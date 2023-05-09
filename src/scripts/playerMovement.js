@@ -4,11 +4,12 @@ import { PointerLockControls } from "three/examples/jsm/controls/PointerLockCont
 const WALK_SPEED = 1.2 // Set the movement speed of the camera
 const LOOK_SPEED = 0.7
 
-const direction = {
+const movementKeys = {
   forward: false,
   backward: false,
   left: false,
   right: false,
+  shift: false,
 }
 
 export function setupFPS(camera, domElement) {
@@ -35,47 +36,53 @@ export function setupFPS(camera, domElement) {
   document.addEventListener(
     "keydown",
     (e) => {
-      switch (e.key) {
+      switch (e.key.toLowerCase()) {
         case "w":
-        case "ArrowUp":
-          direction.forward = true
+        case "arrowup":
+          movementKeys.forward = true
           break
         case "a":
-        case "ArrowLeft":
-          direction.backward = true
+        case "arrowleft":
+          movementKeys.backward = true
           break
         case "s":
-        case "ArrowDown":
-          direction.left = true
+        case "arrowdown":
+          movementKeys.left = true
           break
         case "d":
-        case "ArrowRight":
-          direction.right = true
+        case "arrowright":
+          movementKeys.right = true
+          break
+        // Shift to run
+        case "shift":
+          movementKeys.shift = true
           break
       }
     },
     false
   )
-  // setup keyup events
   document.addEventListener(
     "keyup",
     (e) => {
-      switch (e.key) {
+      switch (e.key.toLowerCase()) {
         case "w":
-        case "ArrowUp":
-          direction.forward = false
+        case "arrowup":
+          movementKeys.forward = false
           break
         case "a":
-        case "ArrowLeft":
-          direction.backward = false
+        case "arrowleft":
+          movementKeys.backward = false
           break
         case "s":
-        case "ArrowDown":
-          direction.left = false
+        case "arrowdown":
+          movementKeys.left = false
           break
         case "d":
-        case "ArrowRight":
-          direction.right = false
+        case "arrowright":
+          movementKeys.right = false
+          break
+        case "shift":
+          movementKeys.shift = false
           break
       }
     },
@@ -86,16 +93,19 @@ export function setupFPS(camera, domElement) {
 }
 
 export function updateFPS(controls) {
-  if (direction.forward) {
-    controls.moveForward(WALK_SPEED)
+  // Calculate the moveSpeed based on whether the shift key is pressed or not
+  const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
+
+  if (movementKeys.forward) {
+    controls.moveForward(currentMoveSpeed)
   }
-  if (direction.left) {
-    controls.moveForward(-WALK_SPEED)
+  if (movementKeys.left) {
+    controls.moveForward(-currentMoveSpeed)
   }
-  if (direction.backward) {
-    controls.moveRight(-WALK_SPEED)
+  if (movementKeys.backward) {
+    controls.moveRight(-currentMoveSpeed)
   }
-  if (direction.right) {
-    controls.moveRight(WALK_SPEED)
+  if (movementKeys.right) {
+    controls.moveRight(currentMoveSpeed)
   }
 }
