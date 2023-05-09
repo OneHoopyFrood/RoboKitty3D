@@ -10,9 +10,10 @@ const movementKeys = {
   left: false,
   right: false,
   shift: false,
+  control: false,
 }
 
-export function setupFPS(camera, domElement) {
+export function setupPlayerMovement(camera, domElement) {
   const controls = new PointerLockControls(camera, domElement)
   controls.pointerSpeed = LOOK_SPEED
 
@@ -22,6 +23,7 @@ export function setupFPS(camera, domElement) {
     document.body.style.cursor = "none"
   })
 
+  // On pointer unlock, show the cursor again and fire a pause event
   document.addEventListener("pointerlockchange", (e) => {
     if (document.pointerLockElement === domElement) {
       return
@@ -57,6 +59,9 @@ export function setupFPS(camera, domElement) {
         case "shift":
           movementKeys.shift = true
           break
+        case "control":
+          movementKeys.control = true
+          break
       }
     },
     false
@@ -84,6 +89,8 @@ export function setupFPS(camera, domElement) {
         case "shift":
           movementKeys.shift = false
           break
+        case "control":
+          movementKeys.control = false
       }
     },
     false
@@ -92,9 +99,12 @@ export function setupFPS(camera, domElement) {
   return controls
 }
 
-export function updateFPS(controls) {
+let originalY = null
+
+export function updateCamera(controls, camera) {
   // Calculate the moveSpeed based on whether the shift key is pressed or not
   const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
+  if (originalY === null) originalY = camera.position.y
 
   if (movementKeys.forward) {
     controls.moveForward(currentMoveSpeed)
@@ -107,5 +117,10 @@ export function updateFPS(controls) {
   }
   if (movementKeys.right) {
     controls.moveRight(currentMoveSpeed)
+  }
+  if (movementKeys.control) {
+    camera.position.y = (originalY || camera.position.y) / 2
+  } else if (camera.position.y !== originalY) {
+    camera.position.y = originalY
   }
 }

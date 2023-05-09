@@ -1,6 +1,6 @@
 import * as THREE from "three"
 import { makeCube } from "./makeCube"
-import { setupFPS, updateFPS } from "./playerMovement"
+import { setupPlayerMovement, updateCamera } from "./playerMovement"
 
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
@@ -77,7 +77,7 @@ function main() {
   const [renderer, scene, camera, clock] = setup()
 
   // Setup player movement controls
-  const cameraControls = setupFPS(camera, renderer.domElement)
+  const cameraControls = setupPlayerMovement(camera, renderer.domElement)
 
   // Populate some cubes, yo
   const cubes = generateCubes(30)
@@ -86,7 +86,7 @@ function main() {
   function render(renderer, scene, camera) {
     requestAnimationFrame(() => render(renderer, scene, camera))
 
-    updateFPS(cameraControls)
+    updateCamera(cameraControls, camera)
     renderer.render(scene, camera)
   }
   render(renderer, scene, camera)
