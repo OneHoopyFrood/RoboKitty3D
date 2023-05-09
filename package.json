@@ -4,12 +4,12 @@
   "description": "Robot finds kitten, in 3D",
   "type": "module",
   "scripts": {
-    "build": "webpack",
+    "build-prod": "webpack --mode production",
     "build-dev": "webpack --mode development",
-    "lint": "eslint src --ext .ts",
-    "start": "yarn build && vite dist",
+    "lint": "eslint src",
+    "start": "yarn build-prod && vite dist",
     "dev": "yarn build-dev && concurrently \"yarn build-dev --watch\" \"vite dist\"",
-    "test": "test"
+    "test": "jest"
   },
   "author": "Cole Panike & Ivan Overmoyer",
   "license": "ISC",
