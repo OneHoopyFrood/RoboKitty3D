@@ -1,72 +1,101 @@
-import * as THREE from "three"
+// Import pointer lock controls
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
 
-// Define the keyboard state object and set initial values
-const keyboard = {}
-keyboard.w = false
-keyboard.a = false
-keyboard.s = false
-keyboard.d = false
-keyboard.q = false
-keyboard.e = false
+const WALK_SPEED = 1.2 // Set the movement speed of the camera
+const LOOK_SPEED = 0.7
 
-// This is just for optimization to prevent the needless creation of a new vector every frame
-const dir = new THREE.Vector3()
-
-const SPEED = 0.7 // Set the movement speed of the camera
-const TURN_SPEED = 0.02
-
-// Add event listeners to detect key presses and releases
-export function setup() {
-  document.addEventListener("keydown", (event) => {
-    if (event.code === "KeyW") keyboard.w = true
-    if (event.code === "KeyA") keyboard.a = true
-    if (event.code === "KeyS") keyboard.s = true
-    if (event.code === "KeyD") keyboard.d = true
-    if (event.code === "KeyQ") keyboard.q = true
-    if (event.code === "KeyE") keyboard.e = true
-  })
-  document.addEventListener("keyup", (event) => {
-    if (event.code === "KeyW") keyboard.w = false
-    if (event.code === "KeyA") keyboard.a = false
-    if (event.code === "KeyS") keyboard.s = false
-    if (event.code === "KeyD") keyboard.d = false
-    if (event.code === "KeyQ") keyboard.q = false
-    if (event.code === "KeyE") keyboard.e = false
-  })
+const direction = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
 }
 
-// Define a function to update the camera position
-export function updateCameraPosition(camera) {
-  if (keyboard.w) {
-    // Forward
-    camera.getWorldDirection(dir)
-    camera.position.addScaledVector(dir, SPEED)
+export function setupFPS(camera, domElement) {
+  const controls = new PointerLockControls(camera, domElement)
+  controls.pointerSpeed = LOOK_SPEED
+
+  // on mouse click, lock the pointer
+  document.addEventListener("click", () => {
+    controls.lock()
+    document.body.style.cursor = "none"
+  })
+
+  document.addEventListener("pointerlockchange", (e) => {
+    if (document.pointerLockElement === domElement) {
+      return
+    }
+    document.body.style.cursor = "default"
+
+    const pauseEvent = new Event("Pause", { bubbles: true, cancelable: false })
+    document.dispatchEvent(pauseEvent)
+  })
+
+  // setup keypress events
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      switch (e.key) {
+        case "w":
+        case "ArrowUp":
+          direction.forward = true
+          break
+        case "a":
+        case "ArrowLeft":
+          direction.backward = true
+          break
+        case "s":
+        case "ArrowDown":
+          direction.left = true
+          break
+        case "d":
+        case "ArrowRight":
+          direction.right = true
+          break
+      }
+    },
+    false
+  )
+  // setup keyup events
+  document.addEventListener(
+    "keyup",
+    (e) => {
+      switch (e.key) {
+        case "w":
+        case "ArrowUp":
+          direction.forward = false
+          break
+        case "a":
+        case "ArrowLeft":
+          direction.backward = false
+          break
+        case "s":
+        case "ArrowDown":
+          direction.left = false
+          break
+        case "d":
+        case "ArrowRight":
+          direction.right = false
+          break
+      }
+    },
+    false
+  )
+
+  return controls
+}
+
+export function updateFPS(controls) {
+  if (direction.forward) {
+    controls.moveForward(WALK_SPEED)
   }
-  if (keyboard.s) {
-    // Back
-    camera.getWorldDirection(dir)
-    camera.position.addScaledVector(dir.negate(), SPEED)
+  if (direction.left) {
+    controls.moveForward(-WALK_SPEED)
   }
-  if (keyboard.a) {
-    // Rotate left
-    camera.rotation.y += TURN_SPEED
+  if (direction.backward) {
+    controls.moveRight(-WALK_SPEED)
   }
-  if (keyboard.d) {
-    // Rotate right
-    camera.rotation.y -= TURN_SPEED
-  }
-  if (keyboard.q) {
-    // Strafe left
-    camera.getWorldDirection(dir)
-    const left = new THREE.Vector3()
-    left.crossVectors(dir, camera.up).negate()
-    camera.position.addScaledVector(left, SPEED)
-  }
-  if (keyboard.e) {
-    // Strafe right
-    camera.getWorldDirection(dir)
-    const right = new THREE.Vector3()
-    right.crossVectors(dir, camera.up)
-    camera.position.addScaledVector(right, SPEED)
+  if (direction.right) {
+    controls.moveRight(WALK_SPEED)
   }
 }

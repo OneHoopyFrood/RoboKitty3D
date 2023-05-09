@@ -1,13 +1,16 @@
 # TODO
 
 - [ ] Prevent cubes colliding on generation
+- [x] Mouse control of view
 - [ ] Add symbols on the cubes?
 - [ ] Provide player interaction mechanism
+  - [ ] Click on cube to get prompt
 - [ ] Prevent player phasing through cubes
 - [ ] World limits
-- [ ] Run button?
-- [ ] Crouch so you can teabag the cubes
-- [ ] Jump because why not
+- [ ] Additional Player Movements
+  - [ ] Run button?
+  - [ ] Crouch so you can teabag the cubes
+  - [ ] Jump because why not
 - [ ] Add asset folder
   - [ ] Music
   - [ ] SFX

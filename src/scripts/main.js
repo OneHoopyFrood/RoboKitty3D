@@ -1,9 +1,6 @@
 import * as THREE from "three"
 import { makeCube } from "./makeCube"
-import {
-  setup as setupPlayerMovement,
-  updateCameraPosition,
-} from "./playerMovement"
+import { setupFPS, updateFPS } from "./playerMovement"
 
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
@@ -19,12 +16,20 @@ function setupRenderer() {
   return renderer
 }
 
-function setupCamera() {
+function setupCamera(renderer) {
   const camera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT)
   camera.position.z = 50
   camera.position.y = 10
-  camera.near = 0.1 // Set the near property to a higher value
-  camera.far = 1000 // Set the far property to a higher value
+  camera.near = 0.1
+  camera.far = 1000
+
+  function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render()
+  }
+  window.addEventListener("resize", onWindowResize, false)
 
   return camera
 }
@@ -34,7 +39,9 @@ function setup() {
 
   const scene = new THREE.Scene()
 
-  const camera = setupCamera()
+  const camera = setupCamera(renderer)
+
+  const clock = new THREE.Clock()
 
   scene.add(camera)
 
@@ -42,7 +49,7 @@ function setup() {
   const gridHelper = new THREE.GridHelper(500, 100)
   scene.add(gridHelper)
 
-  return [renderer, scene, camera]
+  return [renderer, scene, camera, clock]
 }
 
 function genRandomColor() {
@@ -67,18 +74,19 @@ function generateCubes(numCubes = 100) {
 }
 
 function main() {
-  const [renderer, scene, camera] = setup()
+  const [renderer, scene, camera, clock] = setup()
 
-  setupPlayerMovement()
+  // Setup player movement controls
+  const cameraControls = setupFPS(camera, renderer.domElement)
 
+  // Populate some cubes, yo
   const cubes = generateCubes(30)
   cubes.forEach((cube) => scene.add(cube))
 
   function render(renderer, scene, camera) {
     requestAnimationFrame(() => render(renderer, scene, camera))
 
-    updateCameraPosition(camera)
-
+    updateFPS(cameraControls)
     renderer.render(scene, camera)
   }
   render(renderer, scene, camera)
