@@ -8,8 +8,8 @@
 - [ ] Prevent player phasing through cubes
 - [ ] World limits
 - [ ] Additional Player Movements
-  - [ ] Run button?
-  - [ ] Crouch so you can teabag the cubes
+  - [x] Run button?
+  - [x] Crouch so you can teabag the cubes
   - [ ] Jump because why not
 - [ ] Add asset folder
   - [ ] Music
