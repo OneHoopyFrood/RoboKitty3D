@@ -1,6 +1,9 @@
 import * as THREE from "three"
+import { WebGLRenderer } from "three"
 import { makeCube } from "./makeCube"
 import { setupPlayerMovement, updateCamera } from "./playerMovement"
+
+import "../styles/index.css"
 
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
@@ -16,7 +19,7 @@ function setupRenderer() {
   return renderer
 }
 
-function setupCamera(renderer) {
+function setupCamera(renderer: WebGLRenderer) {
   const camera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT)
   camera.position.z = 50
   camera.position.y = 10
@@ -27,21 +30,18 @@ function setupCamera(renderer) {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
     renderer.setSize(window.innerWidth, window.innerHeight)
-    render()
   }
   window.addEventListener("resize", onWindowResize, false)
 
   return camera
 }
 
-function setup() {
+function setup(): [WebGLRenderer, THREE.Scene, THREE.Camera] {
   const renderer = setupRenderer()
 
   const scene = new THREE.Scene()
 
   const camera = setupCamera(renderer)
-
-  const clock = new THREE.Clock()
 
   scene.add(camera)
 
@@ -49,7 +49,7 @@ function setup() {
   const gridHelper = new THREE.GridHelper(500, 100)
   scene.add(gridHelper)
 
-  return [renderer, scene, camera, clock]
+  return [renderer, scene, camera ]
 }
 
 function genRandomColor() {
@@ -74,7 +74,7 @@ function generateCubes(numCubes = 100) {
 }
 
 function main() {
-  const [renderer, scene, camera, clock] = setup()
+  const [renderer, scene, camera] = setup()
 
   // Setup player movement controls
   const cameraControls = setupPlayerMovement(camera, renderer.domElement)
@@ -83,11 +83,11 @@ function main() {
   const cubes = generateCubes(30)
   cubes.forEach((cube) => scene.add(cube))
 
-  function render(renderer, scene, camera) {
+  function render(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
     requestAnimationFrame(() => render(renderer, scene, camera))
 
-    updateCamera(cameraControls, camera)
     renderer.render(scene, camera)
+    updateCamera(cameraControls, camera)
   }
   render(renderer, scene, camera)
 }
