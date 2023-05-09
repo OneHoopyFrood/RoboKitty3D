@@ -1,4 +1,5 @@
 // Import pointer lock controls
+import { Camera } from "three"
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
 
 const WALK_SPEED = 1.2 // Set the movement speed of the camera
@@ -13,7 +14,7 @@ const movementKeys = {
   control: false,
 }
 
-export function setupPlayerMovement(camera, domElement) {
+export function setupPlayerMovement(camera: Camera, domElement: HTMLElement) {
   const controls = new PointerLockControls(camera, domElement)
   controls.pointerSpeed = LOOK_SPEED
 
@@ -99,9 +100,9 @@ export function setupPlayerMovement(camera, domElement) {
   return controls
 }
 
-let originalY = null
+let originalY: number | null = null
 
-export function updateCamera(controls, camera) {
+export function updateCamera(controls: PointerLockControls, camera: Camera) {
   // Calculate the moveSpeed based on whether the shift key is pressed or not
   const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
   if (originalY === null) originalY = camera.position.y
