@@ -11,7 +11,7 @@
 
 ---
 ### QOL Enhancements
-  - [ ] Prevent cubes colliding on generation
+  - [x] Prevent cubes colliding on generation
   - [x] Mouse control of view
   - Sounds
     - [ ] Music

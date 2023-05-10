@@ -8,6 +8,8 @@ import "../styles/index.css"
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 
+const CUBE_SIZE = 10
+
 function setupRenderer() {
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(WIDTH, HEIGHT)
@@ -60,14 +62,20 @@ function genRandomColor() {
 }
 
 function generateCubes(numCubes = 100) {
-  const cubes = []
-  for (let i = 0; i < numCubes; i++) {
+  const cubes: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>[] = []
+  while (cubes.length < numCubes) {
     const cube = makeCube(
-      10,
+      CUBE_SIZE,
       genRandomColor(),
       Math.random() * 500 - 5 - 250,
       Math.random() * 500 - 5 - 250
     )
+
+    // Prevent cubes from spawning inside each other
+    if (cubes.some((c) => c.position.distanceTo(cube.position) < CUBE_SIZE * 2 )) {
+      continue
+    }
+    
     cubes.push(cube)
   }
   return cubes
