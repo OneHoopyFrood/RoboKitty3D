@@ -40,7 +40,7 @@
   - [ ] Symbols on the sides of cubes
   - [ ] Cubes glow when user is within interaction range and looking at the cube
   - [ ] Cubes should float and bob, but not all together. Kinda ethereal like.
-  - [ ] Crosshair in view
+  - [x] Crosshair in view
   - [ ] Additional Player Movements
     - [x] Run button?
     - [x] Crouch so you can teabag the cubes

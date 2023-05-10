@@ -38,6 +38,12 @@ function setupCamera(renderer: WebGLRenderer) {
   return camera
 }
 
+function setupCrosshair() {
+  const crosshair = document.createElement("div")
+  crosshair.classList.add("crosshair")
+  document.body.appendChild(crosshair)
+}
+
 function setup(): [WebGLRenderer, THREE.Scene, THREE.Camera] {
   const renderer = setupRenderer()
 
@@ -87,6 +93,8 @@ function main() {
   // Setup player movement controls
   const cameraControls = setupPlayerMovement(camera, renderer.domElement)
 
+  setupCrosshair()
+  
   // Populate some cubes, yo
   const cubes = generateCubes(30)
   cubes.forEach((cube) => scene.add(cube))
