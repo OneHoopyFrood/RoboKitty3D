@@ -8,9 +8,9 @@ canvas.height = SYMBOL_CANVAS_SIZE
 const ctx = canvas.getContext('2d')
 
 // prettier-ignore
-export const SYMBOLS: [ '!', '#', '$', '%', '&', '*', '+', '.', '/', '0', '3', '8', ';', '=', 
+export const SYMBOLS: [ '!', '@', '$', '%', '&', '*', '+', '.', '/', '0', '3', '8', ';', '=', 
                         '?', 'A', 'F', 'X', 'a', 'f', 'g', 'h', 'i', 'm', 'n', 't', 'w', ] = 
-                      [ '!', '#', '$', '%', '&', '*', '+', '.', '/', '0', '3', '8', ';', '=', 
+                      [ '!', '@', '$', '%', '&', '*', '+', '.', '/', '0', '3', '8', ';', '=', 
                         '?', 'A', 'F', 'X', 'a', 'f', 'g', 'h', 'i', 'm', 'n', 't', 'w', ]
 
 export type AllowedSymbols = (typeof SYMBOLS)[number]
@@ -24,6 +24,9 @@ if (ctx === null) {
   throw new Error('Could not get canvas context for symbol texture')
 }
 
+/**
+ * Creates a texture from a symbol that can be used in a Material
+ */
 function createSymbolTexture(
   symbol: AllowedSymbols,
   fontSize: number,
@@ -66,6 +69,9 @@ function createSymbolTexture(
   return texture
 }
 
+/**
+ * Just a convenience function to hold all the validation logic for the createSymbolTexture function
+ */
 function validateSymbolGenArgs(symbol: string, fontSize: number, fontColor: string) {
   if (symbol.length !== 1) {
     throw new Error('Symbol must be a single character')
@@ -84,6 +90,9 @@ function validateSymbolGenArgs(symbol: string, fontSize: number, fontColor: stri
   }
 }
 
+/**
+ * Creates a material from a symbol that can be used in a Mesh
+ */
 function genSymbolMaterial(
   symbol: AllowedSymbols,
   fontColor: HexColorString,
@@ -94,9 +103,10 @@ function genSymbolMaterial(
   return material
 }
 
+/**
+ * Creates a cube with a symbol on each face
+ */
 export function makeCube(size: number, color: THREE.Color, symbol: AllowedSymbols, x = 0, z = 0, y = 0) {
-  const cubeGeometry = new THREE.BoxGeometry(size, size, size)
-
   const backgroundColor: HexColorString = `#${color.getHexString()}`
   if (!isHexColorString(backgroundColor)) {
     throw new Error('Could not convert background color to hex string')
@@ -114,6 +124,8 @@ export function makeCube(size: number, color: THREE.Color, symbol: AllowedSymbol
   }
 
   const symbolMaterial = genSymbolMaterial(symbol, fontColor, backgroundColor)
+
+  const cubeGeometry = new THREE.BoxGeometry(size, size, size)
 
   const cube = new THREE.Mesh(cubeGeometry, symbolMaterial)
   cube.position.z = z
