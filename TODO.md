@@ -14,8 +14,13 @@
   - [x] Prevent cubes colliding on generation
   - [x] Mouse control of view
   - Sounds
-    - [ ] Music
-    - [ ] SFX
+    - [ ] Music (.ogg)
+    - [ ] SFX (.ogg)
+      - [ ] Cube Interact
+      - [ ] Robot movement
+      - [ ] Kitten noises
+      - [ ] Menu sounds
+      - [ ] Ambiance maybe?
   - Art
     - [ ] Kitten
     - [ ] Player
@@ -34,6 +39,12 @@
         - [ ] Timed
         - [ ] Competition (multiplayer only)
         - [ ] Collaborative (multiplayer only)
+        - [ ] Memory (NKIs in pairs, cubes do not display symbols until
+          interacted with, kitten=old maid, point system for multiplayer)
+          -[ ] Single Player
+          -[ ] Multiplayer
+      - [ ] Control customization
+    - [ ] Credits
 
 ---
 ### Chrome
@@ -65,6 +76,12 @@
   - [ ] Hard (Adds fog to Normal)
   - [ ] Hardcore (cubes drift around randomly and switch symbols when they bump into one another)
   - [ ] Add "Select Difficulty" to Menu (see Difficulty Levels)
+- Cheat Codes
+  - [ ] Kitten noises = true
+  - [ ] Invincibility Mode (doesn't actually do anything, just a message)
+  - [ ] Flying
+  - [ ] Summon Duck
+
 
 
 ---
@@ -74,3 +91,5 @@
 - [ ] Minecraft mode (dirt blocks and punchy-punchy)
 - [ ] Ultra mode? Cubes actively run away?
 - [ ] Weather! (Stars? Clouds?)
+- [ ] Add Duck
+- [ ] Multiple Kittens!?!?
