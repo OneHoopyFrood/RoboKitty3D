@@ -80,11 +80,14 @@ function genRandomColor() {
  * Generates a random position that will fall within the grid
  * @returns A random position between the grid bounds
  */
-function genRandomPosition(mapSize: number, aproxObjectDiameter: number): number {
-  const halfMapSize = mapSize / 2
-  const lowerBound = -halfMapSize + aproxObjectDiameter / 2
-  const upperBound = halfMapSize - aproxObjectDiameter / 2
-  return Math.random() * (upperBound - lowerBound) + lowerBound
+function genRandomPosition(mapSize: number, aproxObjectDiameter: number, alignToGrid: boolean = false): number {
+  const halfMapSize = mapSize / 2 // ex: 500 / 2 = 250
+  let randomPosition = Math.random() * (mapSize - aproxObjectDiameter) - halfMapSize // ex: 500 - 10 = 490, 490 * .842 = 412.18 - 250 = 162.18
+
+  if (alignToGrid) {
+    randomPosition = Math.round(randomPosition / aproxObjectDiameter) * aproxObjectDiameter // ex: 162.18 / 10 = 16.218 => 16 * 10 = 160
+  }
+  return randomPosition
 }
 
 function genRandomSymbol(): AllowedSymbols {
