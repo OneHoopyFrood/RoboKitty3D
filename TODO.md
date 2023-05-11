@@ -2,8 +2,8 @@
 
 ### Gameplay
 
-- [ ] Generate blubs to get on inspect
 - [ ] Cube inspect for proompt
+- [ ] Generate blubs to get on inspect
 - [ ] Add kitten
 - [ ] Win condition (found kitten)
 - [ ] Allow reset on win
@@ -13,51 +13,71 @@
 
 ### QOL Enhancements
 
+**General**
+
 - [x] Prevent cubes colliding on generation
 - [x] Mouse control of view
-- Sounds
-  - [ ] Music (.ogg)
-  - [ ] SFX (.ogg)
-    - [ ] Cube Interact
-    - [ ] Robot movement
-    - [ ] Kitten noises
-    - [ ] Menu sounds
-    - [ ] Ambiance maybe?
-- Art
-  - [ ] Kitten
-  - [ ] Player
-  - [ ] Floor?
-  - [ ] Skydome?
 - [ ] Prevent player phasing through cubes
 - [ ] Give the player corporeal form
-- [ ] World limits
-- [ ] Add pause menu (as features are added)
-  - [ ] Invite another player (p2p)
-  - Settings Menu
-    - [ ] Buildings on/off (requires reload)
-    - [ ] Number of cubes (requires reload)
-    - [ ] Crosshair on off
-    - [ ] Alternate modes
-      - [ ] Timed
-      - [ ] Competition (multiplayer only)
-      - [ ] Collaborative (multiplayer only)
-      - [ ] Memory (NKIs in pairs, cubes do not display symbols until
-            interacted with, kitten=old maid, point system for multiplayer) -[ ] Single Player -[ ] Multiplayer
-    - [ ] Control customization
-  - [ ] Credits
+- [ ] World bounds
+
+**Pause menu** (as features are added)
+
+- [ ] Shows on ESC
+- [ ] Invite another player (p2p)
+- Settings
+  - [ ] Buildings on/off (requires reload)
+  - [ ] Number of cubes (requires reload)
+  - [ ] Crosshair on off
+  - [ ] Alternate modes
+    - [ ] Timed
+    - [ ] Competition (multiplayer only)
+    - [ ] Collaborative (multiplayer only)
+    - [ ] Memory (NKIs in pairs, cubes do not display symbols until
+          interacted with, kitten=old maid, point system for multiplayer) -[ ] Single Player -[ ] Multiplayer
+  - [ ] Control customization
+- [ ] Credits
+
+---
+
+### Assets
+
+**Sounds**
+
+- [ ] Music (.ogg)
+- [ ] SFX (.ogg)
+
+  - [ ] Cube Interact
+  - [ ] Robot movement
+  - [ ] Kitten noises
+  - [ ] Menu sounds
+  - [ ] Explosions
+  - [ ] Angelic Choir Chord
+  - [ ] Ding!
+  - [ ] Ambiance maybe?
+
+    **Art**
+
+- [ ] Kitten
+- [ ] Player
+- [ ] Floor?
+- [ ] Skydome?
 
 ---
 
 ### Chrome
 
+** Cube Enhancements**
+
 - [x] Symbols on the sides of cubes
-- [ ] Cubes glow when user is within interaction range and looking at the cube
-- [ ] Cubes should float and bob, but not all together. Kinda ethereal like.
+- [ ] Glow when user is within interaction range and looking at the cube
+- [ ] Rounded Corners
+- [ ] Float and bob, but not all together. Kinda ethereal like.
 - [x] Crosshair in view
 - [ ] Additional Player Movements
-  - [x] Run button?
-  - [x] Crouch so you can teabag the cubes
-  - [ ] Jump because why not
+  - [x] Run
+  - [x] Crouch
+  - [ ] Jump
 - [ ] Switch cameras
   - [ ] FP (F2)
   - [ ] 3rd person (F2)
@@ -65,7 +85,7 @@
 
 ---
 
-### Stage 2
+### Phase 2
 
 - [ ] AI autopilot
 - [ ] Multiplayer
@@ -73,18 +93,22 @@
   - [ ] Competition
 - [ ] Multiplayer Chat
 - [ ] Levels/buildings/terrain
-- Difficulty Levels
-  - [ ] Super easy (kitten cube is shiny gold and glows brightly)
-  - [ ] Easy (Cubes dim after inspect)
-  - [ ] Normal
-  - [ ] Hard (Adds fog to Normal)
-  - [ ] Hardcore (cubes drift around randomly and switch symbols when they bump into one another)
-  - [ ] Add "Select Difficulty" to Menu (see Difficulty Levels)
-- Cheat Codes
-  - [ ] Kitten noises = true
-  - [ ] Invincibility Mode (doesn't actually do anything, just a message)
-  - [ ] Flying
-  - [ ] Summon Duck
+
+**Difficulty Levels**
+
+- [ ] Super easy (kitten cube is shiny gold and glows brightly)
+- [ ] Easy (Cubes dim after inspect)
+- [ ] Normal
+- [ ] Hard (Adds fog to Normal)
+- [ ] Hardcore (cubes drift around randomly and switch symbols when they bump into one another)
+- [ ] Add "Select Difficulty" to Menu (see Difficulty Levels)
+
+**Cheat Codes**
+
+- [ ] Kitten noises = true
+- [ ] Invincibility Mode (doesn't actually do anything, just a message)
+- [ ] Flying
+- [ ] Summon Duck
 
 ---
 
