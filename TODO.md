@@ -17,6 +17,9 @@
 
 - [x] Prevent cubes colliding on generation
 - [x] Mouse control of view
+- [ ] New consideration: Should player only be able to move in the cardinal
+      directions? Like the original game? W would be forward, S back, A to turn
+      left 90°, D to turn right 90°
 - [ ] Prevent player phasing through cubes
 - [ ] Give the player corporeal form
 - [ ] World bounds
