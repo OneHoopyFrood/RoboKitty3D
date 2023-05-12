@@ -1,15 +1,50 @@
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
+import { PartialDeep } from 'type-fest'
 import { AllowedSymbols, SYMBOLS, makeCube } from './makeCube'
 import { setupPlayerMovement, updateCamera } from './playerMovement'
 
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls'
 import '../styles/index.css'
 
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 
 const CUBE_SIZE = 10
-const GRID_SIZE = 500
+const GRID_SIZE = 1000
+
+export type GridPosition = [number, number]
+
+// Create an interface type to contain the game state
+export interface GameState {
+  renderer: WebGLRenderer
+  scene: THREE.Scene
+  lights: THREE.Light[]
+  grid: THREE.GridHelper
+  player: {
+    // body: THREE.Mesh
+    camera: THREE.PerspectiveCamera
+    position: GridPosition
+    crosshair: HTMLElement
+    controls: PointerLockControls
+  }
+  cubes: THREE.Mesh[]
+}
+
+// typeguard to transform a PartialDeep<GameState> into a GameState
+function isGameState(gameState: PartialDeep<GameState>): gameState is GameState {
+  return (
+    gameState.renderer !== undefined &&
+    gameState.scene !== undefined &&
+    gameState.lights !== undefined &&
+    gameState.grid !== undefined &&
+    gameState.player !== undefined &&
+    gameState.player.camera !== undefined &&
+    gameState.player.position !== undefined &&
+    gameState.player.crosshair !== undefined &&
+    gameState.cubes !== undefined
+  )
+}
 
 function setupRenderer() {
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -29,40 +64,17 @@ function setupCamera(renderer: WebGLRenderer) {
   camera.position.y = 10
   camera.near = 0.1
   camera.far = 1000
-
-  function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-  }
-  window.addEventListener('resize', onWindowResize, false)
-
   return camera
 }
 
-function setupCrosshair() {
+/**
+ * Sets up the crosshair in the center of the screen (uses html/css)
+ */
+function setupCrosshair(): HTMLElement {
   const crosshair = document.createElement('div')
   crosshair.classList.add('crosshair')
   document.body.appendChild(crosshair)
-}
-
-function setup(): [WebGLRenderer, THREE.Scene, THREE.Camera] {
-  const renderer = setupRenderer()
-
-  const scene = new THREE.Scene()
-
-  const ambientLight = new THREE.AmbientLight(0xffffff) // white light
-  scene.add(ambientLight)
-
-  const camera = setupCamera(renderer)
-
-  scene.add(camera)
-
-  // Create a GridHelper
-  const gridHelper = new THREE.GridHelper(500, 100)
-  scene.add(gridHelper)
-
-  return [renderer, scene, camera]
+  return crosshair
 }
 
 /**
@@ -80,14 +92,18 @@ function genRandomColor() {
  * Generates a random position that will fall within the grid
  * @returns A random position between the grid bounds
  */
-function genRandomPosition(mapSize: number, aproxObjectDiameter: number, alignToGrid: boolean = false): number {
+function genRandomPosition(mapSize: number, aproxObjectDiameter: number, alignToGrid: boolean = false): GridPosition {
   const halfMapSize = mapSize / 2 // ex: 500 / 2 = 250
-  let randomPosition = Math.random() * (mapSize - aproxObjectDiameter) - halfMapSize // ex: 500 - 10 = 490, 490 * .842 = 412.18 - 250 = 162.18
+  let randomPosition = []
+  for (let i = 0; i < 2; i++) {
+    randomPosition[i] = Math.random() * (mapSize - aproxObjectDiameter) - halfMapSize // ex: 500 - 10 = 490, 490 * .842 = 412.18 - 250 = 162.18
 
-  if (alignToGrid) {
-    randomPosition = Math.round(randomPosition / aproxObjectDiameter) * aproxObjectDiameter // ex: 162.18 / 10 = 16.218 => 16 * 10 = 160
+    if (alignToGrid) {
+      randomPosition[i] = Math.round(randomPosition[i] / aproxObjectDiameter) * aproxObjectDiameter // ex: 162.18 / 10 = 16.218 => 16 * 10 = 160
+    }
   }
-  return randomPosition
+  // Cast should be safe so long as the above loop isn't changed
+  return randomPosition as GridPosition
 }
 
 function genRandomSymbol(): AllowedSymbols {
@@ -106,13 +122,15 @@ function generateCubes(numCubes = 100) {
       break
     }
 
+    const gridPosition = genRandomPosition(GRID_SIZE, CUBE_SIZE, true)
+
     const cube = makeCube(
       CUBE_SIZE,
       genRandomColor(),
       // Generate a random symbol within the available symbols
       genRandomSymbol(),
-      genRandomPosition(GRID_SIZE, CUBE_SIZE),
-      genRandomPosition(GRID_SIZE, CUBE_SIZE),
+      gridPosition[0],
+      gridPosition[1],
     )
 
     // Prevent cubes from spawning inside each other
@@ -123,24 +141,79 @@ function generateCubes(numCubes = 100) {
   return cubes
 }
 
-function main() {
-  const [renderer, scene, camera] = setup()
+// Make a robot body
+function makePlayer(): THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial> {
+  throw new Error('Not implemented')
+}
 
-  // Setup player movement controls
+function getReady(): GameState {
+  const renderer = setupRenderer()
+  const camera = setupCamera(renderer)
+  const scene = new THREE.Scene()
+  const ambientLight = new THREE.AmbientLight(0xffffff) // white light
+  const grid = new THREE.GridHelper(GRID_SIZE, GRID_SIZE / CUBE_SIZE)
+  const crosshair = setupCrosshair()
+  const cubes = generateCubes()
+
   const cameraControls = setupPlayerMovement(camera, renderer.domElement)
 
-  setupCrosshair()
-
-  // Populate some cubes, yo
-  const cubes = generateCubes(30)
-  cubes.forEach((cube) => scene.add(cube))
-
-  function render(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
-    requestAnimationFrame(() => render(renderer, scene, camera))
-
-    renderer.render(scene, camera)
-    updateCamera(cameraControls, camera)
+  const game: GameState = {
+    renderer,
+    scene,
+    lights: [ambientLight],
+    grid,
+    player: {
+      // body: makePlayer(),
+      camera,
+      position: [0, 0],
+      crosshair,
+      controls: cameraControls,
+    },
+    cubes,
   }
-  render(renderer, scene, camera)
+  return game
+}
+
+function getSet(game: GameState) {
+  // Add all the things! (to the scene)
+  game.lights.forEach((light) => game.scene.add(light))
+  game.scene.add(game.grid)
+  game.cubes.forEach((cube) => game.scene.add(cube))
+  // TODO: Give the player corporeal form 🧙🏻‍♂️
+  // game.scene.add(game.player.body)
+
+  // Adapt to window resizing
+  window.addEventListener(
+    'resize',
+    () => {
+      game.player.camera.aspect = window.innerWidth / window.innerHeight
+      game.player.camera.updateProjectionMatrix()
+      game.renderer.setSize(window.innerWidth, window.innerHeight)
+    },
+    false,
+  )
+
+  // Setup player movement controls
+
+  game.cubes.forEach((cube) => game.scene.add(cube))
+}
+
+function go(game: GameState) {
+  // Start the game loop
+  function animate(game: GameState) {
+    requestAnimationFrame(() => animate(game))
+
+    game.renderer.render(game.scene, game.player.camera)
+    updateCamera(game.player.controls, game.player.camera)
+  }
+  animate(game)
+}
+
+function main() {
+  // Make all the things!
+  const game: GameState = getReady()
+  getSet(game)
+
+  go(game)
 }
 main()
