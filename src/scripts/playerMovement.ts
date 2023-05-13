@@ -1,6 +1,8 @@
 // Import pointer lock controls
-import { Camera } from "three"
-import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
+import { Vec3 } from 'cannon-es'
+import { Camera } from 'three'
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
+import { GameState } from '.'
 
 const WALK_SPEED = 1.2 // Set the movement speed of the camera
 const LOOK_SPEED = 0.7
@@ -19,82 +21,82 @@ export function setupPlayerMovement(camera: Camera, domElement: HTMLElement) {
   controls.pointerSpeed = LOOK_SPEED
 
   // on mouse click, lock the pointer
-  document.addEventListener("click", () => {
+  document.addEventListener('click', () => {
     controls.lock()
-    document.body.style.cursor = "none"
+    document.body.style.cursor = 'none'
   })
 
   // On pointer unlock, show the cursor again and fire a pause event
-  document.addEventListener("pointerlockchange", (e) => {
+  document.addEventListener('pointerlockchange', (e) => {
     if (document.pointerLockElement === domElement) {
       return
     }
-    document.body.style.cursor = "default"
+    document.body.style.cursor = 'default'
 
-    const pauseEvent = new Event("Pause", { bubbles: true, cancelable: false })
+    const pauseEvent = new Event('Pause', { bubbles: true, cancelable: false })
     document.dispatchEvent(pauseEvent)
   })
 
   // setup keypress events
   document.addEventListener(
-    "keydown",
+    'keydown',
     (e) => {
       switch (e.key.toLowerCase()) {
-        case "w":
-        case "arrowup":
+        case 'w':
+        case 'arrowup':
           movementKeys.forward = true
           break
-        case "a":
-        case "arrowleft":
+        case 'a':
+        case 'arrowleft':
           movementKeys.backward = true
           break
-        case "s":
-        case "arrowdown":
+        case 's':
+        case 'arrowdown':
           movementKeys.left = true
           break
-        case "d":
-        case "arrowright":
+        case 'd':
+        case 'arrowright':
           movementKeys.right = true
           break
         // Shift to run
-        case "shift":
+        case 'shift':
           movementKeys.shift = true
           break
-        case "control":
+        case 'control':
           movementKeys.control = true
           break
       }
     },
-    false
+    false,
   )
   document.addEventListener(
-    "keyup",
+    'keyup',
     (e) => {
       switch (e.key.toLowerCase()) {
-        case "w":
-        case "arrowup":
+        case 'w':
+        case 'arrowup':
           movementKeys.forward = false
           break
-        case "a":
-        case "arrowleft":
+        case 'a':
+        case 'arrowleft':
           movementKeys.backward = false
           break
-        case "s":
-        case "arrowdown":
+        case 's':
+        case 'arrowdown':
           movementKeys.left = false
           break
-        case "d":
-        case "arrowright":
+        case 'd':
+        case 'arrowright':
           movementKeys.right = false
           break
-        case "shift":
+        case 'shift':
           movementKeys.shift = false
           break
-        case "control":
+        case 'control':
           movementKeys.control = false
       }
     },
-    false
+    false,
   )
 
   return controls
@@ -102,26 +104,35 @@ export function setupPlayerMovement(camera: Camera, domElement: HTMLElement) {
 
 let originalY: number | null = null
 
-export function updateCamera(controls: PointerLockControls, camera: Camera) {
+export function updatePlayerPosition(game: GameState) {
   // Calculate the moveSpeed based on whether the shift key is pressed or not
   const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
-  if (originalY === null) originalY = camera.position.y
+  if (originalY === null) originalY = game.player.camera.position.y
 
   if (movementKeys.forward) {
-    controls.moveForward(currentMoveSpeed)
+    game.player.controls.moveForward(currentMoveSpeed)
   }
   if (movementKeys.left) {
-    controls.moveForward(-currentMoveSpeed)
+    game.player.controls.moveForward(-currentMoveSpeed)
   }
   if (movementKeys.backward) {
-    controls.moveRight(-currentMoveSpeed)
+    game.player.controls.moveRight(-currentMoveSpeed)
   }
   if (movementKeys.right) {
-    controls.moveRight(currentMoveSpeed)
+    game.player.controls.moveRight(currentMoveSpeed)
   }
   if (movementKeys.control) {
-    camera.position.y = (originalY || camera.position.y) / 2
-  } else if (camera.position.y !== originalY) {
-    camera.position.y = originalY
+    game.player.camera.position.y = (originalY || game.player.camera.position.y) / 2
+  } else if (game.player.camera.position.y !== originalY) {
+    game.player.camera.position.y = originalY
   }
+
+  game.player.body.position.copy(game.player.camera.position)
+
+  game.player.physicsBody.position.copy(
+    new Vec3(game.player.body.position.x, game.player.body.position.y, game.player.body.position.z),
+  )
+  game.player.body.rotation.y = game.player.camera.rotation.y
+  game.player.physicsBody.fixedRotation = true
+  // game.player.physicsBody.quaternion.setFromAxisAngle(new Vec3(0, 1, 0), game.player.camera.rotation.y)
 }
