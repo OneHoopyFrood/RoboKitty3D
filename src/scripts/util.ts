@@ -1,47 +1,8 @@
 import * as CANNON from 'cannon-es'
 import * as THREE from 'three'
-import { CUBE_SIZE, GRID_SIZE, GridPosition, HEIGHT, PLAYER_HEIGHT, WIDTH } from '.'
+import { CUBE_SIZE, GRID_SIZE, GameState, GridPosition } from '.'
 import { AllowedSymbols, SYMBOLS, makeCube } from './makeCube'
 
-export function setupRenderer() {
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(WIDTH, HEIGHT)
-  renderer.setClearColor(0x222222, 1)
-  renderer.domElement.id = 'game'
-  document.body.appendChild(renderer.domElement)
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth, window.innerHeight)
-
-  return renderer
-}
-export function setupCamera() {
-  const camera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT)
-  camera.position.z = 50
-  camera.position.y = PLAYER_HEIGHT * 10
-  camera.near = 0.1
-  camera.far = 1000
-  return camera
-}
-
-export function setupTopCamera() {
-  const topCamera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT)
-  topCamera.position.y = 100
-  topCamera.position.z = 0
-  topCamera.rotation.x = -Math.PI / 2
-  topCamera.near = 0.1
-  topCamera.far = 1000
-  return topCamera
-}
-
-/**
- * Sets up the crosshair in the center of the screen (uses html/css)
- */
-export function setupCrosshair(): HTMLElement {
-  const crosshair = document.createElement('div')
-  crosshair.classList.add('crosshair')
-  document.body.appendChild(crosshair)
-  return crosshair
-}
 /**
  * Generates a random THREE.Color
  * @returns A random color
@@ -117,10 +78,26 @@ export function adaptOnWindowResize(game: GameState) {
   window.addEventListener(
     'resize',
     () => {
-      game.player.camera.aspect = window.innerWidth / window.innerHeight
-      game.player.camera.updateProjectionMatrix()
+      game.player.fpCam.aspect = window.innerWidth / window.innerHeight
+      game.player.fpCam.updateProjectionMatrix()
       game.renderer.setSize(window.innerWidth, window.innerHeight)
     },
     false,
   )
+}
+
+export function CannonVec3ToThreeVector3(cannonVec3: CANNON.Vec3): THREE.Vector3 {
+  return new THREE.Vector3(cannonVec3.x, cannonVec3.y, cannonVec3.z)
+}
+
+export function CannonQuaternionToThreeQuaternion(cannonQuaternion: CANNON.Quaternion): THREE.Quaternion {
+  return new THREE.Quaternion(cannonQuaternion.x, cannonQuaternion.y, cannonQuaternion.z, cannonQuaternion.w)
+}
+
+export function ThreeVector3ToCannonVec3(threeVector3: THREE.Vector3): CANNON.Vec3 {
+  return new CANNON.Vec3(threeVector3.x, threeVector3.y, threeVector3.z)
+}
+
+export function ThreeQuaternionToCannonQuaternion(threeQuaternion: THREE.Quaternion): CANNON.Quaternion {
+  return new CANNON.Quaternion(threeQuaternion.x, threeQuaternion.y, threeQuaternion.z, threeQuaternion.w)
 }

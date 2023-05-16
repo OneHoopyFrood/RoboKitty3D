@@ -1,8 +1,7 @@
 // Import pointer lock controls
-import { Vec3 } from 'cannon-es'
-import { Camera } from 'three'
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
-import { GameState } from '.'
+import * as THREE from 'three'
+import { GameState, THIRD_PERSON_OFFSET } from '.'
+import { PointerLockControls } from './PointerLockControls'
 
 const WALK_SPEED = 1.2 // Set the movement speed of the camera
 const LOOK_SPEED = 0.7
@@ -16,7 +15,7 @@ const movementKeys = {
   control: false,
 }
 
-export function setupPlayerMovement(camera: Camera, domElement: HTMLElement) {
+export function setupPlayerMovement(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
   const controls = new PointerLockControls(camera, domElement)
   controls.pointerSpeed = LOOK_SPEED
 
@@ -102,13 +101,11 @@ export function setupPlayerMovement(camera: Camera, domElement: HTMLElement) {
   return controls
 }
 
-let originalY: number | null = null
+export function applyMovementControls(game: GameState) {
+  const { player } = game
 
-export function updatePlayerPosition(game: GameState) {
   // Calculate the moveSpeed based on whether the shift key is pressed or not
   const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
-  if (originalY === null) originalY = game.player.camera.position.y
-
   if (movementKeys.forward) {
     game.player.controls.moveForward(currentMoveSpeed)
   }
@@ -121,18 +118,46 @@ export function updatePlayerPosition(game: GameState) {
   if (movementKeys.right) {
     game.player.controls.moveRight(currentMoveSpeed)
   }
-  if (movementKeys.control) {
-    game.player.camera.position.y = (originalY || game.player.camera.position.y) / 2
-  } else if (game.player.camera.position.y !== originalY) {
-    game.player.camera.position.y = originalY
+}
+
+export function syncBodyToCamera(game: GameState) {
+  const { player } = game
+
+  // Prevent the player from looking up or down when not in first person
+  if (game.currentCamera !== player.fpCam && game.player.controls.lockPitchToHorizon === false) {
+    game.player.controls.lockPitchToHorizon = true
+  } else if (game.currentCamera === player.fpCam && game.player.controls.lockPitchToHorizon === true) {
+    game.player.controls.lockPitchToHorizon = false
   }
 
-  game.player.body.position.copy(game.player.camera.position)
+  // Sync the player's body to the fpCam
+  player.body.position.copy(player.fpCam.position)
 
-  game.player.physicsBody.position.copy(
-    new Vec3(game.player.body.position.x, game.player.body.position.y, game.player.body.position.z),
-  )
-  game.player.body.rotation.y = game.player.camera.rotation.y
-  game.player.physicsBody.fixedRotation = true
-  // game.player.physicsBody.quaternion.setFromAxisAngle(new Vec3(0, 1, 0), game.player.camera.rotation.y)
+  // Get the Y rotation from the fpCam's quaternion
+  const cameraEuler = new THREE.Euler().setFromQuaternion(player.fpCam.quaternion)
+  player.body.quaternion.setFromEuler(cameraEuler)
+
+  // Sync the tpCam to the fpCam if it's active
+  if (game.currentCamera === player.tpCam) {
+    // This camera is is a bit more complicated. We want the camera to swing about
+    // the player's position while maintaining a constant distance from the
+    // player, as if flying around the player on a selfy stick attached to
+    // their back.
+    // To acomplish this we'll first set the position of the camera directly
+    // to the player's position, then we'll apply an offset to the camera.
+
+    // Copy position of the fpCam
+    player.tpCam.position.copy(player.fpCam.position)
+
+    // Copy the rotation of the fpCam
+    player.tpCam.quaternion.setFromEuler(cameraEuler)
+
+    // Now fly out behind the player using the THIRD_PERSON_OFFSET
+    player.tpCam.translateZ(THIRD_PERSON_OFFSET.z)
+    player.tpCam.translateY(THIRD_PERSON_OFFSET.y)
+    player.tpCam.translateX(THIRD_PERSON_OFFSET.x)
+
+    // Look at the player's position
+    player.tpCam.lookAt(player.body.position)
+  }
 }
