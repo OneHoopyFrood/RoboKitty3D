@@ -22,7 +22,7 @@ import {
   setupRenderer,
   setupTopCamera,
 } from './setup'
-import { adaptOnWindowResize, generateCubes } from './util'
+import { adaptOnWindowResize, allowCameraChange, generateCubes } from './util'
 
 export const GAME_WIDTH = window.innerWidth
 export const GAME_HEIGHT = window.innerHeight
@@ -102,23 +102,15 @@ function getSet(game: GameState) {
   // Add all the things! (to the scene)
   lights.forEach((light) => scene.add(light))
   scene.add(grid)
-  cubes.forEach((cube) => scene.add(cube[0]))
+  cubes.forEach((cube) => scene.add(cube))
   scene.add(player.body)
-  cubes.forEach((cube) => scene.add(cube[0]))
+  cubes.forEach((cube) => scene.add(cube))
 
   adaptOnWindowResize(game)
+  allowCameraChange(game)
 }
 
 function go(game: GameState) {
-  document.addEventListener('keyup', (event) => {
-    if (event.key === 'F2') {
-      game.currentCamera = game.topCamera
-    }
-    if (event.key === 'F3') {
-      game.currentCamera = game.currentCamera !== game.player.fpCam ? game.player.fpCam : game.player.tpCam
-    }
-  })
-
   // Start the game loop
   function animate(game: GameState) {
     requestAnimationFrame(() => animate(game))

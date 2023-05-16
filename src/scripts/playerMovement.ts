@@ -123,13 +123,6 @@ export function applyMovementControls(game: GameState) {
 export function syncBodyToCamera(game: GameState) {
   const { player } = game
 
-  // Prevent the player from looking up or down when not in first person
-  if (game.currentCamera !== player.fpCam && game.player.controls.lockPitchToHorizon === false) {
-    game.player.controls.lockPitchToHorizon = true
-  } else if (game.currentCamera === player.fpCam && game.player.controls.lockPitchToHorizon === true) {
-    game.player.controls.lockPitchToHorizon = false
-  }
-
   // Sync the player's body to the fpCam
   player.body.position.copy(player.fpCam.position)
 

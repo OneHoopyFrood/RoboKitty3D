@@ -1,4 +1,3 @@
-import * as CANNON from 'cannon-es'
 import * as THREE from 'three'
 import { CUBE_SIZE, GRID_SIZE, GameState, GridPosition } from '.'
 import { AllowedSymbols, SYMBOLS, makeCube } from './makeCube'
@@ -34,8 +33,8 @@ function genRandomSymbol(): AllowedSymbols {
   const randomIndex = Math.floor(Math.random() * SYMBOLS.length)
   return SYMBOLS[randomIndex]
 }
-export function generateCubes(numCubes = 100): [THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>, CANNON.Body][] {
-  const cubes: [THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>, CANNON.Body][] = []
+export function generateCubes(numCubes = 100): THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>[] {
+  const cubes: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>[] = []
   // I'm using a for loop here because I want to be able to limit the number or
   // retries to something reasonable. Normally you'd use a while loop here, but
   // that TECHNICALLY has the potential to run forever.
@@ -57,19 +56,11 @@ export function generateCubes(numCubes = 100): [THREE.Mesh<THREE.BoxGeometry, TH
     )
 
     // Prevent cubes from spawning inside each other
-    if (cubes.some(([renderBody]) => renderBody.position.distanceTo(cubeRenderBody.position) < CUBE_SIZE * 2)) {
+    if (cubes.some((renderBody) => renderBody.position.distanceTo(cubeRenderBody.position) < CUBE_SIZE * 2)) {
       continue
     }
 
-    // Now setup the physics body
-    const cubePhysicsBody = new CANNON.Body({
-      mass: 1,
-      position: new CANNON.Vec3(cubeRenderBody.position.x, cubeRenderBody.position.y, cubeRenderBody.position.z),
-      // Cannon uses half extents
-      shape: new CANNON.Box(new CANNON.Vec3(CUBE_SIZE / 2, CUBE_SIZE / 2, CUBE_SIZE / 2)),
-    })
-
-    cubes.push([cubeRenderBody, cubePhysicsBody])
+    cubes.push(cubeRenderBody)
   }
   return cubes
 }
@@ -84,4 +75,22 @@ export function adaptOnWindowResize(game: GameState) {
     },
     false,
   )
+}
+
+export function allowCameraChange(game: GameState) {
+  document.addEventListener('keyup', (event) => {
+    if (event.key === 'F2') {
+      game.currentCamera = game.topCamera
+    }
+    if (event.key === 'F3') {
+      game.currentCamera = game.currentCamera !== game.player.fpCam ? game.player.fpCam : game.player.tpCam
+    }
+  })
+
+  // Prevent the player from looking up or down when not in first person
+  if (game.currentCamera !== game.player.fpCam && game.player.controls.lockPitchToHorizon === false) {
+    game.player.controls.lockPitchToHorizon = true
+  } else if (game.currentCamera === game.player.fpCam && game.player.controls.lockPitchToHorizon === true) {
+    game.player.controls.lockPitchToHorizon = false
+  }
 }
