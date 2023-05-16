@@ -141,9 +141,9 @@ export function syncBodyToCamera(game: GameState) {
   if (game.currentCamera === player.tpCam) {
     // This camera is is a bit more complicated. We want the camera to swing about
     // the player's position while maintaining a constant distance from the
-    // player, as if flying around the player on a selfy stick attached to
+    // player, as if flying around the player on a selfie-stick attached to
     // their back.
-    // To acomplish this we'll first set the position of the camera directly
+    // To accomplish this we'll first set the position of the camera directly
     // to the player's position, then we'll apply an offset to the camera.
 
     // Copy position of the fpCam
