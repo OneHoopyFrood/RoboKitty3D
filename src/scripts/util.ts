@@ -85,19 +85,3 @@ export function adaptOnWindowResize(game: GameState) {
     false,
   )
 }
-
-export function CannonVec3ToThreeVector3(cannonVec3: CANNON.Vec3): THREE.Vector3 {
-  return new THREE.Vector3(cannonVec3.x, cannonVec3.y, cannonVec3.z)
-}
-
-export function CannonQuaternionToThreeQuaternion(cannonQuaternion: CANNON.Quaternion): THREE.Quaternion {
-  return new THREE.Quaternion(cannonQuaternion.x, cannonQuaternion.y, cannonQuaternion.z, cannonQuaternion.w)
-}
-
-export function ThreeVector3ToCannonVec3(threeVector3: THREE.Vector3): CANNON.Vec3 {
-  return new CANNON.Vec3(threeVector3.x, threeVector3.y, threeVector3.z)
-}
-
-export function ThreeQuaternionToCannonQuaternion(threeQuaternion: THREE.Quaternion): CANNON.Quaternion {
-  return new CANNON.Quaternion(threeQuaternion.x, threeQuaternion.y, threeQuaternion.z, threeQuaternion.w)
-}
