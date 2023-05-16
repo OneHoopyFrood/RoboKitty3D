@@ -1,16 +1,39 @@
+/**
+ * This is the entry point for the game.
+ * Its job is to:
+ * 1. Setup all the game objects and resources
+ * 2. Coordinate state
+ * 3. Start the game loop
+ *
+ * Effectively, this module serves as a coordination point for everything in the game.
+ */
+
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { setupPlayerMovement, updateCamera } from './playerMovement'
+import { applyMovementControls, setupPlayerMovement, syncBodyToCamera } from './playerMovement'
 
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls'
 import '../styles/index.css'
-import { generateCubes, setupCamera, setupCrosshair, setupRenderer } from './util'
+import { PointerLockControls } from './PointerLockControls'
+import {
+  setupCrosshair,
+  setupPlayerBody,
+  setupPlayerFPCamera,
+  setupPlayerTPCamera,
+  setupRenderer,
+  setupTopCamera,
+} from './setup'
+import { adaptOnWindowResize, generateCubes } from './util'
 
-export const WIDTH = window.innerWidth
-export const HEIGHT = window.innerHeight
+export const GAME_WIDTH = window.innerWidth
+export const GAME_HEIGHT = window.innerHeight
+
+export const GRID_SIZE = 1000
+
+export const PLAYER_HEIGHT = 0.8 // meters
 
 export const CUBE_SIZE = 10
-export const GRID_SIZE = 1000
+
+export const THIRD_PERSON_OFFSET = new THREE.Vector3(0, 15, 30)
 
 export type GridPosition = [number, number]
 
@@ -19,39 +42,53 @@ export interface GameState {
   renderer: WebGLRenderer
   scene: THREE.Scene
   lights: THREE.Light[]
+  currentCamera: THREE.Camera
+  topCamera: THREE.OrthographicCamera
   grid: THREE.GridHelper
   player: {
-    // body: THREE.Mesh
-    camera: THREE.PerspectiveCamera
-    position: GridPosition
+    previousRotationY: any
+    body: THREE.Mesh
+    fpCam: THREE.PerspectiveCamera
+    tpCam: THREE.PerspectiveCamera
     crosshair: HTMLElement
     controls: PointerLockControls
   }
-  cubes: THREE.Mesh[]
+  cubes: ReturnType<typeof generateCubes>
 }
 
 function getReady(): GameState {
+  // Prepare the components of the game
   const renderer = setupRenderer()
-  const camera = setupCamera(renderer)
   const scene = new THREE.Scene()
-  const ambientLight = new THREE.AmbientLight(0xffffff) // white light
-  const grid = new THREE.GridHelper(GRID_SIZE, GRID_SIZE / CUBE_SIZE)
+
+  const grid = new THREE.GridHelper(GRID_SIZE, (GRID_SIZE / CUBE_SIZE) * 2)
+
   const crosshair = setupCrosshair()
+
+  const ambientLight = new THREE.AmbientLight(0xffffff)
+
+  const playerRenderBody = setupPlayerBody([0, 0])
+  const playerFPCamera = setupPlayerFPCamera(playerRenderBody)
+  const playerTPCamera = setupPlayerTPCamera(playerRenderBody)
+  const topCamera = setupTopCamera()
+
   const cubes = generateCubes()
 
-  const cameraControls = setupPlayerMovement(camera, renderer.domElement)
-
+  // Now add everything to the game state object
   const game: GameState = {
     renderer,
     scene,
     lights: [ambientLight],
+    topCamera,
+    currentCamera: playerFPCamera,
     grid,
     player: {
-      // body: makePlayer(),
-      camera,
-      position: [0, 0],
+      body: playerRenderBody,
+      previousRotationY: playerFPCamera.rotation.y,
+      fpCam: playerFPCamera,
+      tpCam: playerTPCamera,
       crosshair,
-      controls: cameraControls,
+      controls: setupPlayerMovement(playerFPCamera, renderer.domElement),
     },
     cubes,
   }
@@ -59,36 +96,38 @@ function getReady(): GameState {
 }
 
 function getSet(game: GameState) {
+  // Grab only what we're interested in
+  const { renderer, lights, scene, player, grid, cubes } = game
+
   // Add all the things! (to the scene)
-  game.lights.forEach((light) => game.scene.add(light))
-  game.scene.add(game.grid)
-  game.cubes.forEach((cube) => game.scene.add(cube))
-  // TODO: Give the player corporeal form 🧙🏻‍♂️
-  // game.scene.add(game.player.body)
+  lights.forEach((light) => scene.add(light))
+  scene.add(grid)
+  cubes.forEach((cube) => scene.add(cube[0]))
+  scene.add(player.body)
+  cubes.forEach((cube) => scene.add(cube[0]))
 
-  // Adapt to window resizing
-  window.addEventListener(
-    'resize',
-    () => {
-      game.player.camera.aspect = window.innerWidth / window.innerHeight
-      game.player.camera.updateProjectionMatrix()
-      game.renderer.setSize(window.innerWidth, window.innerHeight)
-    },
-    false,
-  )
-
-  // Setup player movement controls
-
-  game.cubes.forEach((cube) => game.scene.add(cube))
+  adaptOnWindowResize(game)
 }
 
 function go(game: GameState) {
+  document.addEventListener('keyup', (event) => {
+    if (event.key === 'F2') {
+      game.currentCamera = game.topCamera
+    }
+    if (event.key === 'F3') {
+      game.currentCamera = game.currentCamera !== game.player.fpCam ? game.player.fpCam : game.player.tpCam
+    }
+  })
+
   // Start the game loop
   function animate(game: GameState) {
     requestAnimationFrame(() => animate(game))
 
-    game.renderer.render(game.scene, game.player.camera)
-    updateCamera(game.player.controls, game.player.camera)
+    game.renderer.render(game.scene, game.currentCamera)
+
+    applyMovementControls(game)
+
+    syncBodyToCamera(game)
   }
   animate(game)
 }

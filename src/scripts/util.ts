@@ -1,36 +1,8 @@
+import * as CANNON from 'cannon-es'
 import * as THREE from 'three'
-import { WebGLRenderer } from 'three'
-import { CUBE_SIZE, GRID_SIZE, GridPosition, HEIGHT, WIDTH } from '.'
+import { CUBE_SIZE, GRID_SIZE, GameState, GridPosition } from '.'
 import { AllowedSymbols, SYMBOLS, makeCube } from './makeCube'
 
-export function setupRenderer() {
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(WIDTH, HEIGHT)
-  renderer.setClearColor(0x222222, 1)
-  renderer.domElement.id = 'game'
-  document.body.appendChild(renderer.domElement)
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth, window.innerHeight)
-
-  return renderer
-}
-export function setupCamera(renderer: WebGLRenderer) {
-  const camera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT)
-  camera.position.z = 50
-  camera.position.y = 10
-  camera.near = 0.1
-  camera.far = 1000
-  return camera
-}
-/**
- * Sets up the crosshair in the center of the screen (uses html/css)
- */
-export function setupCrosshair(): HTMLElement {
-  const crosshair = document.createElement('div')
-  crosshair.classList.add('crosshair')
-  document.body.appendChild(crosshair)
-  return crosshair
-}
 /**
  * Generates a random THREE.Color
  * @returns A random color
@@ -62,8 +34,8 @@ function genRandomSymbol(): AllowedSymbols {
   const randomIndex = Math.floor(Math.random() * SYMBOLS.length)
   return SYMBOLS[randomIndex]
 }
-export function generateCubes(numCubes = 100) {
-  const cubes: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>[] = []
+export function generateCubes(numCubes = 100): [THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>, CANNON.Body][] {
+  const cubes: [THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>, CANNON.Body][] = []
   // I'm using a for loop here because I want to be able to limit the number or
   // retries to something reasonable. Normally you'd use a while loop here, but
   // that TECHNICALLY has the potential to run forever.
@@ -75,7 +47,7 @@ export function generateCubes(numCubes = 100) {
 
     const gridPosition = genRandomPosition(GRID_SIZE, CUBE_SIZE, true)
 
-    const cube = makeCube(
+    const cubeRenderBody = makeCube(
       CUBE_SIZE,
       genRandomColor(),
       // Generate a random symbol within the available symbols
@@ -85,13 +57,31 @@ export function generateCubes(numCubes = 100) {
     )
 
     // Prevent cubes from spawning inside each other
-    if (!cubes.some((c) => c.position.distanceTo(cube.position) < CUBE_SIZE * 2)) {
-      cubes.push(cube)
+    if (cubes.some(([renderBody]) => renderBody.position.distanceTo(cubeRenderBody.position) < CUBE_SIZE * 2)) {
+      continue
     }
+
+    // Now setup the physics body
+    const cubePhysicsBody = new CANNON.Body({
+      mass: 1,
+      position: new CANNON.Vec3(cubeRenderBody.position.x, cubeRenderBody.position.y, cubeRenderBody.position.z),
+      // Cannon uses half extents
+      shape: new CANNON.Box(new CANNON.Vec3(CUBE_SIZE / 2, CUBE_SIZE / 2, CUBE_SIZE / 2)),
+    })
+
+    cubes.push([cubeRenderBody, cubePhysicsBody])
   }
   return cubes
 }
-// Make a robot body
-function makePlayer(): THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial> {
-  throw new Error('Not implemented')
+
+export function adaptOnWindowResize(game: GameState) {
+  window.addEventListener(
+    'resize',
+    () => {
+      game.player.fpCam.aspect = window.innerWidth / window.innerHeight
+      game.player.fpCam.updateProjectionMatrix()
+      game.renderer.setSize(window.innerWidth, window.innerHeight)
+    },
+    false,
+  )
 }

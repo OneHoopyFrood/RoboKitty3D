@@ -1,6 +1,7 @@
 // Import pointer lock controls
-import { Camera } from "three"
-import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
+import * as THREE from 'three'
+import { GameState, THIRD_PERSON_OFFSET } from '.'
+import { PointerLockControls } from './PointerLockControls'
 
 const WALK_SPEED = 1.2 // Set the movement speed of the camera
 const LOOK_SPEED = 0.7
@@ -14,114 +15,149 @@ const movementKeys = {
   control: false,
 }
 
-export function setupPlayerMovement(camera: Camera, domElement: HTMLElement) {
+export function setupPlayerMovement(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
   const controls = new PointerLockControls(camera, domElement)
   controls.pointerSpeed = LOOK_SPEED
 
   // on mouse click, lock the pointer
-  document.addEventListener("click", () => {
+  document.addEventListener('click', () => {
     controls.lock()
-    document.body.style.cursor = "none"
+    document.body.style.cursor = 'none'
   })
 
   // On pointer unlock, show the cursor again and fire a pause event
-  document.addEventListener("pointerlockchange", (e) => {
+  document.addEventListener('pointerlockchange', (e) => {
     if (document.pointerLockElement === domElement) {
       return
     }
-    document.body.style.cursor = "default"
+    document.body.style.cursor = 'default'
 
-    const pauseEvent = new Event("Pause", { bubbles: true, cancelable: false })
+    const pauseEvent = new Event('Pause', { bubbles: true, cancelable: false })
     document.dispatchEvent(pauseEvent)
   })
 
   // setup keypress events
   document.addEventListener(
-    "keydown",
+    'keydown',
     (e) => {
       switch (e.key.toLowerCase()) {
-        case "w":
-        case "arrowup":
+        case 'w':
+        case 'arrowup':
           movementKeys.forward = true
           break
-        case "a":
-        case "arrowleft":
+        case 'a':
+        case 'arrowleft':
           movementKeys.backward = true
           break
-        case "s":
-        case "arrowdown":
+        case 's':
+        case 'arrowdown':
           movementKeys.left = true
           break
-        case "d":
-        case "arrowright":
+        case 'd':
+        case 'arrowright':
           movementKeys.right = true
           break
         // Shift to run
-        case "shift":
+        case 'shift':
           movementKeys.shift = true
           break
-        case "control":
+        case 'control':
           movementKeys.control = true
           break
       }
     },
-    false
+    false,
   )
   document.addEventListener(
-    "keyup",
+    'keyup',
     (e) => {
       switch (e.key.toLowerCase()) {
-        case "w":
-        case "arrowup":
+        case 'w':
+        case 'arrowup':
           movementKeys.forward = false
           break
-        case "a":
-        case "arrowleft":
+        case 'a':
+        case 'arrowleft':
           movementKeys.backward = false
           break
-        case "s":
-        case "arrowdown":
+        case 's':
+        case 'arrowdown':
           movementKeys.left = false
           break
-        case "d":
-        case "arrowright":
+        case 'd':
+        case 'arrowright':
           movementKeys.right = false
           break
-        case "shift":
+        case 'shift':
           movementKeys.shift = false
           break
-        case "control":
+        case 'control':
           movementKeys.control = false
       }
     },
-    false
+    false,
   )
 
   return controls
 }
 
-let originalY: number | null = null
+export function applyMovementControls(game: GameState) {
+  const { player } = game
 
-export function updateCamera(controls: PointerLockControls, camera: Camera) {
   // Calculate the moveSpeed based on whether the shift key is pressed or not
   const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
-  if (originalY === null) originalY = camera.position.y
-
   if (movementKeys.forward) {
-    controls.moveForward(currentMoveSpeed)
+    game.player.controls.moveForward(currentMoveSpeed)
   }
   if (movementKeys.left) {
-    controls.moveForward(-currentMoveSpeed)
+    game.player.controls.moveForward(-currentMoveSpeed)
   }
   if (movementKeys.backward) {
-    controls.moveRight(-currentMoveSpeed)
+    game.player.controls.moveRight(-currentMoveSpeed)
   }
   if (movementKeys.right) {
-    controls.moveRight(currentMoveSpeed)
+    game.player.controls.moveRight(currentMoveSpeed)
   }
-  if (movementKeys.control) {
-    camera.position.y = (originalY || camera.position.y) / 2
-  } else if (camera.position.y !== originalY) {
-    camera.position.y = originalY
+}
+
+export function syncBodyToCamera(game: GameState) {
+  const { player } = game
+
+  // Prevent the player from looking up or down when not in first person
+  if (game.currentCamera !== player.fpCam && game.player.controls.lockPitchToHorizon === false) {
+    game.player.controls.lockPitchToHorizon = true
+  } else if (game.currentCamera === player.fpCam && game.player.controls.lockPitchToHorizon === true) {
+    game.player.controls.lockPitchToHorizon = false
+  }
+
+  // Sync the player's body to the fpCam
+  player.body.position.copy(player.fpCam.position)
+
+  // Get the Y rotation from the fpCam's quaternion
+  const cameraEuler = new THREE.Euler().setFromQuaternion(player.fpCam.quaternion)
+  player.body.quaternion.setFromEuler(cameraEuler)
+
+  // Sync the tpCam to the fpCam if it's active
+  if (game.currentCamera === player.tpCam) {
+    // This camera is is a bit more complicated. We want the camera to swing about
+    // the player's position while maintaining a constant distance from the
+    // player, as if flying around the player on a selfy stick attached to
+    // their back.
+    // To acomplish this we'll first set the position of the camera directly
+    // to the player's position, then we'll apply an offset to the camera.
+
+    // Copy position of the fpCam
+    player.tpCam.position.copy(player.fpCam.position)
+
+    // Copy the rotation of the fpCam
+    player.tpCam.quaternion.setFromEuler(cameraEuler)
+
+    // Now fly out behind the player using the THIRD_PERSON_OFFSET
+    player.tpCam.translateZ(THIRD_PERSON_OFFSET.z)
+    player.tpCam.translateY(THIRD_PERSON_OFFSET.y)
+    player.tpCam.translateX(THIRD_PERSON_OFFSET.x)
+
+    // Look at the player's position
+    player.tpCam.lookAt(player.body.position)
   }
 }
