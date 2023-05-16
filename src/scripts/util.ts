@@ -85,12 +85,12 @@ export function allowCameraChange(game: GameState) {
     if (event.key === 'F3') {
       game.currentCamera = game.currentCamera !== game.player.fpCam ? game.player.fpCam : game.player.tpCam
     }
-  })
 
-  // Prevent the player from looking up or down when not in first person
-  if (game.currentCamera !== game.player.fpCam && game.player.controls.lockPitchToHorizon === false) {
-    game.player.controls.lockPitchToHorizon = true
-  } else if (game.currentCamera === game.player.fpCam && game.player.controls.lockPitchToHorizon === true) {
-    game.player.controls.lockPitchToHorizon = false
-  }
+    // Prevent the player from looking up or down when not in first person
+    if (game.currentCamera !== game.player.fpCam && game.player.controls.lockPitchToHorizon === false) {
+      game.player.controls.lockPitchToHorizon = true
+    } else if (game.currentCamera === game.player.fpCam && game.player.controls.lockPitchToHorizon === true) {
+      game.player.controls.lockPitchToHorizon = false
+    }
+  })
 }
