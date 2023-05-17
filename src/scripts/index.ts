@@ -14,6 +14,7 @@ import { applyMovementControls, setupPlayerMovement, syncBodyToCamera } from './
 
 import '../styles/index.css'
 import { PointerLockControls } from './PointerLockControls'
+import { setupAudio } from './audio'
 import {
   setupCrosshair,
   setupPlayerBody,
@@ -71,6 +72,8 @@ function getReady(): GameState {
   const playerFPCamera = setupPlayerFPCamera(playerRenderBody)
   const playerTPCamera = setupPlayerTPCamera(playerRenderBody)
   const topCamera = setupTopCamera()
+
+  const audio = setupAudio(playerFPCamera)
 
   const cubes = generateCubes()
 
