@@ -18,6 +18,7 @@ class PointerLockControls extends EventDispatcher {
   maxPolarAngle: number
   pointerSpeed: number
   lockPitchToHorizon: boolean
+  invertPitch: boolean
   _onMouseMove: (event: MouseEvent) => void
   _onPointerlockChange: (event: Event) => void
   _onPointerlockError: (event: Event) => void
@@ -38,6 +39,8 @@ class PointerLockControls extends EventDispatcher {
     this.pointerSpeed = 1.0
 
     this.lockPitchToHorizon = false
+
+    this.invertPitch = false
 
     this._onMouseMove = onMouseMove.bind(this)
     this._onPointerlockChange = onPointerlockChange.bind(this)
@@ -121,7 +124,9 @@ function onMouseMove(this: PointerLockControls, event: MouseEvent) {
   if (this.isLocked === false) return
 
   const movementX = event.movementX || 0
-  const movementY = this.lockPitchToHorizon ? 0 : event.movementY || 0
+  let movementY = this.lockPitchToHorizon ? 0 : event.movementY || 0
+
+  if (this.invertPitch) movementY *= -1
 
   _euler.setFromQuaternion(this.camera.quaternion)
 

@@ -23,7 +23,7 @@ import {
   setupTopCamera,
 } from './setup'
 import { GameState } from './types/GameState'
-import { adaptOnWindowResize, allowCameraChange, generateCubes } from './util'
+import { adaptOnWindowResize, allowCameraChange, enableControlInversion, generateCubes } from './util'
 
 export const GAME_WIDTH = window.innerWidth
 export const GAME_HEIGHT = window.innerHeight
@@ -89,6 +89,9 @@ function getSet(game: GameState) {
 
   adaptOnWindowResize(game)
   allowCameraChange(game)
+
+  // TODO: Remove this in the future when we have a menu
+  enableControlInversion(game)
 }
 
 function go(game: GameState) {

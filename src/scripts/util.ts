@@ -96,3 +96,23 @@ export function allowCameraChange(game: GameState) {
     }
   })
 }
+
+// TEMPORARY
+export function enableControlInversion(game: GameState) {
+  // Load the setting from local storage
+  try {
+    const invertPitch: boolean = localStorage.getItem('invertPitch') === 'true' || false
+    game.player.controls.invertPitch = invertPitch
+  } catch (error) {
+    console.warn('Something went wrong while loading the invertPitch setting from local storage.')
+    localStorage.setItem('invertPitch', 'false')
+  }
+
+  document.addEventListener('keyup', (event) => {
+    if (event.key === 'F4') {
+      game.player.controls.invertPitch = !game.player.controls.invertPitch
+      // Save this setting to local storage
+      localStorage.setItem('invertPitch', game.player.controls.invertPitch.toString())
+    }
+  })
+}
