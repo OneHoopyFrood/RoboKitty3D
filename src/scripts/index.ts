@@ -12,6 +12,7 @@ import * as THREE from 'three'
 import { applyMovementControls, setupPlayerMovement, syncBodyToCamera } from './playerMovement'
 
 import '../styles/index.css'
+import { setupAudio } from './audio'
 import { detectCollision } from './interactions'
 import {
   setupCrosshair,
@@ -50,6 +51,8 @@ function getReady(): GameState {
   const playerFPCamera = setupPlayerFPCamera(playerRenderBody)
   const playerTPCamera = setupPlayerTPCamera(playerRenderBody)
   const topCamera = setupTopCamera()
+
+  const audio = setupAudio(playerFPCamera)
 
   const cubes = generateCubes()
 

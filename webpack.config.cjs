@@ -1,5 +1,6 @@
 const path = require('path')
 const HTMLWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: './src/scripts/index.ts',
@@ -12,7 +13,7 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ["style-loader", "css-loader"],
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
@@ -23,5 +24,8 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
-  plugins: [new HTMLWebpackPlugin({ title: 'Robot finds kitten 3D' })],
+  plugins: [
+    new HTMLWebpackPlugin({ title: 'Robot finds kitten 3D' }),
+    new CopyWebpackPlugin({ patterns: [{ from: 'src/assets', to: 'assets' }] }),
+  ],
 }
