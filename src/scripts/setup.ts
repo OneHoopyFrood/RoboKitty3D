@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { GAME_HEIGHT, GAME_WIDTH, GRID_SIZE, GridPosition, PLAYER_HEIGHT } from '.'
+import { GAME_HEIGHT, GAME_WIDTH, GRID_SIZE, PLAYER_HEIGHT } from '.'
+import { GridPosition } from './types/GridPosition'
 
 export function setupRenderer() {
   const renderer = new THREE.WebGLRenderer({ antialias: true })

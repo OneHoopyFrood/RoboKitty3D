@@ -1,7 +1,8 @@
 // Import pointer lock controls
 import * as THREE from 'three'
-import { GameState, THIRD_PERSON_OFFSET } from '.'
+import { THIRD_PERSON_OFFSET } from '.'
 import { PointerLockControls } from './PointerLockControls'
+import { GameState } from './types/GameState'
 
 const WALK_SPEED = 1.2 // Set the movement speed of the camera
 const LOOK_SPEED = 0.7
@@ -47,11 +48,11 @@ export function setupPlayerMovement(camera: THREE.PerspectiveCamera, domElement:
           break
         case 'a':
         case 'arrowleft':
-          movementKeys.backward = true
+          movementKeys.left = true
           break
         case 's':
         case 'arrowdown':
-          movementKeys.left = true
+          movementKeys.backward = true
           break
         case 'd':
         case 'arrowright':
@@ -78,11 +79,11 @@ export function setupPlayerMovement(camera: THREE.PerspectiveCamera, domElement:
           break
         case 'a':
         case 'arrowleft':
-          movementKeys.backward = false
+          movementKeys.left = false
           break
         case 's':
         case 'arrowdown':
-          movementKeys.left = false
+          movementKeys.backward = false
           break
         case 'd':
         case 'arrowright':
@@ -101,22 +102,28 @@ export function setupPlayerMovement(camera: THREE.PerspectiveCamera, domElement:
   return controls
 }
 
-export function applyMovementControls(game: GameState) {
+export function applyMovementControls(game: GameState, collisionDetector: () => THREE.Vector3 | null) {
   const { player } = game
 
   // Calculate the moveSpeed based on whether the shift key is pressed or not
   const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
   if (movementKeys.forward) {
-    game.player.controls.moveForward(currentMoveSpeed)
-  }
-  if (movementKeys.left) {
-    game.player.controls.moveForward(-currentMoveSpeed)
+    player.controls.moveForward(currentMoveSpeed)
   }
   if (movementKeys.backward) {
-    game.player.controls.moveRight(-currentMoveSpeed)
+    player.controls.moveForward(-currentMoveSpeed)
+  }
+  if (movementKeys.left) {
+    player.controls.moveRight(-currentMoveSpeed)
   }
   if (movementKeys.right) {
-    game.player.controls.moveRight(currentMoveSpeed)
+    player.controls.moveRight(currentMoveSpeed)
+  }
+
+  const collisionTranslation = collisionDetector()
+  if (collisionTranslation) {
+    player.fpCam.position.add(collisionTranslation)
+    // player.body.position.add(collisionTranslation)
   }
 }
 

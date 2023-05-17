@@ -55,8 +55,9 @@
 - [ ] Music (.ogg)
 - [ ] SFX (.ogg)
 
-  - [ ] Cube Interact
+  - [ ] Interact
     - [ ] "Speak" blurbs with "WampWamp"
+    - [ ] Noop noise (clicking on nothing)
   - [ ] Robot movement
   - [ ] Kitten noises
   - [ ] Menu sounds

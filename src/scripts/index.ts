@@ -9,11 +9,10 @@
  */
 
 import * as THREE from 'three'
-import { WebGLRenderer } from 'three'
 import { applyMovementControls, setupPlayerMovement, syncBodyToCamera } from './playerMovement'
 
 import '../styles/index.css'
-import { PointerLockControls } from './PointerLockControls'
+import { detectCollision } from './interactions'
 import {
   setupCrosshair,
   setupPlayerBody,
@@ -22,6 +21,7 @@ import {
   setupRenderer,
   setupTopCamera,
 } from './setup'
+import { GameState } from './types/GameState'
 import { adaptOnWindowResize, allowCameraChange, generateCubes } from './util'
 
 export const GAME_WIDTH = window.innerWidth
@@ -34,27 +34,6 @@ export const PLAYER_HEIGHT = 0.8 // meters
 export const CUBE_SIZE = 10
 
 export const THIRD_PERSON_OFFSET = new THREE.Vector3(0, 15, 30)
-
-export type GridPosition = [number, number]
-
-// Create an interface type to contain the game state
-export interface GameState {
-  renderer: WebGLRenderer
-  scene: THREE.Scene
-  lights: THREE.Light[]
-  currentCamera: THREE.Camera
-  topCamera: THREE.OrthographicCamera
-  grid: THREE.GridHelper
-  player: {
-    previousRotationY: any
-    body: THREE.Mesh
-    fpCam: THREE.PerspectiveCamera
-    tpCam: THREE.PerspectiveCamera
-    crosshair: HTMLElement
-    controls: PointerLockControls
-  }
-  cubes: ReturnType<typeof generateCubes>
-}
 
 function getReady(): GameState {
   // Prepare the components of the game
@@ -84,7 +63,6 @@ function getReady(): GameState {
     grid,
     player: {
       body: playerRenderBody,
-      previousRotationY: playerFPCamera.rotation.y,
       fpCam: playerFPCamera,
       tpCam: playerTPCamera,
       crosshair,
@@ -117,7 +95,7 @@ function go(game: GameState) {
 
     game.renderer.render(game.scene, game.currentCamera)
 
-    applyMovementControls(game)
+    applyMovementControls(game, () => detectCollision(game.player, game.cubes))
 
     syncBodyToCamera(game)
   }
