@@ -20,7 +20,7 @@
 - [ ] ~New consideration: Should player only be able to move in the cardinal
       directions? Like the original game? W would be forward, S back, A to turn
       left 90°, D to turn right 90°~ Ivan says nah
-- [ ] Prevent player phasing through cubes (Collision Detection)
+- [x] Prevent player phasing through cubes (Collision Detection)
 - [x] Give the player corporeal form
 - [ ] Improve player body (just a cube right now)
 - [ ] World bounds
