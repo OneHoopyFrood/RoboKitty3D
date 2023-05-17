@@ -43,7 +43,8 @@
     - [ ] Collaborative (multiplayer only)
     - [ ] Memory (NKIs in pairs, cubes do not display symbols until
           interacted with, kitten=old maid, point system for multiplayer) -[ ] Single Player -[ ] Multiplayer
-  - [ ] Control customization
+  - [ ] Control customization (Invert controls)
+  - [ ] Music and SFX volumes
 - [ ] Credits
 
 ---
