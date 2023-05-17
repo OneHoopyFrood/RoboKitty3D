@@ -1,6 +1,8 @@
 import * as THREE from 'three'
-import { CUBE_SIZE, GRID_SIZE, GameState, GridPosition } from '.'
+import { CUBE_SIZE, GRID_SIZE } from '.'
 import { AllowedSymbols, SYMBOLS, makeCube } from './makeCube'
+import { GameState } from './types/GameState'
+import { GridPosition } from './types/GridPosition'
 
 /**
  * Generates a random THREE.Color
