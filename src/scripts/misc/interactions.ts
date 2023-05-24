@@ -31,7 +31,7 @@ function calculateMinimumTranslationVector(playerBox: THREE.Box3, objBox: THREE.
   const direction = playerBox.getCenter(new Vector3())[minAxis] < objBox.getCenter(new Vector3())[minAxis] ? -1 : 1
 
   const result = new Vector3()
-  result[minAxis] = minOverlap * direction
+  result[minAxis] = (minOverlap / 2) * direction
 
   return result
 }
