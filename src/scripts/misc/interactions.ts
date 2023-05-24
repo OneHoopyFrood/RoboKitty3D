@@ -4,7 +4,9 @@
  */
 
 import { Vector3 } from 'three'
-import { GameState } from './types/GameState'
+import { Player } from '../Models/Player'
+
+export type CollisionDetectorFunction = typeof detectCollision
 
 function calculateMinimumTranslationVector(playerBox: THREE.Box3, objBox: THREE.Box3): THREE.Vector3 {
   const overlap = new Vector3(
@@ -29,15 +31,12 @@ function calculateMinimumTranslationVector(playerBox: THREE.Box3, objBox: THREE.
   const direction = playerBox.getCenter(new Vector3())[minAxis] < objBox.getCenter(new Vector3())[minAxis] ? -1 : 1
 
   const result = new Vector3()
-  result[minAxis] = minOverlap * direction
+  result[minAxis] = (minOverlap / 2) * direction
 
   return result
 }
 
-export function detectCollision(
-  player: GameState['player'],
-  possibleCollisionObjects: THREE.Mesh[],
-): THREE.Vector3 | null {
+export function detectCollision(player: Player, possibleCollisionObjects: THREE.Mesh[]): THREE.Vector3 | null {
   // Check for collision
   player.body.geometry.computeBoundingBox()
   const playerBox = player.body.geometry.boundingBox!.clone().applyMatrix4(player.body.matrixWorld)
