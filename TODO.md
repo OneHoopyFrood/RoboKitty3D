@@ -17,12 +17,17 @@
 
 - [x] Prevent cubes colliding on generation
 - [x] Mouse control of view
-- [ ] New consideration: Should player only be able to move in the cardinal
+- [ ] ~New consideration: Should player only be able to move in the cardinal
       directions? Like the original game? W would be forward, S back, A to turn
-      left 90°, D to turn right 90°
-- [ ] Prevent player phasing through cubes
-- [ ] Give the player corporeal form
+      left 90°, D to turn right 90°~ Ivan says nah
+- [x] Prevent player phasing through cubes (Collision Detection)
+- [x] Give the player corporeal form
+- [ ] Improve player body (just a cube right now)
 - [ ] World bounds
+  - [ ] Choose: Physical barrier, invisible limit, or both?
+  - [ ] Idea: If there is no actual limit, only the physical, and we add a jump
+        ability, then the player could potentially escape the bounds and wander
+        off into the darkness. We could hide an easter egg out there...
 
 **Pause menu** (as features are added)
 
@@ -38,7 +43,8 @@
     - [ ] Collaborative (multiplayer only)
     - [ ] Memory (NKIs in pairs, cubes do not display symbols until
           interacted with, kitten=old maid, point system for multiplayer) -[ ] Single Player -[ ] Multiplayer
-  - [ ] Control customization
+  - [ ] Control customization (Invert controls)
+  - [ ] Music and SFX volumes
 - [ ] Credits
 
 ---
@@ -50,7 +56,9 @@
 - [ ] Music (.ogg)
 - [ ] SFX (.ogg)
 
-  - [ ] Cube Interact
+  - [ ] Interact
+    - [ ] "Speak" blurbs with "WampWamp"
+    - [ ] Noop noise (clicking on nothing)
   - [ ] Robot movement
   - [ ] Kitten noises
   - [ ] Menu sounds
@@ -79,11 +87,12 @@
 - [x] Crosshair in view
 - [ ] Additional Player Movements
   - [x] Run
-  - [x] Crouch
+  - [x] ~Crouch~ Removed because why really? Robots can't usually crouch anyway
   - [ ] Jump
 - [ ] Switch cameras
-  - [ ] FP (F2)
-  - [ ] 3rd person (F2)
+  - [x] FP
+  - [x] 3rd person (F3)
+  - [x] Top Down (F2)
   - [ ] Orbit/fly controls (F7)
 
 ---
@@ -117,7 +126,7 @@
 
 ### Wild ideas:
 
-- [ ] Physics? You can chuck the cubes?
+- [ ] ~Physics? You can chuck the cubes?~ Too hard to keep everything straight.
 - [ ] Guns (pew pew)
 - [ ] Minecraft mode (dirt blocks and punchy-punchy)
 - [ ] Ultra mode? Cubes actively run away?
