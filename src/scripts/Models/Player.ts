@@ -35,7 +35,7 @@ export class Player {
   private _wasd: WASDControls
   private _mouse: PointerLockControls
 
-  constructor(domElement: HTMLElement, initialPosition: Vector3 = new Vector3(0, 0, 0)) {
+  constructor(domElement: HTMLElement, initialPosition: Vector3 = new Vector3(0, 5.1, 0)) {
     this._physicsBody = this._setupPhysicsBody(initialPosition)
     this._renderBody = this._setupRenderBody(initialPosition)
 
@@ -131,7 +131,7 @@ export class Player {
   // SETUP FUNCTIONS
 
   private _setupPhysicsBody(initialPosition: Vector3): DirectableBody {
-    const physicsRepresentation = new CANNON.Cylinder(0.5, 0.5, 10)
+    const physicsRepresentation = new CANNON.Cylinder(5, 5, 10)
     const body = new DirectableBody({
       mass: PLAYER_MASS,
       position: Vector3toVec3(initialPosition),
@@ -143,8 +143,8 @@ export class Player {
   }
 
   private _setupRenderBody(initialPosition: Vector3) {
-    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 10)
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const geometry = new THREE.CylinderGeometry(5, 5, 10)
+    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 })
     const playerBodyRepresentation = new THREE.Mesh(geometry, material)
     playerBodyRepresentation.position.copy(initialPosition)
     return playerBodyRepresentation

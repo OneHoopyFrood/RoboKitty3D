@@ -62,7 +62,7 @@ export class Game {
 
     game._bootstrap()
 
-    game.debugRenderer = CannonDebugger(game.scene, game.world)
+    // game.debugRenderer = CannonDebugger(game.scene, game.world)
 
     return game
   }
@@ -90,7 +90,7 @@ export class Game {
 
     this.renderer.render(this.scene, this.currentCamera)
 
-    this.debugRenderer.update()
+    // this.debugRenderer.update()
   }
 
   public async setNumCubes(numCubes: number) {
