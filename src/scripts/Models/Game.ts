@@ -1,4 +1,5 @@
 import * as CANNON from 'cannon-es'
+import CannonDebugger from 'cannon-es-debugger'
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
 import { CUBE_MASS, CUBE_SIZE, GRID_SIZE } from '../misc/constants'
@@ -18,46 +19,51 @@ export class Game {
 
   world: CANNON.World
 
+  debugRenderer: ReturnType<typeof CannonDebugger>
+
   lights: THREE.Light[]
   currentCamera: THREE.Camera
   topCamera: THREE.OrthographicCamera
   grid: THREE.GridHelper
+
   player: Player
   cubes: Cube[]
 
   private constructor(domElement: HTMLElement) {
     // Setup default settings
     Game.settings = new GameSettings()
-
-    // Run assets
-    this.renderer = this._setupRenderer()
-    this.scene = new THREE.Scene()
-
-    // Physics
-    this.world = new CANNON.World()
-    this.world.gravity.set(0, -9.82, 0) // m/s²
-
-    // Game objects
-    this.lights = this._letThereBeLights()
-    this.topCamera = this._createTopViewCamera()
-    this.grid = new THREE.GridHelper(GRID_SIZE, GRID_SIZE / CUBE_SIZE, 0x000000, 0x000000)
-    this.player = new Player(domElement)
-
-    // Set up controls
-    // this._controls = this._setupMovementControls(domElement)
-
-    // Set up initial camera
-    this.currentCamera = this.player.camera
-
-    // Set up event listeners
-    this._setupFunctionKeys()
-    this._listenForResize()
   }
 
   public static async create(numCubes = 100, domElement: HTMLElement) {
     const game = new Game(domElement)
+
+    // Run assets
+    game.renderer = game._setupRenderer()
+    game.scene = new THREE.Scene()
+
+    // Physics
+    game.world = new CANNON.World()
+    game.world.gravity.set(0, -9.82, 0) // m/s²
+
+    // Game objects
+    game.lights = game._letThereBeLights()
+    game.topCamera = game._createTopViewCamera()
+    game.grid = new THREE.GridHelper(GRID_SIZE, GRID_SIZE / CUBE_SIZE, 0x000000, 0x000000)
+
+    game.player = new Player(domElement)
     await game.setNumCubes(numCubes)
+
+    // Set up initial camera
+    game.currentCamera = game.player.camera
+
+    // Set up event listeners
+    game._setupFunctionKeys()
+    game._listenForResize()
+
     game._bootstrap()
+
+    game.debugRenderer = CannonDebugger(game.scene, game.world)
+
     return game
   }
 
@@ -83,6 +89,8 @@ export class Game {
     this.cubes.forEach((cube) => cube.syncBodies())
 
     this.renderer.render(this.scene, this.currentCamera)
+
+    this.debugRenderer.update()
   }
 
   public async setNumCubes(numCubes: number) {
@@ -159,7 +167,7 @@ export class Game {
       }
 
       const gridPosition = genRandomPosition(GRID_SIZE, CUBE_SIZE, true)
-      gridPosition.y = CUBE_SIZE / 2
+      gridPosition.y = CUBE_SIZE / 2 + 0.1 // Make sure cubes are above the floor
 
       // Prevent cubes from spawning inside each other
       if (cubes.some((otherCube) => otherCube.renderBody.position.distanceTo(gridPosition) < CUBE_SIZE * 2)) {
@@ -185,8 +193,15 @@ export class Game {
     scene.add(this.topCamera)
 
     // Physics context
-    // this.world.addBody(this.player.physicsBody)
-    // this.cubes.forEach((cube) => this.world.addBody(cube.physicsBody))
+    // Add a floor
+    const floor = new CANNON.Body({
+      mass: 0,
+      shape: new CANNON.Plane(),
+    })
+    floor.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
+    this.world.addBody(floor)
+    this.world.addBody(this.player.physicsBody)
+    this.cubes.forEach((cube) => this.world.addBody(cube.physicsBody))
   }
 
   // Adapt to window resizing

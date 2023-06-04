@@ -3,59 +3,80 @@
  * rxjs Observables.
  */
 
-import { Observable, fromEvent, map, merge } from 'rxjs'
+import { Observable, distinctUntilChanged, filter, fromEvent, groupBy, map, merge, mergeAll } from 'rxjs'
 
-export type MovementCommands = {
-  forward: boolean
-  backward: boolean
-  left: boolean
-  right: boolean
-  run: boolean
-  crouch: boolean
+export enum MovementValues {
+  FORWARD = 'forward',
+  BACKWARD = 'backward',
+  LEFT = 'left',
+  RIGHT = 'right',
+  RUN = 'run',
+  // CROUCH = 'crouch',
+  // JUMP = 'jump',
+}
+
+type MovementCommand = [MovementValues, boolean]
+
+export type MovementCommandState = {
+  [key in MovementValues]: boolean
+}
+
+const movementKeys = {
+  w: MovementValues.FORWARD,
+  a: MovementValues.LEFT,
+  s: MovementValues.BACKWARD,
+  d: MovementValues.RIGHT,
+  arrowup: MovementValues.FORWARD,
+  arrowleft: MovementValues.LEFT,
+  arrowdown: MovementValues.BACKWARD,
+  arrowright: MovementValues.RIGHT,
+  shift: MovementValues.RUN,
+  // control: MovementValues.CROUCH,
+  // space: MovementValues.JUMP,
 }
 
 export class WASDControls {
-  private _movementCommands: MovementCommands = {
-    forward: false,
-    backward: false,
-    left: false,
-    right: false,
-    run: false,
-    crouch: false,
+  constructor() {
+    this.movementKeysObservable.subscribe(([movement, direction]) => {
+      this._movementCommandsState = {
+        ...this._movementCommandsState,
+        [movement]: direction,
+      }
+    })
   }
 
-  public get movementCommands(): MovementCommands {
-    return this._movementCommands
+  // Sets all the movement commands to false on initialization (driven by the enum)
+  private _movementCommandsState: MovementCommandState = Object.values(MovementValues).reduce(
+    (accumulator, command) => {
+      accumulator[command] = false
+      return accumulator
+    },
+    {} as MovementCommandState,
+  )
+
+  public get movementCommandsState(): MovementCommandState {
+    return this._movementCommandsState
   }
 
-  public get movementKeysObservable(): Observable<MovementCommands> {
-    return merge(fromEvent<KeyboardEvent>(document, 'keydown'), fromEvent<KeyboardEvent>(document, 'keyup')).pipe(
-      map((event) => {
-        switch (event.key.toLowerCase()) {
-          case 'w':
-          case 'arrowup':
-            this._movementCommands.forward = event.type === 'keydown'
-            break
-          case 'a':
-          case 'arrowleft':
-            this._movementCommands.left = event.type === 'keydown'
-            break
-          case 's':
-          case 'arrowdown':
-            this._movementCommands.backward = event.type === 'keydown'
-            break
-          case 'd':
-          case 'arrowright':
-            this._movementCommands.right = event.type === 'keydown'
-            break
-          case 'shift':
-            this._movementCommands.run = event.type === 'keydown'
-            break
-          case 'control':
-            this._movementCommands.crouch = event.type === 'keydown'
-        }
-        return this._movementCommands
+  public get movementKeysObservable(): Observable<MovementCommand> {
+    const keyDowns = fromEvent<KeyboardEvent>(document, 'keydown')
+    const keyUps = fromEvent<KeyboardEvent>(document, 'keyup')
+
+    const keyPresses = merge(keyUps, keyDowns).pipe(
+      filter((e) => {
+        const key = e.key.toLowerCase()
+        return Object.keys(movementKeys).includes(key)
+      }),
+      groupBy((e) => e.key.toLowerCase()),
+      map((group) => group.pipe(distinctUntilChanged((prev, curr) => prev.type === curr.type))),
+      mergeAll(),
+      map((e) => {
+        const key = e.key.toLowerCase() as keyof typeof movementKeys
+        const commandAndDirection = [movementKeys[key], e.type === 'keydown'] as MovementCommand
+        return commandAndDirection
       }),
     )
+
+    return keyPresses
   }
 }

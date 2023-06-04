@@ -4,7 +4,7 @@ import { PLAYER_MASS, THIRD_PERSON_OFFSET, WALK_SPEED } from '../misc/constants'
 import { CannonQuaternionToThreeQuaternion, Vec3toVector3, Vector3toVec3 } from '../misc/util'
 import { DirectableBody } from './Directable'
 import { PointerLockControls } from './PointerLockControls'
-import { MovementCommands, WASDControls } from './WASDControls'
+import { MovementCommandState, WASDControls } from './WASDControls'
 
 export class Player {
   camera: PerspectiveCamera
@@ -17,6 +17,13 @@ export class Player {
     return this._physicsBody
   }
 
+  public get controls() {
+    return {
+      mouse: this._mouse,
+      wasd: this._wasd,
+    }
+  }
+
   private _physicsBody: DirectableBody
   private _renderBody: Mesh
   private _fpCam: PerspectiveCamera
@@ -25,8 +32,8 @@ export class Player {
     crosshair: HTMLElement
   }
 
-  private wasd: WASDControls
-  private mouse: PointerLockControls
+  private _wasd: WASDControls
+  private _mouse: PointerLockControls
 
   constructor(domElement: HTMLElement, initialPosition: Vector3 = new Vector3(0, 0, 0)) {
     this._physicsBody = this._setupPhysicsBody(initialPosition)
@@ -39,8 +46,8 @@ export class Player {
     this.camera = this._fpCam
 
     // Controls
-    this.wasd = new WASDControls()
-    this.mouse = new PointerLockControls(domElement)
+    this._wasd = new WASDControls()
+    this._mouse = new PointerLockControls(domElement)
 
     this._hud = {
       crosshair: this._setupCrosshair(domElement),
@@ -48,7 +55,7 @@ export class Player {
   }
 
   public update() {
-    this._applyMovement(this.wasd.movementCommands)
+    this._applyMovement(this._wasd.movementCommandsState)
     this._syncRepresentations()
   }
 
@@ -82,22 +89,26 @@ export class Player {
     return this._fpCam.rotation
   }
 
-  private _applyMovement(movementCommands: MovementCommands) {
-    const currentMoveSpeed = movementCommands.run ? 2 * WALK_SPEED : WALK_SPEED
+  private _applyMovement(movementCommands: MovementCommandState) {
+    const currentMoveSpeed = (movementCommands.run ? 2 * WALK_SPEED : WALK_SPEED) * 25
 
     // Apply force to the player's physics body based on the movement keys
     this._physicsBody.velocity.setZero()
     if (movementCommands.forward) {
       this._physicsBody.velocity.z -= currentMoveSpeed
+      console.log('forward')
     }
     if (movementCommands.backward) {
       this._physicsBody.velocity.z += currentMoveSpeed
+      console.log('backward')
     }
     if (movementCommands.left) {
       this._physicsBody.velocity.x -= currentMoveSpeed
+      console.log('left')
     }
     if (movementCommands.right) {
       this._physicsBody.velocity.x += currentMoveSpeed
+      console.log('right')
     }
   }
 
