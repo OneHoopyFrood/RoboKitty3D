@@ -1,8 +1,8 @@
+import * as CANNON from 'cannon-es'
 import * as THREE from 'three'
 import { WebGLRenderer } from 'three'
-import { CUBE_SIZE, GRID_SIZE } from '../misc/constants'
+import { CUBE_MASS, CUBE_SIZE, GRID_SIZE } from '../misc/constants'
 import { allowCameraChange, enableControlInversion } from '../misc/functionKeys'
-import { detectCollision } from '../misc/interactions'
 import { genRandomPosition } from '../misc/util'
 import { Cube } from './Cube'
 import { GameSettings } from './GameSettings'
@@ -15,6 +15,9 @@ export class Game {
 
   renderer: WebGLRenderer
   scene: THREE.Scene
+
+  world: CANNON.World
+
   lights: THREE.Light[]
   currentCamera: THREE.Camera
   topCamera: THREE.OrthographicCamera
@@ -22,27 +25,40 @@ export class Game {
   player: Player
   cubes: Cube[]
 
-  constructor(numCubes = 100, domElement: HTMLElement) {
+  private constructor(domElement: HTMLElement) {
+    // Setup default settings
     Game.settings = new GameSettings()
 
     // Run assets
     this.renderer = this._setupRenderer()
     this.scene = new THREE.Scene()
 
+    // Physics
+    this.world = new CANNON.World()
+    this.world.gravity.set(0, -9.82, 0) // m/s²
+
     // Game objects
     this.lights = this._letThereBeLights()
     this.topCamera = this._createTopViewCamera()
     this.grid = new THREE.GridHelper(GRID_SIZE, GRID_SIZE / CUBE_SIZE, 0x000000, 0x000000)
     this.player = new Player(domElement)
-    this.cubes = this._generateCubes(numCubes)
+
+    // Set up controls
+    // this._controls = this._setupMovementControls(domElement)
 
     // Set up initial camera
     this.currentCamera = this.player.camera
 
-    // Putting it all together
-    this._bootstrap()
+    // Set up event listeners
     this._setupFunctionKeys()
     this._listenForResize()
+  }
+
+  public static async create(numCubes = 100, domElement: HTMLElement) {
+    const game = new Game(domElement)
+    await game.setNumCubes(numCubes)
+    game._bootstrap()
+    return game
   }
 
   public loadSettings() {
@@ -50,21 +66,27 @@ export class Game {
   }
 
   public begin() {
+    const clock = new THREE.Clock()
     function animate(game: Game) {
       requestAnimationFrame(() => animate(game))
-      game._update()
+      const tick = clock.getDelta()
+      game._update(tick)
     }
     animate(this)
   }
 
-  private _update() {
-    this.player.update((player: Player) => detectCollision(player, this.cubes))
+  private _update(tick: number) {
+    this.player.update() // Applies movement
+
+    this.world.step(tick)
+
+    this.cubes.forEach((cube) => cube.syncBodies())
 
     this.renderer.render(this.scene, this.currentCamera)
   }
 
-  set numCubes(numCubes: number) {
-    this.cubes = this._generateCubes(numCubes)
+  public async setNumCubes(numCubes: number) {
+    this.cubes = await this._generateCubes(numCubes)
   }
 
   private _setupRenderer() {
@@ -125,7 +147,7 @@ export class Game {
     return topCamera
   }
 
-  private _generateCubes(numCubes = 100): Cube[] {
+  private async _generateCubes(numCubes = 100): Promise<Cube[]> {
     const cubes: Cube[] = []
     // I'm using a for loop here because I want to be able to limit the number or
     // retries to something reasonable. Normally you'd use a while loop here, but
@@ -140,12 +162,12 @@ export class Game {
       gridPosition.y = CUBE_SIZE / 2
 
       // Prevent cubes from spawning inside each other
-      if (cubes.some((otherCube) => otherCube.position.distanceTo(gridPosition) < CUBE_SIZE * 2)) {
+      if (cubes.some((otherCube) => otherCube.renderBody.position.distanceTo(gridPosition) < CUBE_SIZE * 2)) {
         continue
       }
 
-      const newCube = new Cube(CUBE_SIZE)
-      newCube.position.copy(gridPosition)
+      const newCube = await Cube.create(CUBE_SIZE, CUBE_MASS)
+      newCube.setPosition(gridPosition)
 
       cubes.push(newCube)
     }
@@ -153,13 +175,18 @@ export class Game {
   }
 
   private _bootstrap() {
+    // Rendering context
     const scene = this.scene
     scene.add(this.grid)
-    scene.add(this.player.body)
+    scene.add(this.player.renderBody)
     scene.add(this.player.camera)
-    this.cubes.forEach((cube) => scene.add(cube))
+    this.cubes.forEach((cube) => scene.add(cube.renderBody))
     this.lights.forEach((light) => scene.add(light))
     scene.add(this.topCamera)
+
+    // Physics context
+    // this.world.addBody(this.player.physicsBody)
+    // this.cubes.forEach((cube) => this.world.addBody(cube.physicsBody))
   }
 
   // Adapt to window resizing

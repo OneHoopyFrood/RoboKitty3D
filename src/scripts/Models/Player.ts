@@ -1,111 +1,65 @@
-import THREE, { Mesh, PerspectiveCamera } from 'three'
-import { LOOK_SPEED, THIRD_PERSON_OFFSET, WALK_SPEED } from '../misc/constants'
-import { Game } from './Game'
+import * as CANNON from 'cannon-es'
+import THREE, { Mesh, PerspectiveCamera, Vector3 } from 'three'
+import { PLAYER_MASS, THIRD_PERSON_OFFSET, WALK_SPEED } from '../misc/constants'
+import { CannonQuaternionToThreeQuaternion, Vec3toVector3, Vector3toVec3 } from '../misc/util'
+import { DirectableBody } from './Directable'
 import { PointerLockControls } from './PointerLockControls'
+import { MovementCommands, WASDControls } from './WASDControls'
 
 export class Player {
-  body: Mesh
   camera: PerspectiveCamera
 
+  public get renderBody() {
+    return this._renderBody
+  }
+
+  public get physicsBody() {
+    return this._physicsBody
+  }
+
+  private _physicsBody: DirectableBody
+  private _renderBody: Mesh
   private _fpCam: PerspectiveCamera
   private _tpCam: PerspectiveCamera
   private _hud: {
     crosshair: HTMLElement
   }
-  private _movementKeys = {
-    forward: false,
-    backward: false,
-    left: false,
-    right: false,
-    shift: false,
-    control: false,
-  }
-  private _controls: PointerLockControls
 
-  constructor(domElement: HTMLElement) {
-    this.body = this._setupPlayerBody()
+  private wasd: WASDControls
+  private mouse: PointerLockControls
 
-    this._fpCam = this._setupFPCamera()
-    this._tpCam = this._setupTPCamera()
+  constructor(domElement: HTMLElement, initialPosition: Vector3 = new Vector3(0, 0, 0)) {
+    this._physicsBody = this._setupPhysicsBody(initialPosition)
+    this._renderBody = this._setupRenderBody(initialPosition)
+
+    this._fpCam = this._setupFPCamera(initialPosition)
+    this._tpCam = this._setupTPCamera() // Follows the _fpCam
+    this._positionTPCamera()
+
     this.camera = this._fpCam
+
+    // Controls
+    this.wasd = new WASDControls()
+    this.mouse = new PointerLockControls(domElement)
 
     this._hud = {
       crosshair: this._setupCrosshair(domElement),
     }
-
-    this._controls = this._setupMovementControls(domElement)
   }
 
-  public update(collisionDetector: Parameters<typeof this._updateMovement>[0]) {
-    this._syncBodyAndCameras()
-    this._updateMovement(collisionDetector)
-  }
-
-  private _updateMovement(collisionDetector: (player: Player) => THREE.Vector3 | null) {
-    // Calculate the moveSpeed based on whether the shift key is pressed or not
-    const movementKeys = this._movementKeys
-
-    // Run
-    const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
-
-    if (movementKeys.forward) {
-      this._controls.moveForward(currentMoveSpeed)
-    }
-    if (movementKeys.backward) {
-      this._controls.moveForward(-currentMoveSpeed)
-    }
-    if (movementKeys.left) {
-      this._controls.moveRight(-currentMoveSpeed)
-    }
-    if (movementKeys.right) {
-      this._controls.moveRight(currentMoveSpeed)
-    }
-
-    const collisionTranslation = collisionDetector(this)
-    if (collisionTranslation) {
-      this._fpCam.position.add(collisionTranslation)
-    }
-  }
-
-  private _syncBodyAndCameras() {
-    if (this.body == null) throw new Error('Player body must be initialized before syncing')
-    if (this._fpCam == null) throw new Error('Player fpCam must be initialized before syncing')
-    if (this._tpCam == null) throw new Error('Player tpCam must be initialized before syncing')
-    const playerBody = this.body
-    const fpCam = this._fpCam
-    const tpCam = this._tpCam
-
-    // Sync the player's body to the fpCam
-    playerBody.position.copy(fpCam.position)
-
-    // Get the Y rotation from the fpCam's quaternion
-    const cameraEuler = new THREE.Euler().setFromQuaternion(fpCam.quaternion)
-    playerBody.quaternion.setFromEuler(cameraEuler)
-
-    // Sync the tpCam only if it's active to save on performance
-    if (this.camera === tpCam) {
-      // This is a bit of trickery to avoid doing complicated maths.
-      // Rather than recalculating the camera position as a swing around the
-      // player based on the body's rotation, we just bring the camera to the
-      // player's position, rotate it there, then back it up along it's local z
-      // axis! The result is the same, but the code is much simpler.
-      tpCam.position.copy(fpCam.position)
-      tpCam.quaternion.setFromEuler(cameraEuler)
-      tpCam.translateZ(THIRD_PERSON_OFFSET.z)
-      tpCam.translateY(THIRD_PERSON_OFFSET.y)
-      tpCam.translateX(THIRD_PERSON_OFFSET.x)
-      tpCam.lookAt(playerBody.position)
-    }
+  public update() {
+    this._applyMovement(this.wasd.movementCommands)
+    this._syncRepresentations()
   }
 
   public switchCamera() {
     if (this.camera === this._fpCam) {
       this.camera = this._tpCam
-      this._controls.lockPitchToHorizon = true
+      // this._controls.lockPitchToHorizon = true
       this._hud.crosshair.style.display = 'none'
     } else {
       this.camera = this._fpCam
-      this._controls.lockPitchToHorizon = false
+      // this._controls.lockPitchToHorizon = false
       this._hud.crosshair.style.display = 'block'
     }
   }
@@ -128,22 +82,69 @@ export class Player {
     return this._fpCam.rotation
   }
 
-  private _setupPlayerBody() {
-    const geometry = new THREE.BoxGeometry(5, 10, 5)
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-    const playerBody = new THREE.Mesh(geometry, material)
-    playerBody.position.x = 0
-    playerBody.position.y = 0
-    playerBody.position.z = 0
-    return playerBody
+  private _applyMovement(movementCommands: MovementCommands) {
+    const currentMoveSpeed = movementCommands.run ? 2 * WALK_SPEED : WALK_SPEED
+
+    // Apply force to the player's physics body based on the movement keys
+    this._physicsBody.velocity.setZero()
+    if (movementCommands.forward) {
+      this._physicsBody.velocity.z -= currentMoveSpeed
+    }
+    if (movementCommands.backward) {
+      this._physicsBody.velocity.z += currentMoveSpeed
+    }
+    if (movementCommands.left) {
+      this._physicsBody.velocity.x -= currentMoveSpeed
+    }
+    if (movementCommands.right) {
+      this._physicsBody.velocity.x += currentMoveSpeed
+    }
   }
 
-  private _setupFPCamera() {
-    if (this.body == null) throw new Error('Player body must be initialized before setting up camera')
-    const playerBody = this.body
+  private _syncRepresentations() {
+    if (this._renderBody == null) throw new Error('Player renderBody must be initialized before syncing')
+    if (this._physicsBody == null) throw new Error('Player physicsBody must be initialized before syncing')
+    if (this._fpCam == null) throw new Error('Player _fpCam must be initialized before syncing')
+    if (this._tpCam == null) throw new Error('Player _tpCam must be initialized before syncing')
+
+    // Get the Y rotation from the _fpCam's quaternion
+    // const cameraEuler = new THREE.Euler().setFromQuaternion(this._fpCam.quaternion)
+    // this._renderBody.quaternion.setFromEuler(new THREE.Euler(0, cameraEuler.y, 0))
+
+    this._renderBody.position.copy(Vec3toVector3(this._physicsBody.position))
+    this._renderBody.quaternion.copy(CannonQuaternionToThreeQuaternion(this._physicsBody.quaternion))
+    this._fpCam.position.copy(this._renderBody.position)
+    this._positionTPCamera()
+  }
+
+  // SETUP FUNCTIONS
+
+  private _setupPhysicsBody(initialPosition: Vector3): DirectableBody {
+    const physicsRepresentation = new CANNON.Cylinder(0.5, 0.5, 10)
+    const body = new DirectableBody({
+      mass: PLAYER_MASS,
+      position: Vector3toVec3(initialPosition),
+      shape: physicsRepresentation,
+    })
+    // Make it kinematic so that it doesn't fall over
+    body.type = CANNON.Body.KINEMATIC
+    return body
+  }
+
+  private _setupRenderBody(initialPosition: Vector3) {
+    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 10)
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const playerBodyRepresentation = new THREE.Mesh(geometry, material)
+    playerBodyRepresentation.position.copy(initialPosition)
+    return playerBodyRepresentation
+  }
+
+  private _setupFPCamera(initialPosition: Vector3) {
+    if (this._renderBody == null) throw new Error('Player body must be initialized before setting up camera')
+    const playerBody = this._renderBody
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight)
 
-    camera.position.copy(playerBody.position)
+    camera.position.copy(initialPosition)
     // Adjust the camera to be at the player's head
     playerBody.geometry.computeBoundingBox()
     const playerBoundingBox = playerBody.geometry.boundingBox
@@ -163,6 +164,25 @@ export class Player {
     return camera
   }
 
+  private _positionTPCamera() {
+    if (this._renderBody == null) throw new Error('Player body must be initialized before setting up camera')
+    if (this._tpCam == null) throw new Error('Player _tpCam must be initialized before syncing')
+
+    const _tpCam = this._tpCam
+
+    // This is a bit of trickery to avoid doing complicated maths.
+    // Rather than recalculating the camera position as a swing around the
+    // player based on the body's rotation, we just bring the camera to the
+    // player's position, rotate it there, then back it up along it's local z
+    // axis! The result is the same, but the code is much simpler.
+    _tpCam.position.copy(this._fpCam.position)
+    _tpCam.quaternion.copy(this._fpCam.quaternion)
+    _tpCam.translateZ(THIRD_PERSON_OFFSET.z)
+    _tpCam.translateY(THIRD_PERSON_OFFSET.y)
+    _tpCam.translateX(THIRD_PERSON_OFFSET.x)
+    _tpCam.lookAt(this.renderBody.position)
+  }
+
   /**
    * Sets up the crosshair in the center of the screen (uses html/css)
    */
@@ -171,94 +191,5 @@ export class Player {
     crosshair.classList.add('crosshair')
     domObject.appendChild(crosshair)
     return crosshair
-  }
-
-  private _setupMovementControls(domElement: HTMLElement) {
-    const controls = new PointerLockControls(this._fpCam, domElement)
-    controls.invertPitch = Game.settings.get('invertPitchControl')
-    // Update the settings when the user changes them
-    Game.settings.onChange('invertPitchControl', (value) => (controls.invertPitch = value))
-    controls.pointerSpeed = LOOK_SPEED
-
-    const movementKeys = this._movementKeys
-
-    domElement.addEventListener('click', () => {
-      controls.lock()
-      domElement.style.cursor = 'none'
-    })
-
-    // On pointer unlock, show the cursor again and fire a pause event
-    document.addEventListener('pointerlockchange', (e) => {
-      if (document.pointerLockElement === domElement) {
-        return
-      }
-      domElement.style.cursor = 'default'
-
-      const pauseEvent = new Event('Pause', { bubbles: true, cancelable: false })
-      domElement.dispatchEvent(pauseEvent)
-    })
-
-    // setup keypress events
-    document.addEventListener(
-      'keydown',
-      (e) => {
-        switch (e.key.toLowerCase()) {
-          case 'w':
-          case 'arrowup':
-            movementKeys.forward = true
-            break
-          case 'a':
-          case 'arrowleft':
-            movementKeys.left = true
-            break
-          case 's':
-          case 'arrowdown':
-            movementKeys.backward = true
-            break
-          case 'd':
-          case 'arrowright':
-            movementKeys.right = true
-            break
-          // Shift to run
-          case 'shift':
-            movementKeys.shift = true
-            break
-          case 'control':
-            movementKeys.control = true
-            break
-        }
-      },
-      false,
-    )
-    document.addEventListener(
-      'keyup',
-      (e) => {
-        switch (e.key.toLowerCase()) {
-          case 'w':
-          case 'arrowup':
-            movementKeys.forward = false
-            break
-          case 'a':
-          case 'arrowleft':
-            movementKeys.left = false
-            break
-          case 's':
-          case 'arrowdown':
-            movementKeys.backward = false
-            break
-          case 'd':
-          case 'arrowright':
-            movementKeys.right = false
-            break
-          case 'shift':
-            movementKeys.shift = false
-            break
-          case 'control':
-            movementKeys.control = false
-        }
-      },
-      false,
-    )
-    return controls
   }
 }

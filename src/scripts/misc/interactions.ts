@@ -38,8 +38,8 @@ function calculateMinimumTranslationVector(playerBox: THREE.Box3, objBox: THREE.
 
 export function detectCollision(player: Player, possibleCollisionObjects: THREE.Mesh[]): THREE.Vector3 | null {
   // Check for collision
-  player.body.geometry.computeBoundingBox()
-  const playerBox = player.body.geometry.boundingBox!.clone().applyMatrix4(player.body.matrixWorld)
+  player.renderBody.geometry.computeBoundingBox()
+  const playerBox = player.renderBody.geometry.boundingBox!.clone().applyMatrix4(player.renderBody.matrixWorld)
 
   for (const obj of possibleCollisionObjects) {
     obj.geometry.computeBoundingBox()

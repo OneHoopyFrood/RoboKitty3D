@@ -1,4 +1,5 @@
-import { Vector3 } from 'three'
+import { Quaternion as CannonQuaternion, Vec3 } from 'cannon-es'
+import { Quaternion as ThreeQuaternion, Vector3 } from 'three'
 import { HexColorString } from '../types/HexColorString'
 
 /**
@@ -30,4 +31,24 @@ export function genRandomHexColor(): HexColorString {
   const max = 1 << 24
   const randomColor = (max + Math.floor(Math.random() * max)).toString(16).slice(-6)
   return `#${randomColor}`
+}
+
+export function Vector3toVec3(vector: Vector3): Vec3 {
+  return new Vec3(vector.x, vector.y, vector.z)
+}
+
+export function Vec3toVector3(vec: Vec3): Vector3 {
+  return new Vector3(vec.x, vec.y, vec.z)
+}
+
+export function CannonQuaternionToThreeQuaternion(quat: CannonQuaternion): ThreeQuaternion {
+  return new ThreeQuaternion(quat.x, quat.y, quat.z, quat.w)
+}
+
+export function ThreeQuaternionToCannonQuaternion(quat: ThreeQuaternion): CannonQuaternion {
+  return new CannonQuaternion(quat.x, quat.y, quat.z, quat.w)
+}
+
+export function isHexColorString(str: string): boolean {
+  return /^#[0-9A-F]{6}$/i.test(str)
 }
