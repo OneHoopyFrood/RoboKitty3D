@@ -3,24 +3,53 @@ import { LOOK_SPEED, THIRD_PERSON_OFFSET, WALK_SPEED } from '../misc/constants'
 import { Game } from './Game'
 import { PointerLockControls } from './PointerLockControls'
 
+// These are the potential kinds of movement a player can make
+enum Movement {
+  forward,
+  backward,
+  left,
+  right,
+  sprint,
+  // crouch,
+  // jump,
+}
+
+type MovementStates = { [K in Movement]: boolean }
+
 export class Player {
   body: Mesh
   camera: PerspectiveCamera
 
+  private _controls: PointerLockControls
   private _fpCam: PerspectiveCamera
   private _tpCam: PerspectiveCamera
   private _hud: {
     crosshair: HTMLElement
   }
-  private _movementKeys = {
-    forward: false,
-    backward: false,
-    left: false,
-    right: false,
-    shift: false,
-    control: false,
+
+  private _movementIndicators: MovementStates = Object.fromEntries(
+    Object.values(Movement).map((key) => [key, false]),
+  ) as MovementStates
+
+  private static readonly KEY_MAPPINGS: {
+    [key: string]: Record<string, Movement>
+  } = {
+    WASD: {
+      w: Movement.forward,
+      a: Movement.left,
+      s: Movement.backward,
+      d: Movement.right,
+      shift: Movement.sprint,
+    } as const,
+    ARROWS: {
+      arrowup: Movement.forward,
+      arrowleft: Movement.left,
+      arrowdown: Movement.backward,
+      arrowright: Movement.right,
+    } as const,
   }
-  private _controls: PointerLockControls
+
+  private static readonly KEY_MAP = { ...Player.KEY_MAPPINGS.WASD, ...Player.KEY_MAPPINGS.ARROWS }
 
   constructor(domElement: HTMLElement) {
     this.body = this._setupPlayerBody()
@@ -43,21 +72,21 @@ export class Player {
 
   private _updateMovement(collisionDetector: (player: Player) => THREE.Vector3 | null) {
     // Calculate the moveSpeed based on whether the shift key is pressed or not
-    const movementKeys = this._movementKeys
+    const movementIndicators = this._movementIndicators
 
-    // Run
-    const currentMoveSpeed = movementKeys.shift ? 2 * WALK_SPEED : WALK_SPEED
+    // Sprint
+    const currentMoveSpeed = movementIndicators[Movement.sprint] ? 2 * WALK_SPEED : WALK_SPEED
 
-    if (movementKeys.forward) {
+    if (movementIndicators[Movement.forward]) {
       this._controls.moveForward(currentMoveSpeed)
     }
-    if (movementKeys.backward) {
+    if (movementIndicators[Movement.backward]) {
       this._controls.moveForward(-currentMoveSpeed)
     }
-    if (movementKeys.left) {
+    if (movementIndicators[Movement.left]) {
       this._controls.moveRight(-currentMoveSpeed)
     }
-    if (movementKeys.right) {
+    if (movementIndicators[Movement.right]) {
       this._controls.moveRight(currentMoveSpeed)
     }
 
@@ -180,7 +209,7 @@ export class Player {
     Game.settings.onChange('invertPitchControl', (value) => (controls.invertPitch = value))
     controls.pointerSpeed = LOOK_SPEED
 
-    const movementKeys = this._movementKeys
+    const movementKeys = this._movementIndicators
 
     domElement.addEventListener('click', () => {
       controls.lock()
@@ -198,67 +227,19 @@ export class Player {
       domElement.dispatchEvent(pauseEvent)
     })
 
-    // setup keypress events
-    document.addEventListener(
-      'keydown',
-      (e) => {
-        switch (e.key.toLowerCase()) {
-          case 'w':
-          case 'arrowup':
-            movementKeys.forward = true
-            break
-          case 'a':
-          case 'arrowleft':
-            movementKeys.left = true
-            break
-          case 's':
-          case 'arrowdown':
-            movementKeys.backward = true
-            break
-          case 'd':
-          case 'arrowright':
-            movementKeys.right = true
-            break
-          // Shift to run
-          case 'shift':
-            movementKeys.shift = true
-            break
-          case 'control':
-            movementKeys.control = true
-            break
-        }
-      },
-      false,
-    )
-    document.addEventListener(
-      'keyup',
-      (e) => {
-        switch (e.key.toLowerCase()) {
-          case 'w':
-          case 'arrowup':
-            movementKeys.forward = false
-            break
-          case 'a':
-          case 'arrowleft':
-            movementKeys.left = false
-            break
-          case 's':
-          case 'arrowdown':
-            movementKeys.backward = false
-            break
-          case 'd':
-          case 'arrowright':
-            movementKeys.right = false
-            break
-          case 'shift':
-            movementKeys.shift = false
-            break
-          case 'control':
-            movementKeys.control = false
-        }
-      },
-      false,
-    )
+    const keyMap = Player.KEY_MAP
+
+    const keyHandler = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      if (key in keyMap) {
+        const action = keyMap[key]
+        const value = event.type === 'keydown'
+        movementKeys[action] = value
+      }
+    }
+
+    document.addEventListener('keydown', keyHandler, false)
+    document.addEventListener('keyup', keyHandler, false)
     return controls
   }
 }
