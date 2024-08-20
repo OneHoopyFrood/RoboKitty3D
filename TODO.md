@@ -21,8 +21,9 @@
       directions? Like the original game? W would be forward, S back, A to turn
       left 90°, D to turn right 90°~ Ivan says nah
 - [x] Prevent player phasing through cubes (Collision Detection)
-- [x] Give the player corporeal form
+  - [ ] Prevent player jumping through cube when sprinting
 - [ ] Improve player body (just a cube right now)
+- [ ] Configurable controls
 - [ ] World bounds
   - [ ] Choose: Physical barrier, invisible limit, or both?
   - [ ] Idea: If there is no actual limit, only the physical, and we add a jump
@@ -99,10 +100,11 @@
 
 ### Phase 2
 
-- [ ] AI autopilot
+- [ ] AI autopilot (Screensaver mode)
 - [ ] Multiplayer
   - [ ] Collaborative
   - [ ] Competition
+    - [ ] AI Might actually be useful as a competitor?
 - [ ] Multiplayer Chat
 - [ ] Levels/buildings/terrain
 
@@ -118,8 +120,10 @@
 **Cheat Codes**
 
 - [ ] Kitten noises = true
-- [ ] Invincibility Mode (doesn't actually do anything, just a message)
-- [ ] Flying
+- [ ] God Mode (doesn't actually do anything, but you get to feel cool)
+  - [ ] Maybe have this cause thunder and lightning flash?
+  - [ ] Could make it possible to strike cubes? Why? Idk. Go ask your Dad.
+- [ ] Flight!
 - [ ] Summon Duck
 
 ---
@@ -129,7 +133,7 @@
 - [ ] ~Physics? You can chuck the cubes?~ Too hard to keep everything straight.
 - [ ] Guns (pew pew)
 - [ ] Minecraft mode (dirt blocks and punchy-punchy)
-- [ ] Ultra mode? Cubes actively run away?
+- [ ] INSANE mode? Cubes actively run away?
 - [ ] Weather! (Stars? Clouds?)
 - [ ] Add Duck
 - [ ] Multiple Kittens!?!?
