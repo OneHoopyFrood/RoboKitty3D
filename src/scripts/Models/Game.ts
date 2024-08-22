@@ -58,7 +58,7 @@ export class Game {
   }
 
   private _update() {
-    this.player.update((player: Player) => detectCollision(player, this.cubes))
+    this.player.update((player: Player) => detectCollision(player, this.cubes, 0.0001))
 
     this.renderer.render(this.scene, this.currentCamera)
   }

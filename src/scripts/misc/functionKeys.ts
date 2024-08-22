@@ -3,6 +3,8 @@ import { Game } from '../Models/Game'
 export function allowCameraChange(game: Game) {
   document.addEventListener('keyup', (event) => {
     if (event.key === 'F2') {
+      game.player.resetView()
+      game.player.resetView()
       game.currentCamera = game.topCamera
     }
     if (event.key === 'F3') {

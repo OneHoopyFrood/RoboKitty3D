@@ -17,7 +17,8 @@ class PointerLockControls extends EventDispatcher {
   minPolarAngle: number
   maxPolarAngle: number
   pointerSpeed: number
-  lockPitchToHorizon: boolean
+  lockPitch: boolean
+  lockYaw: boolean
   invertPitch: boolean
   _onMouseMove: (event: MouseEvent) => void
   _onPointerlockChange: (event: Event) => void
@@ -38,7 +39,7 @@ class PointerLockControls extends EventDispatcher {
 
     this.pointerSpeed = 1.0
 
-    this.lockPitchToHorizon = false
+    this.lockPitch = false
 
     this.invertPitch = false
 
@@ -112,6 +113,8 @@ class PointerLockControls extends EventDispatcher {
   }
 
   rotateH(amount: number) {
+    if (this.lockYaw) return
+
     // See comment above in moveForward()
     this.camera.updateMatrix()
 
@@ -126,7 +129,7 @@ class PointerLockControls extends EventDispatcher {
   }
 
   rotateV(amount: number) {
-    if (this.lockPitchToHorizon) return
+    if (this.lockPitch) return
 
     _euler.setFromQuaternion(this.camera.quaternion)
     _euler.x -= amount * 0.002 * this.pointerSpeed
@@ -137,6 +140,18 @@ class PointerLockControls extends EventDispatcher {
       const pivot = this.additionalPivotObjects[0]
       pivot.quaternion.setFromEuler(_euler)
     }
+  }
+
+  zeroYaw(): void {
+    _euler.setFromQuaternion(this.camera.quaternion)
+    _euler.y = 0
+    this.camera.quaternion.setFromEuler(_euler)
+  }
+
+  zeroPitch(): void {
+    _euler.setFromQuaternion(this.camera.quaternion)
+    _euler.x = 0
+    this.camera.quaternion.setFromEuler(_euler)
   }
 
   lock() {
@@ -152,7 +167,7 @@ function onMouseMove(this: PointerLockControls, event: MouseEvent) {
   if (this.isLocked === false) return
 
   const movementX = event.movementX || 0
-  let movementY = this.lockPitchToHorizon ? 0 : event.movementY || 0
+  let movementY = this.lockPitch ? 0 : event.movementY || 0
 
   if (this.invertPitch) movementY *= -1
 

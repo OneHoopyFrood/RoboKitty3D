@@ -68,13 +68,18 @@ export class Player {
   }
 
   public update(collisionDetector: Parameters<typeof this._updateMovement>[0]) {
-    this._syncBodyAndCameras()
     this._updateMovement(collisionDetector)
+    this._syncBodyAndCameras()
   }
 
   private _updateMovement(collisionDetector: (player: Player) => THREE.Vector3 | null) {
-    // Calculate the moveSpeed based on whether the shift key is pressed or not
-    const movementIndicators = this._movementIndicators
+    const movementIndicators = this._movementIndicators // convenience
+
+    const collisionTranslation = collisionDetector(this)
+    if (collisionTranslation) {
+      this._fpCam.position.add(collisionTranslation)
+      return
+    }
 
     // Sprint
     const currentMoveSpeed = movementIndicators[Movement.sprint] ? 2 * WALK_SPEED : WALK_SPEED
@@ -85,24 +90,21 @@ export class Player {
     if (movementIndicators[Movement.backward]) {
       this._controls.moveForward(-currentMoveSpeed)
     }
+
+    const strafeSpeed = currentMoveSpeed / 2
     if (movementIndicators[Movement.left]) {
-      this._controls.moveRight(-currentMoveSpeed)
+      this._controls.moveRight(-strafeSpeed)
     }
     if (movementIndicators[Movement.right]) {
-      this._controls.moveRight(currentMoveSpeed)
+      this._controls.moveRight(strafeSpeed)
     }
 
-    const turnSpeed = currentMoveSpeed * 5
+    const turnSpeed = currentMoveSpeed * 10
     if (movementIndicators[Movement.turnLeft]) {
       this._controls.rotateH(-turnSpeed)
     }
     if (movementIndicators[Movement.turnRight]) {
       this._controls.rotateH(turnSpeed)
-    }
-
-    const collisionTranslation = collisionDetector(this)
-    if (collisionTranslation) {
-      this._fpCam.position.add(collisionTranslation)
     }
   }
 
@@ -118,8 +120,8 @@ export class Player {
     playerBody.position.copy(fpCam.position)
 
     // Get the Y rotation from the fpCam's quaternion
-    const cameraEuler = new THREE.Euler().setFromQuaternion(fpCam.quaternion)
-    playerBody.quaternion.setFromEuler(cameraEuler)
+    const cameraQ = fpCam.quaternion
+    playerBody.setRotationFromQuaternion(cameraQ)
 
     // Sync the tpCam only if it's active to save on performance
     if (this.camera === tpCam) {
@@ -127,9 +129,9 @@ export class Player {
       // Rather than recalculating the camera position as a swing around the
       // player based on the body's rotation, we just bring the camera to the
       // player's position, rotate it there, then back it up along it's local z
-      // axis! The result is the same, but the code is much simpler.
+      // axis! The result is the same, but the code is _much_ simpler.
       tpCam.position.copy(fpCam.position)
-      tpCam.quaternion.setFromEuler(cameraEuler)
+      tpCam.setRotationFromQuaternion(cameraQ)
       tpCam.translateZ(THIRD_PERSON_OFFSET.z)
       tpCam.translateY(THIRD_PERSON_OFFSET.y)
       tpCam.translateX(THIRD_PERSON_OFFSET.x)
@@ -140,13 +142,23 @@ export class Player {
   public switchCamera() {
     if (this.camera === this._fpCam) {
       this.camera = this._tpCam
-      this._controls.lockPitchToHorizon = true
+      this._controls.lockPitch = true
+      this._controls.zeroPitch()
       this._hud.crosshair.style.display = 'none'
     } else {
       this.camera = this._fpCam
-      this._controls.lockPitchToHorizon = false
+      this._controls.lockPitch = false
       this._hud.crosshair.style.display = 'block'
     }
+  }
+
+  public resetView(): void {
+    this._controls.zeroPitch()
+    this._controls.zeroYaw()
+  }
+
+  public releasePointer(): void {
+    this._controls.unlock
   }
 
   public set cameraAspect(aspect: number) {
