@@ -10,6 +10,8 @@ enum Movement {
   left,
   right,
   sprint,
+  turnLeft,
+  turnRight,
   // crouch,
   // jump,
 }
@@ -27,29 +29,29 @@ export class Player {
     crosshair: HTMLElement
   }
 
+  // The movement indicator reflects which movement keys are currently pressed
+  // This object is generated from the Movement enum where each key is paired
+  // with a boolean false as the default value.
   private _movementIndicators: MovementStates = Object.fromEntries(
     Object.values(Movement).map((key) => [key, false]),
   ) as MovementStates
 
-  private static readonly KEY_MAPPINGS: {
-    [key: string]: Record<string, Movement>
-  } = {
-    WASD: {
-      w: Movement.forward,
-      a: Movement.left,
-      s: Movement.backward,
-      d: Movement.right,
-      shift: Movement.sprint,
-    } as const,
-    ARROWS: {
-      arrowup: Movement.forward,
-      arrowleft: Movement.left,
-      arrowdown: Movement.backward,
-      arrowright: Movement.right,
-    } as const,
-  }
+  private static readonly KEY_MAP: Record<string, Movement> = {
+    // WASD
+    w: Movement.forward,
+    a: Movement.left,
+    s: Movement.backward,
+    d: Movement.right,
+    q: Movement.turnLeft,
+    e: Movement.turnRight,
+    shift: Movement.sprint,
 
-  private static readonly KEY_MAP = { ...Player.KEY_MAPPINGS.WASD, ...Player.KEY_MAPPINGS.ARROWS }
+    // ARROWS
+    arrowup: Movement.forward,
+    arrowleft: Movement.left,
+    arrowdown: Movement.backward,
+    arrowright: Movement.right,
+  }
 
   constructor(domElement: HTMLElement) {
     this.body = this._setupPlayerBody()
@@ -88,6 +90,14 @@ export class Player {
     }
     if (movementIndicators[Movement.right]) {
       this._controls.moveRight(currentMoveSpeed)
+    }
+
+    const turnSpeed = currentMoveSpeed * 5
+    if (movementIndicators[Movement.turnLeft]) {
+      this._controls.rotateH(-turnSpeed)
+    }
+    if (movementIndicators[Movement.turnRight]) {
+      this._controls.rotateH(turnSpeed)
     }
 
     const collisionTranslation = collisionDetector(this)
@@ -159,7 +169,7 @@ export class Player {
 
   private _setupPlayerBody() {
     const geometry = new THREE.BoxGeometry(5, 10, 5)
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const material = new THREE.MeshBasicMaterial({ color: 0x409883, dithering: true })
     const playerBody = new THREE.Mesh(geometry, material)
     playerBody.position.x = 0
     playerBody.position.y = 0
@@ -209,8 +219,7 @@ export class Player {
     Game.settings.onChange('invertPitchControl', (value) => (controls.invertPitch = value))
     controls.pointerSpeed = LOOK_SPEED
 
-    const movementKeys = this._movementIndicators
-
+    // When the user clicks the window, lock the pointer into controlling the camera
     domElement.addEventListener('click', () => {
       controls.lock()
       domElement.style.cursor = 'none'
@@ -227,6 +236,9 @@ export class Player {
       domElement.dispatchEvent(pauseEvent)
     })
 
+    // Keyboard movement is based on the constants at the top of this file
+    // the following code sets up key handlers to modify the movement indicators
+    // when the keys are pressed
     const keyMap = Player.KEY_MAP
 
     const keyHandler = (event: KeyboardEvent) => {
@@ -234,7 +246,7 @@ export class Player {
       if (key in keyMap) {
         const action = keyMap[key]
         const value = event.type === 'keydown'
-        movementKeys[action] = value
+        this._movementIndicators[action] = value
       }
     }
 

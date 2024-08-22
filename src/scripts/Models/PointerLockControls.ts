@@ -111,6 +111,34 @@ class PointerLockControls extends EventDispatcher {
     }
   }
 
+  rotateH(amount: number) {
+    // See comment above in moveForward()
+    this.camera.updateMatrix()
+
+    _euler.setFromQuaternion(this.camera.quaternion)
+    _euler.y -= amount * 0.002 * this.pointerSpeed
+    this.camera.quaternion.setFromEuler(_euler)
+
+    if (this.additionalPivotObjects && this.additionalPivotObjects.length > 0) {
+      const pivot = this.additionalPivotObjects[0]
+      pivot.quaternion.setFromEuler(_euler)
+    }
+  }
+
+  rotateV(amount: number) {
+    if (this.lockPitchToHorizon) return
+
+    _euler.setFromQuaternion(this.camera.quaternion)
+    _euler.x -= amount * 0.002 * this.pointerSpeed
+    _euler.x = Math.max(_PI_2 - this.maxPolarAngle, Math.min(_PI_2 - this.minPolarAngle, _euler.x))
+    this.camera.quaternion.setFromEuler(_euler)
+
+    if (this.additionalPivotObjects && this.additionalPivotObjects.length > 0) {
+      const pivot = this.additionalPivotObjects[0]
+      pivot.quaternion.setFromEuler(_euler)
+    }
+  }
+
   lock() {
     this.domElement.requestPointerLock()
   }
@@ -128,23 +156,8 @@ function onMouseMove(this: PointerLockControls, event: MouseEvent) {
 
   if (this.invertPitch) movementY *= -1
 
-  _euler.setFromQuaternion(this.camera.quaternion)
-
-  if (this.lockPitchToHorizon && _euler.x !== 0) _euler.x = 0
-
-  _euler.y -= movementX * 0.002 * this.pointerSpeed
-  if (!this.lockPitchToHorizon) {
-    _euler.x -= movementY * 0.002 * this.pointerSpeed
-
-    _euler.x = Math.max(_PI_2 - this.maxPolarAngle, Math.min(_PI_2 - this.minPolarAngle, _euler.x))
-  }
-
-  this.camera.quaternion.setFromEuler(_euler)
-
-  if (this.additionalPivotObjects && this.additionalPivotObjects.length > 0) {
-    const pivot = this.additionalPivotObjects[0]
-    pivot.quaternion.setFromEuler(_euler)
-  }
+  this.rotateH(movementX)
+  this.rotateV(movementY)
 
   this.dispatchEvent(_changeEvent)
 }
