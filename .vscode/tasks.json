@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "<insert-godot-executable-path-here>",
+      "type": "process",
+      "args": [
+        "--build-solutions",
+        "--path",
+        "${workspaceRoot}",
+        "--no-window",
+        "-q"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/RoboKitty3D.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/RoboKitty3D.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}
