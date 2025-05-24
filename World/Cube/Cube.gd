@@ -9,7 +9,7 @@ extends Node3D
 ########################
 # Clamp values
 const MIN_AMPLITUDE: float = 0.1
-const MAX_AMPLITUDE: float = 0.5
+const MAX_AMPLITUDE: float = 0.3
 const MIN_SPEED: float = 0.5
 const MAX_SPEED: float = 2.0
 const MAX_Y: float = 2.0

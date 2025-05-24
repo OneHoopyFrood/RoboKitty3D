@@ -3,8 +3,8 @@ render_mode blend_mix,depth_draw_opaque, unshaded;
 
 uniform vec4 gridColor: source_color;
 uniform vec4 checkerColor: source_color;
-uniform float fadeStart = 0.0;
-uniform float fadeEnd = 10.0;
+//uniform float fadeStart = 0.0;
+//uniform float fadeEnd = 100.0;
 uniform float unitSize = 1.0;
 uniform int subdivisions: hint_range(1, 10) = 5;
 uniform float majorLineThickness = 2.0;
@@ -49,7 +49,7 @@ void fragment() {
 	float chec = checker(posWorld.xz, unitSize);
 
 	// distance fade factor
-	float fadeFactor = 1.0 - clamp((distPlanar - fadeStart) / (fadeEnd - fadeStart), 0.0, 1.0);
+	//float fadeFactor = 1.0 - clamp((distPlanar - fadeStart) / (fadeEnd - fadeStart), 0.0, 1.0);
 
 	// write ground plane depth into z buffer
 	vec4 pp = (PROJECTION_MATRIX * (VIEW_MATRIX * vec4(posWorld, 1.0)));
@@ -58,7 +58,7 @@ void fragment() {
 	// final alpha
 	float alphaGrid = line * gridColor.a;
 	float alphaChec = chec * checkerColor.a;
-	ALPHA = clamp(alphaGrid + alphaChec, 0.0, 1.0) * fadeFactor;
+	ALPHA = clamp(alphaGrid + alphaChec, 0.0, 1.0); // * fadeFactor;
 	// eliminate grid above the horizon
 	ALPHA *= step(t, 0.0);
 
@@ -66,16 +66,3 @@ void fragment() {
 	ALBEDO = (checkerColor.rgb * alphaChec) * (1.0 - alphaGrid) + (gridColor.rgb * alphaGrid);
 
 }
-
-void vertex() {
-	// Called for every vertex the material is visible on.
-}
-
-void fragment() {
-	// Called for every pixel the material is visible on.
-}
-
-//void light() {
-//	// Called for every pixel for every light affecting the material.
-//	// Uncomment to replace the http://godotshaders.com/shader/infinite-ground-grid/default light processing function with this one.
-//}

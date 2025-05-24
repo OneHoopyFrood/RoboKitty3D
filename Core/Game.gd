@@ -41,9 +41,9 @@ func _create_ground_plane() -> MeshInstance3D:
   plane.subdivide_depth = 20
   ground.mesh = plane
 
-  var shader = load("res://Shaders/InfiniteGrid.gdshader")
-  var shader_mat = ShaderMaterial.new()
-  shader_mat.shader = shader
-  ground.set_surface_override_material(0, shader_mat)
+  #var shader = preload('res://World/InfiniteGrid.gdshader')
+  #var shader_mat = ShaderMaterial.new()
+  #shader_mat.shader = shader
+  #ground.set_surface_override_material(0, shader_mat)
 
   return ground
