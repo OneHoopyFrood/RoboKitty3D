@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="RoboKitty3D"
-run/main_scene="res://World/Board.tscn"
+run/main_scene="res://World/World.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 boot_splash/image="uid://dlhxyxfd0p4qs"
 config/icon="uid://dlhxyxfd0p4qs"

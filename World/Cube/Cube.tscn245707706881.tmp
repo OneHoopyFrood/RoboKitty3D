@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cx75at1f2ulrm"]
+[gd_scene load_steps=3 format=3 uid="uid://bbqno1d63igg4"]
 
-[ext_resource type="Script" uid="uid://ct84st6o8nh7d" path="res://World/Cube/cube.gd" id="1_7f02t"]
+[ext_resource type="Script" uid="uid://ci26uft7fat1f" path="res://World/Cube/Cube.gd" id="1_7f02t"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_7f02t"]
 

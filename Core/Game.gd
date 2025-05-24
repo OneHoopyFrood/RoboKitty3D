@@ -1,36 +1,37 @@
 extends Node3D
 
-@export var num_cubes: int = 100
-@export var spawn_radius: float = 50.0
+@export var num_nodes: int = 100
+@export var spawn_radius: int = 50
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
-var cube_scene = preload('res://World/Cube/Cube.tscn')
+#var node_scene = preload('res://World/Cube/Cube.tscn')
+var node_scene = preload('res://World/Symbol/Symbol.tscn')
 
 func _ready():
   rng.randomize()
   add_child(_create_ground_plane())
 
   # Cubes
-  var cubes = _generate_cubes()
-  for cube in cubes:
-    add_child(cube)
+  var nodes = _generate_nodes()
+  for node in nodes:
+    add_child(node)
 
-func _generate_cubes() -> Array:
-  var cubes: Array[Cube];
-  for i in range(num_cubes):
-    var cube: Cube = cube_scene.instantiate() as Cube
+func _generate_nodes() -> Array[BaseInteractionNode]:
+  var nodes: Array[BaseInteractionNode];
+  for i in range(num_nodes):
+    var node := node_scene.instantiate()
 
-    cube.randomize_bobbing(rng)
+    node.randomize_bobbing(rng)
 
-    cube.position = Vector3(
+    node.position = Vector3(
       rng.randf_range(-spawn_radius, spawn_radius),
       0.5,
       rng.randf_range(-spawn_radius, spawn_radius)
     )
 
-    cubes.append(cube)
-  return cubes
+    nodes.append(node)
+  return nodes
 
 func _create_ground_plane() -> MeshInstance3D:
   var ground = MeshInstance3D.new()

@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3 uid="uid://dslsww36yeyjy"]
+
+[ext_resource type="Script" uid="uid://bs8j71elomxox" path="res://World/Symbol/symbol.gd" id="1_a5rj1"]
+[ext_resource type="FontFile" uid="uid://034x3460fr0j" path="res://Assets/TerminusBold.ttf" id="2_xqmbm"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xqmbm"]
+emission_enabled = true
+emission = Color(0, 1, 0, 1)
+emission_energy_multiplier = 16.0
+backlight = Color(1, 1, 1, 1)
+
+[sub_resource type="TextMesh" id="TextMesh_nnv6f"]
+material = SubResource("StandardMaterial3D_xqmbm")
+text = "#"
+font = ExtResource("2_xqmbm")
+font_size = 127
+vertical_alignment = 2
+
+[node name="Symbol" type="Node3D"]
+script = ExtResource("1_a5rj1")
+metadata/_custom_type_script = "uid://ctq7nc76j356v"
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("TextMesh_nnv6f")

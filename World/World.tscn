@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=3 uid="uid://ck1us1on6vyvw"]
+
+[ext_resource type="Script" uid="uid://qihcooc24anp" path="res://Core/game.gd" id="1_y6flb"]
+[ext_resource type="PackedScene" uid="uid://dml8klxtt80hf" path="res://Player/Player.tscn" id="2_g376h"]
+
+[sub_resource type="Environment" id="Environment_js7pq"]
+background_mode = 1
+ambient_light_source = 1
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 8.47
+glow_enabled = true
+glow_intensity = 5.0
+glow_strength = 1.53
+glow_mix = 0.049
+glow_bloom = 0.39
+glow_blend_mode = 4
+fog_light_color = Color(0.357311, 0.388105, 0.436507, 1)
+fog_light_energy = 0.0
+fog_sky_affect = 0.0
+volumetric_fog_density = 0.2282
+volumetric_fog_sky_affect = 0.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y6flb"]
+
+[node name="World" type="Node3D"]
+script = ExtResource("1_y6flb")
+
+[node name="Player" parent="." instance=ExtResource("2_g376h")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_js7pq")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+visible = false
+light_energy = 0.15
+light_indirect_energy = 16.0
+light_size = 1.0
+light_specular = 16.0
+omni_range = 4096.0
+omni_attenuation = 0.0
+
+[node name="Boundry" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Boundry"]
+transform = Transform3D(50, 0, 0, 0, 10, 0, 0, 0, 50, 0, 0, 0)
+shape = SubResource("BoxShape3D_y6flb")

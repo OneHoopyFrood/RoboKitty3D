@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dmgfvsopi6uf1"]
+
+[ext_resource type="Script" uid="uid://ctq7nc76j356v" path="res://World/BaseInteractionNode/base_interaction_node.gd" id="1_ups6f"]
+
+[node name="BaseInteractionNode" type="Node3D"]
+script = ExtResource("1_ups6f")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
