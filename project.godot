@@ -11,9 +11,10 @@ config_version=5
 [application]
 
 config/name="RoboKitty3D"
-run/main_scene="res://Scenes/Board.tscn"
+run/main_scene="res://World/Board.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
-config/icon="res://icon.svg"
+boot_splash/image="uid://dlhxyxfd0p4qs"
+config/icon="uid://dlhxyxfd0p4qs"
 
 [dotnet]
 
