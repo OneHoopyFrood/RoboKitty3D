@@ -1,6 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://ck1us1on6vyvw"]
+[gd_scene load_steps=7 format=3 uid="uid://ck1us1on6vyvw"]
 
-[ext_resource type="Script" uid="uid://qihcooc24anp" path="res://Core/game.gd" id="1_y6flb"]
+[ext_resource type="Script" uid="uid://qihcooc24anp" path="res://World/world.gd" id="1_y6flb"]
 [ext_resource type="PackedScene" uid="uid://dml8klxtt80hf" path="res://Player/Player.tscn" id="2_g376h"]
 
 [sub_resource type="Environment" id="Environment_js7pq"]
@@ -20,7 +20,13 @@ fog_sky_affect = 0.0
 volumetric_fog_density = 0.2282
 volumetric_fog_sky_affect = 0.0
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_y6flb"]
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_y6flb"]
+plane = Plane(0, 0, 1, -0.035)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_il6x7"]
+plane = Plane(0, 0, 1, 0)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_mlekv"]
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_y6flb")
@@ -42,6 +48,21 @@ omni_attenuation = 0.0
 
 [node name="Boundry" type="StaticBody3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Boundry"]
-transform = Transform3D(50, 0, 0, 0, 10, 0, 0, 0, 50, 0, 0, 0)
-shape = SubResource("BoxShape3D_y6flb")
+[node name="Wall1" type="CollisionShape3D" parent="Boundry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -25)
+shape = SubResource("WorldBoundaryShape3D_y6flb")
+
+[node name="Wall2" type="CollisionShape3D" parent="Boundry"]
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 1, 25)
+shape = SubResource("WorldBoundaryShape3D_il6x7")
+
+[node name="Wall3" type="CollisionShape3D" parent="Boundry"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -25, 1, 0)
+shape = SubResource("WorldBoundaryShape3D_il6x7")
+
+[node name="Wall4" type="CollisionShape3D" parent="Boundry"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 25, 1, 0)
+shape = SubResource("WorldBoundaryShape3D_il6x7")
+
+[node name="Floor" type="CollisionShape3D" parent="Boundry"]
+shape = SubResource("WorldBoundaryShape3D_mlekv")
