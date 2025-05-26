@@ -18,16 +18,24 @@ func _ready():
 
 func _generate_nodes() -> Array[BaseInteractionNode]:
   var nodes: Array[BaseInteractionNode];
+  var used_positions: Array[Vector3i] = []
   for i in range(num_nodes):
     var node := node_scene.instantiate()
 
     node.randomize_bobbing(rng)
 
-    node.position = Vector3(
-      rng.randf_range(-spawn_radius, spawn_radius),
-      1,
-      rng.randf_range(-spawn_radius, spawn_radius)
-    )
+    var pos: Vector3i = random_pos()
+    while used_positions.has(pos):
+      pos = random_pos()
+    used_positions.push_back(pos)
+    node.position = pos
 
     nodes.append(node)
   return nodes
+
+func random_pos() -> Vector3i:
+  return Vector3i(
+      rng.randi_range(-spawn_radius, spawn_radius),
+      1,
+      rng.randi_range(-spawn_radius, spawn_radius)
+    )
