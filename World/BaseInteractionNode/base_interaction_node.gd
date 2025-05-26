@@ -40,6 +40,8 @@ func _ready():
   var box_size = _mesh.get_aabb().size
   # Make sure the box isn't in the ground or too high.
   base_y = clamp(global_position.y, box_size.y / 2, MAX_Y)
+
+  # Add glow
   _mesh.material_overlay = StandardMaterial3D.new()
   _mesh.material_overlay.emission_enabled = true
   _mesh.material_overlay.emission = color
@@ -59,9 +61,15 @@ func configure_bobbing(
   bob_amplitude = clamp(amplitude, MIN_AMPLITUDE, MAX_AMPLITUDE)
   bob_speed = clamp(speed, MIN_SPEED, MAX_SPEED)
 
+func set_color(new_color: Color) -> void:
+  color = new_color
+  _mesh.material_overlay.emission = color
+
 func randomize_bobbing(rng: RandomNumberGenerator):
   bob_amplitude = rng.randf_range(MIN_AMPLITUDE, MAX_AMPLITUDE)
   bob_speed = rng.randf_range(MIN_SPEED, MAX_SPEED)
 
 func randomize_color(rng: RandomNumberGenerator):
-  return
+  color = Color.from_hsv(rng.randf(), 0.8, 1.0) # Vibrant color
+  if (_mesh != null):
+    set_color(color)
