@@ -1,7 +1,7 @@
 extends Node3D
 
 @export var num_nodes: int = 100
-@export var spawn_radius: int = 25
+var board_size: int = 50
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -25,7 +25,7 @@ func _generate_nodes() -> Array[BaseInteractionNode]:
     node.randomize_bobbing(rng)
 
     var pos: Vector3i = random_pos()
-    while used_positions.has(pos):
+    while used_positions.has(pos): # If an overlap happens, choose another spot until you get a unique value
       pos = random_pos()
     used_positions.push_back(pos)
     node.position = pos
@@ -34,6 +34,7 @@ func _generate_nodes() -> Array[BaseInteractionNode]:
   return nodes
 
 func random_pos() -> Vector3i:
+  var spawn_radius = (board_size / 2) - 1
   return Vector3i(
       rng.randi_range(-spawn_radius, spawn_radius),
       1,

@@ -2,7 +2,8 @@ extends CharacterBody3D
 
 @export var speed: float = 10.0
 @export var mouse_sensitivity: float = 0.15
-@export var eye_height: float = 1.6
+@export var eye_height: float = 1
+
 
 var cam: Camera3D
 var shape: CollisionShape3D

@@ -12,12 +12,12 @@ const MIN_AMPLITUDE: float = 0.1
 const MAX_AMPLITUDE: float = 0.3
 const MIN_SPEED: float = 0.5
 const MAX_SPEED: float = 2.0
-const MAX_Y: float = 2.0
+const MAX_Y: float = 1.5
 
 # Defaults
 const DEFAULT_AMPLITUDE: float = 0.25
 const DEFAULT_SPEED: float = 1.0
-const DEFAULT_Y: float = 1.0
+const DEFAULT_Y: float = 0.5
 
 ########################
 ## Active values

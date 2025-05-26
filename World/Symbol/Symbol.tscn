@@ -11,14 +11,15 @@ backlight = Color(1, 1, 1, 1)
 
 [sub_resource type="TextMesh" id="TextMesh_nnv6f"]
 material = SubResource("StandardMaterial3D_xqmbm")
-text = "#"
+text = "?"
 font = ExtResource("2_xqmbm")
 font_size = 127
-vertical_alignment = 2
+depth = 0.125
 
 [node name="Symbol" type="Node3D"]
 script = ExtResource("1_a5rj1")
 metadata/_custom_type_script = "uid://ctq7nc76j356v"
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
+custom_aabb = AABB(-0.5, -0.5, -0.5, 1, 1, 1)
 mesh = SubResource("TextMesh_nnv6f")
