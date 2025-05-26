@@ -18,6 +18,7 @@ const MAX_Y: float = 1.5
 const DEFAULT_AMPLITUDE: float = 0.25
 const DEFAULT_SPEED: float = 1.0
 const DEFAULT_Y: float = 0.5
+const DEFAULT_COLOR: Color = Color.GREEN
 
 ########################
 ## Active values
@@ -25,6 +26,7 @@ const DEFAULT_Y: float = 0.5
 var bob_amplitude: float = DEFAULT_AMPLITUDE
 var bob_speed: float = DEFAULT_SPEED
 var base_y: float # Height to float (centerpoint of box)
+var color: Color = DEFAULT_COLOR
 
 # Private
 var _time: float = 0.0
@@ -38,6 +40,9 @@ func _ready():
   var box_size = _mesh.get_aabb().size
   # Make sure the box isn't in the ground or too high.
   base_y = clamp(global_position.y, box_size.y / 2, MAX_Y)
+  _mesh.material_overlay = StandardMaterial3D.new()
+  _mesh.material_overlay.emission_enabled = true
+  _mesh.material_overlay.emission = color
 
 func _process(delta: float) -> void:
   _time += delta
@@ -57,3 +62,6 @@ func configure_bobbing(
 func randomize_bobbing(rng: RandomNumberGenerator):
   bob_amplitude = rng.randf_range(MIN_AMPLITUDE, MAX_AMPLITUDE)
   bob_speed = rng.randf_range(MIN_SPEED, MAX_SPEED)
+
+func randomize_color(rng: RandomNumberGenerator):
+  return

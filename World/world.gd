@@ -18,11 +18,12 @@ func _ready():
 
 func _generate_nodes() -> Array[BaseInteractionNode]:
   var nodes: Array[BaseInteractionNode];
-  var used_positions: Array[Vector3i] = []
+  var used_positions: Array[Vector3i] = [Vector3i(0,0,0)]
   for i in range(num_nodes):
-    var node := node_scene.instantiate()
+    var node: BaseInteractionNode = node_scene.instantiate()
 
     node.randomize_bobbing(rng)
+    node.randomize_color(rng)
 
     var pos: Vector3i = random_pos()
     while used_positions.has(pos): # If an overlap happens, choose another spot until you get a unique value
