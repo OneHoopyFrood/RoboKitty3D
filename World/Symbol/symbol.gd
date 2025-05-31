@@ -27,5 +27,7 @@ func _ready():
 #Returns a random character from ASCII 33 to 126
 func random_symbol() -> String:
   # Pulls from the same set of characters as the terminal version
-  var ascii_code := randi_range(33, 126)
+  var ascii_code: int
+  while [0, 37].has(ascii_code): # 37 is %, which has display issues in this font
+    ascii_code = randi_range(33, 126)
   return char(ascii_code)
