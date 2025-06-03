@@ -47,8 +47,6 @@ func _process(delta):
     go_backward()
 
   # Mouse look
-  # TODO: Make look work under the "ctrl" press. When ctrl is held, the mouse can move the look around
-  # and when it is released, the view returns to center.
   if Input.is_action_pressed("look"):
     yaw   -= mouse_delta.x * mouse_sensitivity
     yaw = clamp(yaw, -89.0, 89.0)
