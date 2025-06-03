@@ -9,13 +9,14 @@ extends CharacterBody3D
 var cam: Camera3D
 var shape: CollisionShape3D
 var mouse_delta: Vector2 = Vector2.ZERO
+var yaw: float = 0.0
 var pitch: float = 0.0
 
 var _tween: Tween # Constantly gets overwritten
 
 func _ready():
   cam = $FPV
-  shape = $Hitbox
+  shape = $HitBox
   Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
   # Position camera at eye level
@@ -46,13 +47,25 @@ func _process(delta):
     go_backward()
 
   # Mouse look
-  pitch -= mouse_delta.y * mouse_sensitivity
-  pitch = clamp(pitch, -89.0, 89.0)
+  # TODO: Make look work under the "ctrl" press. When ctrl is held, the mouse can move the look around
+  # and when it is released, the view returns to center.
+  if Input.is_action_pressed("look"):
+    yaw   -= mouse_delta.x * mouse_sensitivity
+    yaw = clamp(yaw, -89.0, 89.0)
+    pitch -= mouse_delta.y * mouse_sensitivity
+    pitch = clamp(pitch, -89.0, 89.0)
+    
+    cam.rotation_degrees = Vector3(pitch, yaw, 0)
+    
+    # Reset for next frame
+    mouse_delta = Vector2.ZERO
+  if Input.is_action_just_released("look"):
+    yaw = 0
+    pitch = 0
+    var look_tweener := create_tween().bind_node(cam)
+    look_tweener.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+    look_tweener.tween_property(cam, "rotation_degrees", Vector3.ZERO, 0.2)
 
-  cam.rotation_degrees = Vector3(pitch, 0, 0)
-
-  # Reset for next frame
-  mouse_delta = Vector2.ZERO
 
 func go_forward():
   var one_step_forward = self.position - transform.basis.z
