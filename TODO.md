@@ -48,7 +48,12 @@
 **Sounds**
 
 - [ ] Music (.ogg)
+  - [X] Nostalgium 2023
+  - [X] I Found A Pretty Stone
+  - [X] Cuban Pete (Secret)
 - [ ] SFX (.ogg)
+  - [X] Wahmp
+  - [X] Kitten Noises
 
   - [ ] Interact
     - [ ] "Speak" blurbs with "Animal Crossing" style speech sounds
