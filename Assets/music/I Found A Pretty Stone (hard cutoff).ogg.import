@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://diego0eoahkvw"
+path="res://.godot/imported/I Found A Pretty Stone (hard cutoff).ogg-4195c2c6574adae733aea7270425d6bf.oggvorbisstr"
+
+[deps]
+
+source_file="res://Assets/music/I Found A Pretty Stone (hard cutoff).ogg"
+dest_files=["res://.godot/imported/I Found A Pretty Stone (hard cutoff).ogg-4195c2c6574adae733aea7270425d6bf.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

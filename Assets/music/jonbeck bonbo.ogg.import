@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bbmkppbpci53q"
+path="res://.godot/imported/jonbeck bonbo.ogg-12d364bb3103a17a43d4ebf0ce172a30.oggvorbisstr"
+
+[deps]
+
+source_file="res://Assets/music/jonbeck bonbo.ogg"
+dest_files=["res://.godot/imported/jonbeck bonbo.ogg-12d364bb3103a17a43d4ebf0ce172a30.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://oye4okuoaqwq"
+path="res://.godot/imported/Nostalgium 2023.ogg-320ada82257ae3dbdf2bd4cda1420938.oggvorbisstr"
+
+[deps]
+
+source_file="res://Assets/music/Nostalgium 2023.ogg"
+dest_files=["res://.godot/imported/Nostalgium 2023.ogg-320ada82257ae3dbdf2bd4cda1420938.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
