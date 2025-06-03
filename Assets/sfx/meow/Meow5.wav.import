@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://crhndxh0o54mv"
-path="res://.godot/imported/Meow4.wav-5fdf973b51c58dc28670fd21fea34d5c.sample"
+uid="uid://blmncjbng4og5"
+path="res://.godot/imported/Meow5.wav-d786f550078e8a826ef40923fdacbbdd.sample"
 
 [deps]
 
-source_file="res://Assets/sfx/Meow4.wav"
-dest_files=["res://.godot/imported/Meow4.wav-5fdf973b51c58dc28670fd21fea34d5c.sample"]
+source_file="res://Assets/sfx/meow/Meow5.wav"
+dest_files=["res://.godot/imported/Meow5.wav-d786f550078e8a826ef40923fdacbbdd.sample"]
 
 [params]
 

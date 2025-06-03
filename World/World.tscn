@@ -1,9 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://ck1us1on6vyvw"]
+[gd_scene load_steps=14 format=3 uid="uid://ck1us1on6vyvw"]
 
 [ext_resource type="Script" uid="uid://qihcooc24anp" path="res://World/world.gd" id="1_y6flb"]
 [ext_resource type="PackedScene" uid="uid://dml8klxtt80hf" path="res://Player/Player.tscn" id="2_g376h"]
 [ext_resource type="Texture2D" uid="uid://dsmobpvffbkln" path="res://Assets/texture_01.png" id="3_mlekv"]
-[ext_resource type="PackedScene" uid="uid://cx75at1f2ulrm" path="res://World/Cube/Cube.tscn" id="4_il6x7"]
+[ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="4_il6x7"]
+[ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg" id="5_04mge"]
+[ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/jonbeck bonbo.ogg" id="6_eue43"]
 
 [sub_resource type="Environment" id="Environment_js7pq"]
 background_mode = 1
@@ -41,6 +43,12 @@ uv1_scale = Vector3(49, 49, 49)
 [sub_resource type="PlaneMesh" id="PlaneMesh_il6x7"]
 material = SubResource("StandardMaterial3D_mlekv")
 size = Vector2(49, 49)
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_cf1t6"]
+streams_count = 3
+stream_0/stream = ExtResource("4_il6x7")
+stream_1/stream = ExtResource("5_04mge")
+stream_2/stream = ExtResource("6_eue43")
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_y6flb")
@@ -85,5 +93,6 @@ shape = SubResource("WorldBoundaryShape3D_mlekv")
 [node name="FloorSolid" type="MeshInstance3D" parent="Boundry"]
 mesh = SubResource("PlaneMesh_il6x7")
 
-[node name="Cube" parent="." instance=ExtResource("4_il6x7")]
-visible = false
+[node name="BackgroundMusic" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamRandomizer_cf1t6")
+autoplay = true
