@@ -2,12 +2,14 @@
 
 ### Gameplay
 
-- [ ] Cube inspect for proompt
-- [ ] Generate blubs to get on inspect
+- [ ] Dialogue
+  - [ ] Generate blurbs to get on inspect
+  - [ ] Show blurb on bumping a symbol
+  - [ ] Bump animation + sound
+  - [ ] 
 - [ ] Add kitten
-- [ ] Win condition (found kitten)
-- [ ] Allow reset on win
-  - [ ] Reset sequence: Cubes all explode, fade to black, fade back in to new game
+  - [ ] Win condition (found kitten)
+  - [ ] Win sequence (Ideas: fireworks, pop-up ascii animation of robot finding kitten and a heart)
 
 ---
 
@@ -15,15 +17,13 @@
 
 **General**
 
-- [x] Prevent cubes colliding on generation
+- [x] Prevent symbols colliding on generation
 - [x] Mouse control of view
-- [ ] ~New consideration: Should player only be able to move in the cardinal
+- [x] ~New consideration: Should player only be able to move in the cardinal
       directions? Like the original game? W would be forward, S back, A to turn
-      left 90°, D to turn right 90°~ Ivan says nah
-- [x] Prevent player phasing through cubes (Collision Detection)
-  - [ ] Prevent player jumping through cube when sprinting
+      left 90°, D to turn right 90°~ Ivan says nah, but I did it anyway more than a year later.
 - [ ] Improve player body (just a cube right now)
-- [ ] Configurable controls
+- [ ] Configurable controls (Invert mouse and such)
 - [ ] World bounds
   - [ ] Choose: Physical barrier, invisible limit, or both?
   - [ ] Idea: If there is no actual limit, only the physical, and we add a jump
@@ -33,18 +33,11 @@
 **Pause menu** (as features are added)
 
 - [ ] Shows on ESC
-- [ ] Invite another player (p2p)
+- [ ] p2p multiplayer?
 - Settings
-  - [ ] Buildings on/off (requires reload)
-  - [ ] Number of cubes (requires reload)
-  - [ ] Crosshair on off
-  - [ ] Alternate modes
-    - [ ] Timed
-    - [ ] Competition (multiplayer only)
-    - [ ] Collaborative (multiplayer only)
-    - [ ] Memory (NKIs in pairs, cubes do not display symbols until
-          interacted with, kitten=old maid, point system for multiplayer) -[ ] Single Player -[ ] Multiplayer
-  - [ ] Control customization (Invert controls)
+  - [ ] Number of symbols
+  - [ ] Board size
+  - [ ] Control customization (Invert look y-axis, custom movement and look button)
   - [ ] Music and SFX volumes
 - [ ] Credits
 
@@ -58,82 +51,55 @@
 - [ ] SFX (.ogg)
 
   - [ ] Interact
-    - [ ] "Speak" blurbs with "WampWamp"
-    - [ ] Noop noise (clicking on nothing)
+    - [ ] "Speak" blurbs with "Animal Crossing" style speech sounds
+    - [ ] Wall bump noise (DOS alert noise?)
   - [ ] Robot movement
+    - [ ] Whirrr on move/turn
+    - [ ] Aborted whirr on interacion bump
+    - [ ] Back-up beep?
+    - [ ] Error noise when backing into a symbol
   - [ ] Kitten noises
+    - [ ] For when you find the kitten, or in "hint" mode (you can hear the kitten when you call)
+    - [ ] Call noise (Wall-E style whistle)
   - [ ] Menu sounds
-  - [ ] Explosions
-  - [ ] Angelic Choir Chord
-  - [ ] Ding!
-  - [ ] Ambiance maybe?
-
+        
     **Art**
 
 - [ ] Kitten
 - [ ] Player
-- [ ] Floor?
-- [ ] Skydome?
 
 ---
 
 ### Chrome
 
-** Cube Enhancements**
+** Symbol Enhancements**
 
-- [x] Symbols on the sides of cubes
-- [ ] Glow when user is within interaction range and looking at the cube
-- [ ] Rounded Corners
-- [ ] Float and bob, but not all together. Kinda ethereal like.
-- [x] Crosshair in view
+- [x] Glow
+- [x] Float and bob, but not all together. Kinda ethereal like.
 - [ ] Additional Player Movements
-  - [x] Run
-  - [x] ~Crouch~ Removed because why really? Robots can't usually crouch anyway
-  - [ ] Jump
+  - [x] Run (speed boost?)
 - [ ] Switch cameras
   - [x] FP
-  - [x] 3rd person (F3)
-  - [x] Top Down (F2)
-  - [ ] Orbit/fly controls (F7)
+  - [ ] 3rd person (F3)
+  - [ ] Top Down (F2)
+    - [ ] Disable parametric
+    - [ ] Might affect controls?
 
 ---
 
-### Phase 2
+### Big Ideas:
 
 - [ ] AI autopilot (Screensaver mode)
-- [ ] Multiplayer
-  - [ ] Collaborative
-  - [ ] Competition
-    - [ ] AI Might actually be useful as a competitor?
-- [ ] Multiplayer Chat
-- [ ] Levels/buildings/terrain
-
-**Difficulty Levels**
-
-- [ ] Super easy (kitten cube is shiny gold and glows brightly)
-- [ ] Easy (Cubes dim after inspect)
-- [ ] Normal
-- [ ] Hard (Adds fog to Normal)
-- [ ] Hardcore (cubes drift around randomly and switch symbols when they bump into one another)
-- [ ] Add "Select Difficulty" to Menu (see Difficulty Levels)
+- [ ] Timed Game (non-zen)
+- [ ] Multiplayer!
+    - [ ] Competition - Race to find kitten! Keeps score over multiple rounds.
+    - [ ] Memory game (NKIs in pairs, symbols hide inside cubes and are revealed when interacted with.
+          The object is to find the most pairs before the kitten is found! (single or multiplayer)
+    - [ ] Multiplayer Chat
 
 **Cheat Codes**
 
 - [ ] Kitten noises = true
-- [ ] God Mode (doesn't actually do anything, but you get to feel cool)
+- [ ] God Mode (doesn't actually do anything. You just get a UI HUD label)
   - [ ] Maybe have this cause thunder and lightning flash?
-  - [ ] Could make it possible to strike cubes? Why? Idk. Go ask your Dad.
-- [ ] Flight!
-- [ ] Summon Duck
-
----
-
-### Wild ideas:
-
-- [ ] ~Physics? You can chuck the cubes?~ Too hard to keep everything straight.
-- [ ] Guns (pew pew)
-- [ ] Minecraft mode (dirt blocks and punchy-punchy)
-- [ ] INSANE mode? Cubes actively run away?
-- [ ] Weather! (Stars? Clouds?)
-- [ ] Add Duck
-- [ ] Multiple Kittens!?!?
+- [ ] Summon Duck - Summons a duck that wanders around and quacks.
