@@ -10,6 +10,7 @@ font_size = 127
 depth = 0.125
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_xqmbm"]
+size = Vector3(0.9, 0.9, 0.9)
 
 [node name="Symbol" type="Node3D"]
 script = ExtResource("1_a5rj1")
