@@ -12,7 +12,7 @@ var mouse_delta: Vector2 = Vector2.ZERO
 var yaw: float = 0.0
 var pitch: float = 0.0
 
-# Movement 
+# Movement
 var is_moving: bool = false
 var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
@@ -48,9 +48,9 @@ func _process(delta):
       turn_left()
     elif Input.is_action_just_pressed("move_right"):
       turn_right()
-    elif Input.is_action_just_pressed("move_forward"):
+    elif Input.is_action_pressed("move_forward"):
       start_move(-transform.basis.z)
-    elif Input.is_action_just_pressed("move_back"):
+    elif Input.is_action_pressed("move_back"):
       start_move(transform.basis.z)
 
   # Mouse look
@@ -79,7 +79,7 @@ func _physics_process(delta):
     if move_dir.dot(target_position - global_transform.origin) <= 0:
       is_moving = false
     elif velocity == Vector3.ZERO:
-      print("Hit something")
+      #print("Hit something")
       position = pre_move_pos
       is_moving = false
     # else still moving
@@ -91,8 +91,6 @@ func _physics_process(delta):
     move_and_slide()
 
 func start_move(direction: Vector3) -> void:
-  # direction should be either -transform.basis.z (forward) or +transform.basis.z (back)
-  # But make sure it’s purely horizontal (y = 0)
   direction.y = 0
   direction = direction.normalized()
 
@@ -113,7 +111,7 @@ func turn_right():
   if is_moving: return
   var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
   _face_degree(new_yaw)
-  
+
 func recenter_look():
   yaw = 0
   pitch = 0

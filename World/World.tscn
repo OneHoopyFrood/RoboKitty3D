@@ -95,4 +95,3 @@ mesh = SubResource("PlaneMesh_il6x7")
 
 [node name="BackgroundMusic" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamRandomizer_cf1t6")
-autoplay = true
