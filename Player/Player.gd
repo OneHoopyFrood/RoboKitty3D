@@ -24,6 +24,7 @@ var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
 var _block_cooldown: float = 0.0
 var _blocked_move_dir: Vector3 = Vector3.ZERO # direction that got blocked
+var _was_moving: bool = false # true after start_move(); used to distinguish crash from standing hold
 const BLOCK_COOLDOWN_DURATION: float = 0.8
 
 var _tween: Tween
@@ -99,12 +100,15 @@ func _process(delta):
         else:
           start_move(-transform.basis.z)
       elif Input.is_action_pressed("move_forward"):
-        # Held walk: crash into symbol, stop silently at walls
-        var symbol = _try_bump_interact()
-        if symbol:
-          _do_brake_animation()
-        elif _block_cooldown <= 0.0 and not _is_path_blocked(-transform.basis.z):
-          start_move(-transform.basis.z)
+        # Held walk: brake animation when arriving at a symbol mid-walk; stop silently at walls
+        if _block_cooldown <= 0.0:
+          var _held_symbol = _try_bump_interact()
+          if _held_symbol and _was_moving:
+            _do_brake_animation()
+            _was_moving = false
+            _block_cooldown = BLOCK_COOLDOWN_DURATION
+          elif not _is_path_blocked(-transform.basis.z):
+            start_move(-transform.basis.z)
       elif Input.is_action_just_pressed("move_back"):
         if _is_path_blocked(transform.basis.z):
           if _error_sfx and _error_sfx.stream:
@@ -147,6 +151,7 @@ func _physics_process(delta):
       is_moving = false
       _block_cooldown = BLOCK_COOLDOWN_DURATION
       _blocked_move_dir = move_dir
+      # Error SFX on wall bump
       if _error_sfx and _error_sfx.stream:
         _error_sfx.play()
     # else still moving
@@ -173,6 +178,7 @@ func start_move(direction: Vector3) -> void:
   is_moving = true
   # Store current grid-aligned position for collision bounce-back
   start_position = global_transform.origin
+  _was_moving = true
     # Calculate exactly one cell ahead
   target_position = global_transform.origin + move_dir * step_size
 
@@ -259,25 +265,31 @@ func _do_brake_animation() -> void:
   # Brake animation: camera lurches forward and down like sudden deceleration, then snaps back
   is_animating = true
 
+  var fwd = - transform.basis.z
+  fwd.y = 0
+  fwd = fwd.normalized()
+
+  var start_pos = global_transform.origin
+  var forward_pos = start_pos + fwd * (step_size * 0.08) # Small forward skid
+
+  # Animate player body forward and back
+  var body_tween = create_tween()
+  body_tween.tween_property(self , "global_position", forward_pos, 0.06)
+  body_tween.tween_property(self , "global_position", start_pos, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  body_tween.finished.connect(func(): is_animating = false)
+
+  # Camera lurch
   var original_cam_pos = cam.position
   var original_cam_rot = cam.rotation_degrees
+  var lurch_pos = original_cam_pos + Vector3(0, -0.08, -0.15) # Down and forward
+  var lurch_rot = original_cam_rot + Vector3(-5, 0, 0) # Tilt up slightly
 
-  # Lurch forward and tilt down
-  var lurch_pos = original_cam_pos + Vector3(0, -0.1, -0.2) # Down and forward
-  var lurch_rot = original_cam_rot + Vector3(8, 0, 0) # Tilt down
-
-  var brake_tween = create_tween()
-  brake_tween.set_parallel(true)
-  # Quick lurch
-  brake_tween.tween_property(cam, "position", lurch_pos, 0.1).set_ease(Tween.EASE_OUT)
-  brake_tween.tween_property(cam, "rotation_degrees", lurch_rot, 0.1).set_ease(Tween.EASE_OUT)
-  # Snap back
-  brake_tween.chain().set_parallel(true)
-  brake_tween.tween_property(cam, "position", original_cam_pos, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-  brake_tween.tween_property(cam, "rotation_degrees", original_cam_rot, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-  # Re-enable input after animation completes
-  brake_tween.finished.connect(func(): is_animating = false)
+  var cam_tween = create_tween()
+  cam_tween.set_parallel(true)
+  cam_tween.tween_property(cam, "position", lurch_pos, 0.06).set_ease(Tween.EASE_OUT)
+  cam_tween.tween_property(cam, "rotation_degrees", lurch_rot, 0.06).set_ease(Tween.EASE_OUT)
+  cam_tween.tween_property(cam, "position", original_cam_pos, 0.18).set_delay(0.06).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  cam_tween.tween_property(cam, "rotation_degrees", original_cam_rot, 0.18).set_delay(0.06).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _try_bump_interact() -> Node:
   # Cast one cell ahead on a horizontal line from player center
