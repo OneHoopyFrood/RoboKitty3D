@@ -22,6 +22,9 @@ var is_animating: bool = false # Blocks input during animations
 var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
+var _block_cooldown: float = 0.0
+var _blocked_move_dir: Vector3 = Vector3.ZERO # direction that got blocked
+const BLOCK_COOLDOWN_DURATION: float = 0.8
 
 var _tween: Tween
 var _dialog_ui: Node = null
@@ -73,6 +76,9 @@ func _process(delta):
     _toggle_mouse_capture()
     return
 
+  if _block_cooldown > 0.0:
+    _block_cooldown -= delta
+
   if not is_moving and not is_animating:
     if Input.is_action_just_pressed("move_left"):
       turn_left()
@@ -97,7 +103,7 @@ func _process(delta):
         var symbol = _try_bump_interact()
         if symbol:
           _do_brake_animation()
-        elif not _is_path_blocked(-transform.basis.z):
+        elif _block_cooldown <= 0.0 and not _is_path_blocked(-transform.basis.z):
           start_move(-transform.basis.z)
       elif Input.is_action_just_pressed("move_back"):
         if _is_path_blocked(transform.basis.z):
@@ -106,7 +112,7 @@ func _process(delta):
         else:
           start_move(transform.basis.z)
       elif Input.is_action_pressed("move_back"):
-        if not _is_path_blocked(transform.basis.z):
+        if _block_cooldown <= 0.0 and not _is_path_blocked(transform.basis.z):
           start_move(transform.basis.z)
 
   # Mouse look
@@ -128,11 +134,21 @@ func _physics_process(delta):
     var speed = step_size / step_duration
     velocity = move_dir.normalized() * speed
 
+    var pos_before = global_transform.origin
     move_and_slide()
 
     if move_dir.dot(target_position - global_transform.origin) <= 0:
+      # Reached target - successful move
       is_moving = false
       _snap_to_grid()
+    elif global_transform.origin.distance_to(pos_before) < 0.001:
+      # Made no progress - blocked mid-move, snap back and unlock
+      global_transform.origin = start_position
+      is_moving = false
+      _block_cooldown = BLOCK_COOLDOWN_DURATION
+      _blocked_move_dir = move_dir
+      if _error_sfx and _error_sfx.stream:
+        _error_sfx.play()
     # else still moving
   else:
     # If we’re not moving, ensure velocity is zero
@@ -163,11 +179,13 @@ func start_move(direction: Vector3) -> void:
 func turn_left():
   if is_moving:
     return
+  _block_cooldown = 0.0
   var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
   _face_degree(new_yaw)
 
 func turn_right():
   if is_moving: return
+  _block_cooldown = 0.0
   var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
   _face_degree(new_yaw)
 
