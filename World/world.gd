@@ -35,7 +35,7 @@ func _generate_nodes() -> Array[BaseInteractionNode]:
   return nodes
 
 func random_pos() -> Vector3i:
-  var spawn_radius = (board_size / 2) - 1
+  var spawn_radius = int(board_size / 2) - 1
   return Vector3i(
       rng.randi_range(-spawn_radius, spawn_radius),
       1,
