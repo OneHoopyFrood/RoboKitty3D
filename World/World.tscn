@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://ck1us1on6vyvw"]
+[gd_scene format=3 uid="uid://ck1us1on6vyvw"]
 
 [ext_resource type="Script" uid="uid://qihcooc24anp" path="res://World/world.gd" id="1_y6flb"]
 [ext_resource type="PackedScene" uid="uid://dml8klxtt80hf" path="res://Player/Player.tscn" id="2_g376h"]
@@ -50,15 +50,15 @@ stream_0/stream = ExtResource("4_il6x7")
 stream_1/stream = ExtResource("5_04mge")
 stream_2/stream = ExtResource("6_eue43")
 
-[node name="World" type="Node3D"]
+[node name="World" type="Node3D" unique_id=667061703]
 script = ExtResource("1_y6flb")
 
-[node name="Player" parent="." instance=ExtResource("2_g376h")]
+[node name="Player" parent="." unique_id=968952245 instance=ExtResource("2_g376h")]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=709112638]
 environment = SubResource("Environment_js7pq")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1718981289]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
 visible = false
 light_energy = 0.15
@@ -68,30 +68,31 @@ light_specular = 16.0
 omni_range = 4096.0
 omni_attenuation = 0.0
 
-[node name="Boundry" type="StaticBody3D" parent="."]
+[node name="Boundry" type="StaticBody3D" parent="." unique_id=665446268]
 
-[node name="Wall1" type="CollisionShape3D" parent="Boundry"]
+[node name="Wall1" type="CollisionShape3D" parent="Boundry" unique_id=1333183612]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -25)
 shape = SubResource("WorldBoundaryShape3D_y6flb")
 
-[node name="Wall2" type="CollisionShape3D" parent="Boundry"]
+[node name="Wall2" type="CollisionShape3D" parent="Boundry" unique_id=1464596147]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 1, 25)
 shape = SubResource("WorldBoundaryShape3D_il6x7")
 
-[node name="Wall3" type="CollisionShape3D" parent="Boundry"]
+[node name="Wall3" type="CollisionShape3D" parent="Boundry" unique_id=1132544913]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -25, 1, 0)
 shape = SubResource("WorldBoundaryShape3D_il6x7")
 
-[node name="Wall4" type="CollisionShape3D" parent="Boundry"]
+[node name="Wall4" type="CollisionShape3D" parent="Boundry" unique_id=111304540]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 25, 1, 0)
 shape = SubResource("WorldBoundaryShape3D_il6x7")
 
-[node name="FloorBoundry" type="CollisionShape3D" parent="Boundry"]
+[node name="FloorBoundry" type="CollisionShape3D" parent="Boundry" unique_id=2118913691]
 visible = false
 shape = SubResource("WorldBoundaryShape3D_mlekv")
 
-[node name="FloorSolid" type="MeshInstance3D" parent="Boundry"]
+[node name="FloorSolid" type="MeshInstance3D" parent="Boundry" unique_id=1482360944]
 mesh = SubResource("PlaneMesh_il6x7")
 
-[node name="BackgroundMusic" type="AudioStreamPlayer" parent="."]
+[node name="BackgroundMusic" type="AudioStreamPlayer" parent="." unique_id=1030709042]
 stream = SubResource("AudioStreamRandomizer_cf1t6")
+autoplay = true

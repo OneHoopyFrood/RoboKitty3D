@@ -8,6 +8,7 @@ extends CharacterBody3D
 
 @export var dialog_ui_path: NodePath
 @export var select_sfx_stream: AudioStream
+@export var error_sfx_stream: AudioStream
 
 var cam: Camera3D
 var shape: CollisionShape3D
@@ -17,6 +18,7 @@ var pitch: float = 0.0
 
 # Movement
 var is_moving: bool = false
+var is_animating: bool = false # Blocks input during animations
 var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
@@ -24,6 +26,7 @@ var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement s
 var _tween: Tween
 var _dialog_ui: Node = null
 var _sfx: AudioStreamPlayer = null
+var _error_sfx: AudioStreamPlayer = null
 
 const symbol_group = "symbol"
 
@@ -48,6 +51,12 @@ func _ready():
   if select_sfx_stream:
     _sfx.stream = select_sfx_stream
 
+  # Error SFX player
+  _error_sfx = AudioStreamPlayer.new()
+  add_child(_error_sfx)
+  if error_sfx_stream:
+    _error_sfx.stream = error_sfx_stream
+
 func _input(event):
   if event is InputEventMouseMotion:
     mouse_delta = event.relative
@@ -64,28 +73,41 @@ func _process(delta):
     _toggle_mouse_capture()
     return
 
-  if not is_moving:
+  if not is_moving and not is_animating:
     if Input.is_action_just_pressed("move_left"):
       turn_left()
     elif Input.is_action_just_pressed("move_right"):
       turn_right()
     else:
-      # Try interaction on a *fresh* forward press
-      # NOTE: Interactions only trigger on intentional bumps (standing -> just_pressed).
+      # Interactions only trigger on intentional bumps (standing -> just_pressed).
       # Walking into symbols (action_pressed while moving) should collide naturally
       # without triggering interaction.
       if Input.is_action_just_pressed("move_forward"):
+        # Intentional tap: interact or error
         var symbol = _try_bump_interact()
         if symbol:
-          # interacted; do not move
           _on_bumped_symbol(symbol)
+        elif _is_path_blocked(-transform.basis.z):
+          if _error_sfx and _error_sfx.stream:
+            _error_sfx.play()
         else:
           start_move(-transform.basis.z)
-      # Holding W for zoom should still step repeatedly when not interacting
       elif Input.is_action_pressed("move_forward"):
-        start_move(-transform.basis.z)
+        # Held walk: crash into symbol, stop silently at walls
+        var symbol = _try_bump_interact()
+        if symbol:
+          _do_brake_animation()
+        elif not _is_path_blocked(-transform.basis.z):
+          start_move(-transform.basis.z)
+      elif Input.is_action_just_pressed("move_back"):
+        if _is_path_blocked(transform.basis.z):
+          if _error_sfx and _error_sfx.stream:
+            _error_sfx.play()
+        else:
+          start_move(transform.basis.z)
       elif Input.is_action_pressed("move_back"):
-        start_move(transform.basis.z)
+        if not _is_path_blocked(transform.basis.z):
+          start_move(transform.basis.z)
 
   # Mouse look
   if Input.is_action_pressed("look"):
@@ -110,12 +132,7 @@ func _physics_process(delta):
 
     if move_dir.dot(target_position - global_transform.origin) <= 0:
       is_moving = false
-      _snap_to_grid() # Snap to grid after completing move
-    elif velocity == Vector3.ZERO:
-      #print("Hit something")
-      position = start_position # Return to grid-aligned start position
-      is_moving = false
-      # No need to snap - start_position is already grid-aligned
+      _snap_to_grid()
     # else still moving
   else:
     # If we’re not moving, ensure velocity is zero
@@ -194,6 +211,56 @@ func _snap_to_grid() -> void:
   snapped_pos.z = round(snapped_pos.z / step_size) * step_size
   global_transform.origin = snapped_pos
 
+func _do_bump_bounce() -> void:
+  # Bounce animation: slight forward movement, then hop backward with camera shake
+  is_animating = true
+
+  var fwd = - transform.basis.z
+  fwd.y = 0
+  fwd = fwd.normalized()
+
+  var start_pos = global_transform.origin
+  var forward_pos = start_pos + fwd * (step_size * 0.15) # Move 15% forward
+
+  # Animate player body
+  var body_tween = create_tween()
+  body_tween.tween_property(self , "global_position", forward_pos, 0.08)
+  body_tween.tween_property(self , "global_position", start_pos, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+  # Re-enable input after animation completes
+  body_tween.finished.connect(func(): is_animating = false)
+
+  # Camera shake
+  var original_cam_pos = cam.position
+  var shake_tween = create_tween()
+  shake_tween.tween_property(cam, "position", original_cam_pos + Vector3(randf_range(-0.05, 0.05), randf_range(-0.05, 0.05), randf_range(-0.05, 0.05)), 0.05)
+  shake_tween.tween_property(cam, "position", original_cam_pos + Vector3(randf_range(-0.03, 0.03), randf_range(-0.03, 0.03), 0), 0.05)
+  shake_tween.tween_property(cam, "position", original_cam_pos, 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _do_brake_animation() -> void:
+  # Brake animation: camera lurches forward and down like sudden deceleration, then snaps back
+  is_animating = true
+
+  var original_cam_pos = cam.position
+  var original_cam_rot = cam.rotation_degrees
+
+  # Lurch forward and tilt down
+  var lurch_pos = original_cam_pos + Vector3(0, -0.1, -0.2) # Down and forward
+  var lurch_rot = original_cam_rot + Vector3(8, 0, 0) # Tilt down
+
+  var brake_tween = create_tween()
+  brake_tween.set_parallel(true)
+  # Quick lurch
+  brake_tween.tween_property(cam, "position", lurch_pos, 0.1).set_ease(Tween.EASE_OUT)
+  brake_tween.tween_property(cam, "rotation_degrees", lurch_rot, 0.1).set_ease(Tween.EASE_OUT)
+  # Snap back
+  brake_tween.chain().set_parallel(true)
+  brake_tween.tween_property(cam, "position", original_cam_pos, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+  brake_tween.tween_property(cam, "rotation_degrees", original_cam_rot, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+  # Re-enable input after animation completes
+  brake_tween.finished.connect(func(): is_animating = false)
+
 func _try_bump_interact() -> Node:
   # Cast one cell ahead on a horizontal line from player center
   var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
@@ -209,11 +276,34 @@ func _try_bump_interact() -> Node:
 
   if hit.size() > 0 and hit.has("collider") and hit.collider:
     var col: Node = hit.collider
-    if col.is_in_group(symbol_group):
-      return col
+    # The collider is typically ColliderBody (StaticBody3D), parent is the Symbol
+    var parent = col.get_parent()
+    if parent and parent is Symbol:
+      return parent
   return null
 
+func _is_path_blocked(direction: Vector3) -> bool:
+  # Check if moving in this direction would hit something
+  var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
+  var fwd := direction
+  fwd.y = 0
+  fwd = fwd.normalized()
+  var to := from + fwd * (step_size * 0.95)
+
+  var space := get_world_3d().direct_space_state
+  var query := PhysicsRayQueryParameters3D.create(from, to)
+  query.exclude = [ self ]
+  var hit := space.intersect_ray(query)
+
+  return hit.size() > 0
+
 func _on_bumped_symbol(symbol: Node) -> void:
+  # Log interaction
+  print_debug("Bumped symbol: ", symbol.name)
+
+  # Bounce off the symbol
+  _do_bump_bounce()
+
   # Play sfx
   if _sfx and _sfx.stream:
     _sfx.play()
