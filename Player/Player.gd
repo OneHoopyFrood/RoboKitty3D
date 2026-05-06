@@ -1,9 +1,18 @@
 extends CharacterBody3D
 
-@export var step_size: float = 1.0 # how big is one grid cell? (basically 1.0)
-@export var step_duration: float = 0.1 # how long to spend moving one cell
+## Distance moved per step input; also defines grid cell size
+@export var step_size: float = 1.0
+## Duration of a single step movement (lower = snappier but less forgiving)
+@export var step_duration: float = 0.1
+## Duration of 90-degree turn (lower = snappier but may cause motion sickness)
 @export var turn_duration: float = 0.25
+## Mouse movement to camera rotation ratio (higher = more responsive, less precise)
 @export var mouse_sensitivity: float = 0.15
+## Camera catch-up speed to target angles (higher = snappier but less smooth)
+@export var look_smoothing: float = 10.0
+## Ease-out curve steepness (higher = more pronounced; tweak carefully)
+@export var look_ease_power: float = 1.5
+## Camera height above player origin (adjust based on model height)
 @export var eye_height: float = 1
 
 @export var dialog_ui_path: NodePath
@@ -13,7 +22,9 @@ extends CharacterBody3D
 var cam: Camera3D
 var shape: CollisionShape3D
 var mouse_delta: Vector2 = Vector2.ZERO
-var yaw: float = 0.0
+var target_yaw: float = 0.0 # Where the mouse wants to look
+var target_pitch: float = 0.0
+var yaw: float = 0.0 # Current camera angle (smoothed)
 var pitch: float = 0.0
 
 # Movement
@@ -119,15 +130,20 @@ func _process(delta):
         if _block_cooldown <= 0.0 and not _is_path_blocked(transform.basis.z):
           start_move(transform.basis.z)
 
-  # Mouse look
+  # Mouse look - update target angles based on mouse input
   if Input.is_action_pressed("look"):
-    yaw -= mouse_delta.x * mouse_sensitivity
-    yaw = clamp(yaw, -89.0, 89.0)
-    pitch -= mouse_delta.y * mouse_sensitivity
-    pitch = clamp(pitch, -89.0, 89.0)
-
-    cam.rotation_degrees = Vector3(pitch, yaw, 0)
+    target_yaw -= mouse_delta.x * mouse_sensitivity
+    target_yaw = clamp(target_yaw, -89.0, 89.0)
+    target_pitch -= mouse_delta.y * mouse_sensitivity
+    target_pitch = clamp(target_pitch, -89.0, 89.0)
     mouse_delta = Vector2.ZERO
+
+  # Exponential decay for smooth ease-out (starts fast, slows as it approaches, no oscillation)
+  var smoothing_factor = 1.0 - exp(-look_smoothing * delta)
+  var eased_factor = pow(smoothing_factor, look_ease_power) # Apply power curve for steeper easing
+  yaw = lerp(yaw, target_yaw, eased_factor)
+  pitch = lerp(pitch, target_pitch, eased_factor)
+  cam.rotation_degrees = Vector3(pitch, yaw, 0)
 
   if Input.is_action_just_released("look"):
     recenter_look()
@@ -196,6 +212,8 @@ func turn_right():
   _face_degree(new_yaw)
 
 func recenter_look():
+  target_yaw = 0
+  target_pitch = 0
   yaw = 0
   pitch = 0
   _tween = create_tween().bind_node(cam)
