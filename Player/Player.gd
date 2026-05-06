@@ -77,17 +77,34 @@ func _input(event):
     mouse_delta = event.relative
 
 func _process(delta):
-  # Mouse-lock toggling
-  if (!_is_mouse_captive()):
-    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-      _toggle_mouse_capture()
-    else:
-      return
-
-  if Input.is_action_pressed("ui_cancel"):
-    _toggle_mouse_capture()
+  # Early exit if mouse capture not active
+  if not _handle_mouse_capture():
     return
 
+  # Handle movement and interaction input
+  _handle_movement_input(delta)
+
+  # Handle mouse look
+  _handle_look_input(delta)
+
+func _handle_mouse_capture() -> bool:
+  """Handle mouse capture toggling. Returns false if processing should stop."""
+  if not Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+      Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+      print_debug("Mouse captured")
+      # Fall through to `return true`, capturing the mouse
+    else:
+      return false # Don't process input if mouse not captured
+  elif Input.is_action_pressed("ui_cancel"):
+    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+    print_debug("Mouse released")
+    return false # Stop processing input on this frame to avoid sudden jumps when toggling capture
+  return true
+
+func _handle_movement_input(delta: float) -> void:
+  """Process all movement and interaction input (forward, back, turn)."""
+  # Decrement block cooldown
   if _block_cooldown > 0.0:
     _block_cooldown -= delta
 
@@ -130,7 +147,9 @@ func _process(delta):
         if _block_cooldown <= 0.0 and not _is_path_blocked(transform.basis.z):
           start_move(transform.basis.z)
 
-  # Mouse look - update target angles based on mouse input
+func _handle_look_input(delta: float) -> void:
+  """Process mouse look input and apply smoothed camera rotation."""
+  # Update target angles based on mouse input
   if Input.is_action_pressed("look"):
     target_yaw -= mouse_delta.x * mouse_sensitivity
     target_yaw = clamp(target_yaw, -89.0, 89.0)
@@ -235,16 +254,6 @@ func _face_degree(turn_degrees: float):
   _tween.set_trans(Tween.TRANS_ELASTIC)
   _tween.tween_property(self , "rotation_degrees", Vector3(0, turn_degrees, 0), turn_duration)
 
-func _toggle_mouse_capture(release := false):
-  if _is_mouse_captive() or release:
-    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-    print_debug("Mouse released")
-  else:
-    Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-    print_debug("Mouse captured")
-
-func _is_mouse_captive() -> bool:
-  return Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
 func _snap_to_grid() -> void:
   # Snap position to nearest grid cell center
