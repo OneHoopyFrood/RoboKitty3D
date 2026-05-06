@@ -8,6 +8,8 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 #var node_scene = preload('res://World/Cube/Cube.tscn')
 var node_scene = preload('res://World/Symbol/Symbol.tscn')
 
+var _music_player: AudioStreamPlayer = null
+
 func _ready():
   rng.randomize()
 
@@ -16,9 +18,18 @@ func _ready():
   for node in nodes:
     add_child(node)
 
+  # Music looping
+  _music_player = $BackgroundMusic
+  if _music_player:
+    _music_player.finished.connect(_on_music_finished)
+
+func _on_music_finished():
+  if _music_player:
+    _music_player.play()
+
 func _generate_nodes() -> Array[BaseInteractionNode]:
   var nodes: Array[BaseInteractionNode];
-  var used_positions: Array[Vector3i] = [Vector3i(0,0,0)]
+  var used_positions: Array[Vector3i] = [Vector3i(0, 0, 0)]
   for i in range(num_nodes):
     var node: BaseInteractionNode = node_scene.instantiate()
 
