@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+signal player_movement(direction: Vector3)
+
 ## Distance moved per step input; also defines grid cell size
 @export var step_size: float = 1.0
 ## Duration of a single step movement (lower = snappier but less forgiving)
@@ -33,10 +35,7 @@ var is_animating: bool = false # Blocks input during animations
 var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
-var _block_cooldown: float = 0.0
-var _blocked_move_dir: Vector3 = Vector3.ZERO # direction that got blocked
-var _was_moving: bool = false # true after start_move(); used to distinguish crash from standing hold
-const BLOCK_COOLDOWN_DURATION: float = 0.8
+var is_walking: bool = false # True when in continuous walk sequence; false after brake, turn, or key release
 
 var _tween: Tween
 var _dialog_ui: Node = null
@@ -77,19 +76,36 @@ func _input(event):
     mouse_delta = event.relative
 
 func _process(delta):
-  # Mouse-lock toggling
-  if (!_is_mouse_captive()):
-    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-      _toggle_mouse_capture()
-    else:
-      return
-
-  if Input.is_action_pressed("ui_cancel"):
-    _toggle_mouse_capture()
+  # Early exit if mouse capture not active
+  if not _handle_mouse_capture():
     return
 
-  if _block_cooldown > 0.0:
-    _block_cooldown -= delta
+  # Handle movement and interaction input
+  _handle_movement_input(delta)
+
+  # Handle mouse look
+  _handle_look_input(delta)
+
+## Handle mouse capture toggling. Returns false if processing should stop.
+func _handle_mouse_capture() -> bool:
+  if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+      Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+      print_debug("Mouse captured")
+      # Fall through to `return true`, capturing the mouse
+    else:
+      return false # Don't process input if mouse not captured
+  elif Input.is_action_pressed("ui_cancel"):
+    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+    print_debug("Mouse released")
+    return false # Stop processing input on this frame to avoid sudden jumps when toggling capture
+  return true
+
+## Process all movement and interaction input (forward, back, turn).
+func _handle_movement_input(delta: float) -> void:
+  # Reset walk sequence when player releases movement keys
+  if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
+    is_walking = false
 
   if not is_moving and not is_animating:
     if Input.is_action_just_pressed("move_left"):
@@ -111,26 +127,34 @@ func _process(delta):
         else:
           start_move(-transform.basis.z)
       elif Input.is_action_pressed("move_forward"):
-        # Held walk: brake animation when arriving at a symbol mid-walk; stop silently at walls
-        if _block_cooldown <= 0.0:
-          var _held_symbol = _try_bump_interact()
-          if _held_symbol and _was_moving:
-            _do_brake_animation()
-            _was_moving = false
-            _block_cooldown = BLOCK_COOLDOWN_DURATION
-          elif not _is_path_blocked(-transform.basis.z):
-            start_move(-transform.basis.z)
+        # Held walk: brake when hitting any obstacle during continuous walk
+        if is_walking and _is_path_blocked(-transform.basis.z):
+          # Hit obstacle during continuous walk - brake and end sequence
+          _do_brake_animation()
+          is_walking = false
+        elif not _is_path_blocked(-transform.basis.z):
+          start_move(-transform.basis.z)
+          is_walking = true
       elif Input.is_action_just_pressed("move_back"):
+        # Backward tap (always allowed)
         if _is_path_blocked(transform.basis.z):
           if _error_sfx and _error_sfx.stream:
             _error_sfx.play()
         else:
           start_move(transform.basis.z)
       elif Input.is_action_pressed("move_back"):
-        if _block_cooldown <= 0.0 and not _is_path_blocked(transform.basis.z):
+        # Held walk backward: brake when hitting any obstacle
+        if is_walking and _is_path_blocked(transform.basis.z):
+          # Hit obstacle during continuous walk - brake and end sequence
+          _do_brake_animation()
+          is_walking = false
+        elif not _is_path_blocked(transform.basis.z):
           start_move(transform.basis.z)
+          is_walking = true
 
-  # Mouse look - update target angles based on mouse input
+## Process mouse look input and apply smoothed camera rotation.
+func _handle_look_input(delta: float) -> void:
+  # Update target angles based on mouse input
   if Input.is_action_pressed("look"):
     target_yaw -= mouse_delta.x * mouse_sensitivity
     target_yaw = clamp(target_yaw, -89.0, 89.0)
@@ -161,12 +185,12 @@ func _physics_process(delta):
       # Reached target - successful move
       is_moving = false
       _snap_to_grid()
+      # Note: is_walking persists here to allow continuous walk sequence to continue
     elif global_transform.origin.distance_to(pos_before) < 0.001:
-      # Made no progress - blocked mid-move, snap back and unlock
+      # Made no progress - blocked mid-move, snap back and end walk sequence
       global_transform.origin = start_position
       is_moving = false
-      _block_cooldown = BLOCK_COOLDOWN_DURATION
-      _blocked_move_dir = move_dir
+      is_walking = false
       # Error SFX on wall bump
       if _error_sfx and _error_sfx.stream:
         _error_sfx.play()
@@ -194,22 +218,27 @@ func start_move(direction: Vector3) -> void:
   is_moving = true
   # Store current grid-aligned position for collision bounce-back
   start_position = global_transform.origin
-  _was_moving = true
-    # Calculate exactly one cell ahead
+  # Calculate exactly one cell ahead
   target_position = global_transform.origin + move_dir * step_size
 
 func turn_left():
   if is_moving:
     return
-  _block_cooldown = 0.0
+  is_walking = false # Turning ends walk sequence
   var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
   _face_degree(new_yaw)
+  var dir = _yaw_to_direction(new_yaw)
+  print_debug("Player turn_left: emitting player_movement with direction: ", dir)
+  player_movement.emit(dir)
 
 func turn_right():
   if is_moving: return
-  _block_cooldown = 0.0
+  is_walking = false # Turning ends walk sequence
   var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
   _face_degree(new_yaw)
+  var dir = _yaw_to_direction(new_yaw)
+  print_debug("Player turn_right: emitting player_movement with direction: ", dir)
+  player_movement.emit(dir)
 
 func recenter_look():
   target_yaw = 0
@@ -230,21 +259,15 @@ func _cardinalize_deg(turn_deg: float) -> float:
     cardinalized += 360
   return cardinalized
 
+func _yaw_to_direction(yaw_deg: float) -> Vector3:
+  var r = deg_to_rad(yaw_deg)
+  return Vector3(-sin(r), 0, -cos(r))
+
 func _face_degree(turn_degrees: float):
   _tween = create_tween().bind_node(self )
   _tween.set_trans(Tween.TRANS_ELASTIC)
   _tween.tween_property(self , "rotation_degrees", Vector3(0, turn_degrees, 0), turn_duration)
 
-func _toggle_mouse_capture(release := false):
-  if _is_mouse_captive() or release:
-    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-    print_debug("Mouse released")
-  else:
-    Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-    print_debug("Mouse captured")
-
-func _is_mouse_captive() -> bool:
-  return Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
 func _snap_to_grid() -> void:
   # Snap position to nearest grid cell center
@@ -331,7 +354,19 @@ func _try_bump_interact() -> Node:
   return null
 
 func _is_path_blocked(direction: Vector3) -> bool:
-  # Check if moving in this direction would hit something
+  # Check if moving in this direction would hit something or go out of bounds
+  var target_pos := global_transform.origin + direction.normalized() * step_size
+
+  # World boundaries - get board_size from World node parent
+  var world = get_parent()
+  if world:
+    var board_size = world.get("board_size")
+    if board_size is int or board_size is float:
+      var boundary = int(board_size / 2)
+      if abs(target_pos.x) >= boundary or abs(target_pos.z) >= boundary:
+        return true
+
+  # Raycast for collisions with objects
   var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
   var fwd := direction
   fwd.y = 0

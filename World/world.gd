@@ -8,6 +8,8 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 #var node_scene = preload('res://World/Cube/Cube.tscn')
 var node_scene = preload('res://World/Symbol/Symbol.tscn')
 
+var _music_player: AudioStreamPlayer = null
+
 func _ready():
   rng.randomize()
 
@@ -16,9 +18,30 @@ func _ready():
   for node in nodes:
     add_child(node)
 
+  # Connect player rotation signal to all interaction nodes
+  var player = get_node_or_null("Player")
+  print_debug("World: Looking for player at Player: ", player)
+  if player and player.has_signal("player_movement"):
+    print_debug("World: Found player with player_movement signal, connecting ", nodes.size(), " nodes")
+    for node in nodes:
+      if node.has_method("face_player") and not player.player_movement.is_connected(node.face_player):
+        player.player_movement.connect(node.face_player)
+        print_debug("World: Connected ", node.name, " to player_movement signal")
+  else:
+    print_debug("World: Failed to find player or signal!")
+
+  # Music looping
+  _music_player = get_node_or_null("BackgroundMusic") as AudioStreamPlayer
+  if _music_player:
+    _music_player.finished.connect(_on_music_finished)
+
+func _on_music_finished():
+  if _music_player:
+    _music_player.play()
+
 func _generate_nodes() -> Array[BaseInteractionNode]:
   var nodes: Array[BaseInteractionNode];
-  var used_positions: Array[Vector3i] = [Vector3i(0,0,0)]
+  var used_positions: Array[Vector3i] = [Vector3i(0, 0, 0)]
   for i in range(num_nodes):
     var node: BaseInteractionNode = node_scene.instantiate()
 

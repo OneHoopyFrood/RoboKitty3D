@@ -31,6 +31,7 @@ var color: Color = DEFAULT_COLOR
 # Private
 var _time: float = 0.0
 var _mesh: MeshInstance3D
+var _rotation_tween: Tween
 
 ########################
 ## Lifecycle
@@ -73,3 +74,22 @@ func randomize_color(rng: RandomNumberGenerator):
   color = Color.from_hsv(rng.randf(), 0.8, 1.0) # Vibrant color
   if (_mesh != null):
     set_color(color)
+
+func face_player(direction: Vector3) -> void:
+  print_debug("face_player called on ", name, " with direction: ", direction)
+  # Flip direction so symbol faces toward player (opposite of where player looks)
+  var opposite_dir = - direction
+  var target_rotation_y = rad_to_deg(atan2(opposite_dir.x, opposite_dir.z))
+  print_debug("  -> target_rotation_y: ", target_rotation_y)
+
+  if _rotation_tween:
+    _rotation_tween.kill()
+
+  var current_rotation_y = rotation_degrees.y
+  var delta_rotation_y = wrapf(target_rotation_y - current_rotation_y, -180.0, 180.0)
+  var shortest_target_rotation_y = current_rotation_y + delta_rotation_y
+
+  _rotation_tween = create_tween()
+  _rotation_tween.set_trans(Tween.TRANS_BACK)
+  _rotation_tween.set_ease(Tween.EASE_OUT)
+  _rotation_tween.tween_property(self, "rotation_degrees:y", shortest_target_rotation_y, 1.2)
