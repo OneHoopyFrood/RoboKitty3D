@@ -382,7 +382,7 @@ func _is_path_blocked(direction: Vector3) -> bool:
 
 func _on_bumped_symbol(symbol: Node) -> void:
   # Log interaction
-  print_debug("Bumped symbol: ", symbol.name)
+  print_debug("Bumped symbol: ", symbol.symbol if "symbol" in symbol else symbol.name)
 
   # Bounce off the symbol
   _do_bump_bounce()
