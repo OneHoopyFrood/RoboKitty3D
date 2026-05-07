@@ -88,7 +88,7 @@ func _process(delta):
 
 ## Handle mouse capture toggling. Returns false if processing should stop.
 func _handle_mouse_capture() -> bool:
-  if not Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+  if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
     if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
       Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
       print_debug("Mouse captured")
@@ -101,8 +101,8 @@ func _handle_mouse_capture() -> bool:
     return false # Stop processing input on this frame to avoid sudden jumps when toggling capture
   return true
 
+## Process all movement and interaction input (forward, back, turn).
 func _handle_movement_input(delta: float) -> void:
-  """Process all movement and interaction input (forward, back, turn)."""
   # Reset walk sequence when player releases movement keys
   if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
     is_walking = false
@@ -152,8 +152,8 @@ func _handle_movement_input(delta: float) -> void:
           start_move(transform.basis.z)
           is_walking = true
 
+## Process mouse look input and apply smoothed camera rotation.
 func _handle_look_input(delta: float) -> void:
-  """Process mouse look input and apply smoothed camera rotation."""
   # Update target angles based on mouse input
   if Input.is_action_pressed("look"):
     target_yaw -= mouse_delta.x * mouse_sensitivity

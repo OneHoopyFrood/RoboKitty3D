@@ -24,7 +24,7 @@ func _ready():
   if player and player.has_signal("player_movement"):
     print_debug("World: Found player with player_movement signal, connecting ", nodes.size(), " nodes")
     for node in nodes:
-      if node.has_method("face_player"):
+      if node.has_method("face_player") and not player.player_movement.is_connected(node.face_player):
         player.player_movement.connect(node.face_player)
         print_debug("World: Connected ", node.name, " to player_movement signal")
   else:
