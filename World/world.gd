@@ -45,7 +45,7 @@ func _on_music_finished():
 
 func _generate_nodes() -> Array[BaseInteractionNode]:
   var nodes: Array[BaseInteractionNode];
-  var used_positions: Array[Vector3i] = [Vector3i(0, 0, 0)]
+  var used_positions: Array[Vector3i] = [Vector3i(0, 1, 0)] # Start with the player's position as used to avoid spawning on top of them
   for i in range(num_nodes):
     var node: BaseInteractionNode = node_scene.instantiate()
 
