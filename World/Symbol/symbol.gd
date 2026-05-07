@@ -5,6 +5,7 @@ extends BaseInteractionNode
 ## Active values
 ########################
 var symbol: String
+var blurb: String = ""
 
 # Private
 var _textMesh: TextMesh
@@ -24,6 +25,10 @@ func _ready():
 ########################
 ## Methods
 ########################
+## Returns the blurb text for this symbol
+func get_blurb() -> String:
+  return blurb
+
 #Returns a random character from ASCII 33 to 126
 func random_symbol() -> String:
   # Pulls from the same set of characters as the terminal version

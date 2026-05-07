@@ -9,9 +9,13 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var node_scene = preload('res://World/Symbol/Symbol.tscn')
 
 var _music_player: AudioStreamPlayer = null
+var _blurbs: Array[String] = []
 
 func _ready():
   rng.randomize()
+
+  # Load and shuffle blurbs from NKIs.txt
+  _load_blurbs()
 
   # Floaty Bits
   var nodes = _generate_nodes()
@@ -48,6 +52,10 @@ func _generate_nodes() -> Array[BaseInteractionNode]:
     node.randomize_bobbing(rng)
     node.randomize_color(rng)
 
+    # Assign blurb to Symbol nodes
+    if node is Symbol and i < _blurbs.size():
+      node.blurb = _blurbs[i]
+
     var pos: Vector3i = random_pos()
     while used_positions.has(pos): # If an overlap happens, choose another spot until you get a unique value
       pos = random_pos()
@@ -64,3 +72,19 @@ func random_pos() -> Vector3i:
       1,
       rng.randi_range(-spawn_radius, spawn_radius)
     )
+
+func _load_blurbs() -> void:
+  var file = FileAccess.open("res://Assets/NKIs.txt", FileAccess.READ)
+  if file:
+    while not file.eof_reached():
+      var line = file.get_line().strip_edges()
+      if line.length() > 0:
+        _blurbs.append(line)
+    file.close()
+
+    # Shuffle blurbs so each playthrough is different
+    _blurbs.shuffle()
+
+    print_debug("World: Loaded ", _blurbs.size(), " blurbs from NKIs.txt")
+  else:
+    print_debug("World: Failed to load NKIs.txt")

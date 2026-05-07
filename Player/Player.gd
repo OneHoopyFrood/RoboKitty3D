@@ -15,7 +15,7 @@ signal player_movement(direction: Vector3)
 ## Ease-out curve steepness (higher = more pronounced; tweak carefully)
 @export var look_ease_power: float = 1.5
 ## Camera height above player origin (adjust based on model height)
-@export var eye_height: float = 1
+@export var eye_height: float = 0.8
 
 @export var dialog_ui_path: NodePath
 @export var select_sfx_stream: AudioStream
@@ -103,6 +103,10 @@ func _handle_mouse_capture() -> bool:
 
 ## Process all movement and interaction input (forward, back, turn).
 func _handle_movement_input(delta: float) -> void:
+  # Block input if dialog is open
+  if _dialog_ui and _dialog_ui.is_open:
+    return
+
   # Reset walk sequence when player releases movement keys
   if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
     is_walking = false
