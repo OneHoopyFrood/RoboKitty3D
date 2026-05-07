@@ -85,7 +85,11 @@ func face_player(direction: Vector3) -> void:
   if _rotation_tween:
     _rotation_tween.kill()
 
+  var current_rotation_y = rotation_degrees.y
+  var delta_rotation_y = wrapf(target_rotation_y - current_rotation_y, -180.0, 180.0)
+  var shortest_target_rotation_y = current_rotation_y + delta_rotation_y
+
   _rotation_tween = create_tween()
   _rotation_tween.set_trans(Tween.TRANS_BACK)
   _rotation_tween.set_ease(Tween.EASE_OUT)
-  _rotation_tween.tween_property(self , "rotation_degrees", Vector3(0, target_rotation_y, 0), 1.2)
+  _rotation_tween.tween_property(self, "rotation_degrees:y", shortest_target_rotation_y, 1.2)

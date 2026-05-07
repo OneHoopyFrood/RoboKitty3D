@@ -31,7 +31,7 @@ func _ready():
     print_debug("World: Failed to find player or signal!")
 
   # Music looping
-  _music_player = $BackgroundMusic
+  _music_player = get_node_or_null("BackgroundMusic") as AudioStreamPlayer
   if _music_player:
     _music_player.finished.connect(_on_music_finished)
 

@@ -86,8 +86,8 @@ func _process(delta):
   # Handle mouse look
   _handle_look_input(delta)
 
+## Handle mouse capture toggling. Returns false if processing should stop.
 func _handle_mouse_capture() -> bool:
-  """Handle mouse capture toggling. Returns false if processing should stop."""
   if not Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
     if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
       Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -359,10 +359,12 @@ func _is_path_blocked(direction: Vector3) -> bool:
 
   # World boundaries - get board_size from World node parent
   var world = get_parent()
-  if world and "board_size" in world:
-    var boundary = int(world.board_size / 2)
-    if abs(target_pos.x) >= boundary or abs(target_pos.z) >= boundary:
-      return true
+  if world:
+    var board_size = world.get("board_size")
+    if board_size is int or board_size is float:
+      var boundary = int(board_size / 2)
+      if abs(target_pos.x) >= boundary or abs(target_pos.z) >= boundary:
+        return true
 
   # Raycast for collisions with objects
   var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
