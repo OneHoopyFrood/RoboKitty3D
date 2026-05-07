@@ -2,11 +2,12 @@
 
 ### Gameplay
 
-- [ ] Dialogue
-  - [ ] Generate blurbs to get on inspect
-  - [ ] Show blurb on bumping a symbol
-  - [ ] Bump animation + sound
-  - [ ] 
+- [x] Dialogue
+  - [x] Generate blurbs to get on inspect
+  - [x] Show blurb on bumping a symbol
+  - [x] Bump animation + sound
+  - [ ] Typing animation
+  - [ ] "Chatter" noise for speech (based on the text itself, kinda like "animalese" from Animal Crossing (see: https://github.com/Acedio/animalese.js)) 
 - [ ] Add kitten
   - [ ] Win condition (found kitten)
   - [ ] Win sequence (Ideas: fireworks, pop-up ascii animation of robot finding kitten and a heart)
