@@ -41,14 +41,16 @@ No compilation step is needed — GDScript is interpreted by the engine.
 
 | Action | Key |
 |---|---|
-| Move forward / back / left / right | `W` `S` `A` `D` |
-| Turn (rotate player) | `A` / `D` (tap to turn 90°) |
-| Look around (free camera) | Hold `Ctrl` + move mouse |
+| Move forward / back | `W` / `S` |
+| Turn left / right (90°) | `A` / `D` |
+| Look around freely | Hold `Ctrl` + move mouse |
 | Run | Hold `Shift` while moving |
 | First-person view | `F1` |
 | Interact / inspect | Walk into a symbol |
 
-> **Tip:** Walking _into_ a symbol triggers its blurb. Walking while holding a direction into a symbol brakes smoothly instead.
+> **Note:** `A` and `D` rotate the player in 90° increments (like the original game), rather than strafing. Hold `Ctrl` to look around without changing your facing direction.
+
+> **Tip:** Tapping into a symbol triggers its blurb and a bump animation. Holding a direction while walking into a symbol brakes smoothly instead.
 
 ---
 
