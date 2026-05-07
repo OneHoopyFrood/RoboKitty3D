@@ -18,6 +18,18 @@ func _ready():
   for node in nodes:
     add_child(node)
 
+  # Connect player rotation signal to all interaction nodes
+  var player = get_node_or_null("Player")
+  print_debug("World: Looking for player at Player: ", player)
+  if player and player.has_signal("player_movement"):
+    print_debug("World: Found player with player_movement signal, connecting ", nodes.size(), " nodes")
+    for node in nodes:
+      if node.has_method("face_player"):
+        player.player_movement.connect(node.face_player)
+        print_debug("World: Connected ", node.name, " to player_movement signal")
+  else:
+    print_debug("World: Failed to find player or signal!")
+
   # Music looping
   _music_player = $BackgroundMusic
   if _music_player:

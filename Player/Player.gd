@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+signal player_movement(direction: Vector3)
+
 ## Distance moved per step input; also defines grid cell size
 @export var step_size: float = 1.0
 ## Duration of a single step movement (lower = snappier but less forgiving)
@@ -225,12 +227,18 @@ func turn_left():
   is_walking = false # Turning ends walk sequence
   var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
   _face_degree(new_yaw)
+  var dir = _yaw_to_direction(new_yaw)
+  print_debug("Player turn_left: emitting player_movement with direction: ", dir)
+  player_movement.emit(dir)
 
 func turn_right():
   if is_moving: return
   is_walking = false # Turning ends walk sequence
   var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
   _face_degree(new_yaw)
+  var dir = _yaw_to_direction(new_yaw)
+  print_debug("Player turn_right: emitting player_movement with direction: ", dir)
+  player_movement.emit(dir)
 
 func recenter_look():
   target_yaw = 0
@@ -250,6 +258,10 @@ func _cardinalize_deg(turn_deg: float) -> float:
   while cardinalized <= -180:
     cardinalized += 360
   return cardinalized
+
+func _yaw_to_direction(yaw_deg: float) -> Vector3:
+  var r = deg_to_rad(yaw_deg)
+  return Vector3(-sin(r), 0, -cos(r))
 
 func _face_degree(turn_degrees: float):
   _tween = create_tween().bind_node(self )
