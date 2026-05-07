@@ -33,10 +33,7 @@ var is_animating: bool = false # Blocks input during animations
 var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
-var _block_cooldown: float = 0.0
-var _blocked_move_dir: Vector3 = Vector3.ZERO # direction that got blocked
-var _was_moving: bool = false # true after start_move(); used to distinguish crash from standing hold
-const BLOCK_COOLDOWN_DURATION: float = 0.8
+var is_walking: bool = false # True when in continuous walk sequence; false after brake, turn, or key release
 
 var _tween: Tween
 var _dialog_ui: Node = null
@@ -104,9 +101,9 @@ func _handle_mouse_capture() -> bool:
 
 func _handle_movement_input(delta: float) -> void:
   """Process all movement and interaction input (forward, back, turn)."""
-  # Decrement block cooldown
-  if _block_cooldown > 0.0:
-    _block_cooldown -= delta
+  # Reset walk sequence when player releases movement keys
+  if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
+    is_walking = false
 
   if not is_moving and not is_animating:
     if Input.is_action_just_pressed("move_left"):
@@ -128,24 +125,30 @@ func _handle_movement_input(delta: float) -> void:
         else:
           start_move(-transform.basis.z)
       elif Input.is_action_pressed("move_forward"):
-        # Held walk: brake animation when arriving at a symbol mid-walk; stop silently at walls
-        if _block_cooldown <= 0.0:
-          var _held_symbol = _try_bump_interact()
-          if _held_symbol and _was_moving:
-            _do_brake_animation()
-            _was_moving = false
-            _block_cooldown = BLOCK_COOLDOWN_DURATION
-          elif not _is_path_blocked(-transform.basis.z):
-            start_move(-transform.basis.z)
+        # Held walk: brake when hitting any obstacle during continuous walk
+        if is_walking and _is_path_blocked(-transform.basis.z):
+          # Hit obstacle during continuous walk - brake and end sequence
+          _do_brake_animation()
+          is_walking = false
+        elif not _is_path_blocked(-transform.basis.z):
+          start_move(-transform.basis.z)
+          is_walking = true
       elif Input.is_action_just_pressed("move_back"):
+        # Backward tap (always allowed)
         if _is_path_blocked(transform.basis.z):
           if _error_sfx and _error_sfx.stream:
             _error_sfx.play()
         else:
           start_move(transform.basis.z)
       elif Input.is_action_pressed("move_back"):
-        if _block_cooldown <= 0.0 and not _is_path_blocked(transform.basis.z):
+        # Held walk backward: brake when hitting any obstacle
+        if is_walking and _is_path_blocked(transform.basis.z):
+          # Hit obstacle during continuous walk - brake and end sequence
+          _do_brake_animation()
+          is_walking = false
+        elif not _is_path_blocked(transform.basis.z):
           start_move(transform.basis.z)
+          is_walking = true
 
 func _handle_look_input(delta: float) -> void:
   """Process mouse look input and apply smoothed camera rotation."""
@@ -180,12 +183,12 @@ func _physics_process(delta):
       # Reached target - successful move
       is_moving = false
       _snap_to_grid()
+      # Note: is_walking persists here to allow continuous walk sequence to continue
     elif global_transform.origin.distance_to(pos_before) < 0.001:
-      # Made no progress - blocked mid-move, snap back and unlock
+      # Made no progress - blocked mid-move, snap back and end walk sequence
       global_transform.origin = start_position
       is_moving = false
-      _block_cooldown = BLOCK_COOLDOWN_DURATION
-      _blocked_move_dir = move_dir
+      is_walking = false
       # Error SFX on wall bump
       if _error_sfx and _error_sfx.stream:
         _error_sfx.play()
@@ -213,20 +216,19 @@ func start_move(direction: Vector3) -> void:
   is_moving = true
   # Store current grid-aligned position for collision bounce-back
   start_position = global_transform.origin
-  _was_moving = true
-    # Calculate exactly one cell ahead
+  # Calculate exactly one cell ahead
   target_position = global_transform.origin + move_dir * step_size
 
 func turn_left():
   if is_moving:
     return
-  _block_cooldown = 0.0
+  is_walking = false # Turning ends walk sequence
   var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
   _face_degree(new_yaw)
 
 func turn_right():
   if is_moving: return
-  _block_cooldown = 0.0
+  is_walking = false # Turning ends walk sequence
   var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
   _face_degree(new_yaw)
 
@@ -340,7 +342,17 @@ func _try_bump_interact() -> Node:
   return null
 
 func _is_path_blocked(direction: Vector3) -> bool:
-  # Check if moving in this direction would hit something
+  # Check if moving in this direction would hit something or go out of bounds
+  var target_pos := global_transform.origin + direction.normalized() * step_size
+
+  # World boundaries - get board_size from World node parent
+  var world = get_parent()
+  if world and "board_size" in world:
+    var boundary = int(world.board_size / 2)
+    if abs(target_pos.x) >= boundary or abs(target_pos.z) >= boundary:
+      return true
+
+  # Raycast for collisions with objects
   var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
   var fwd := direction
   fwd.y = 0
