@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://b21f20o23r3ct"]
+
+[ext_resource type="Script" path="res://Root/Root.gd" id="1_ja5m8"]
+[ext_resource type="PackedScene" uid="uid://cpjw6a9bfhfb5" path="res://Root/Menu/Menu.tscn" id="2_0lfnq"]
+[ext_resource type="PackedScene" uid="uid://dncdv0s93fv21" path="res://Root/World/World.tscn" id="3_o6r8d"]
+
+[node name="Root" type="Node3D"]
+script = ExtResource("1_ja5m8")
+
+[node name="Menu" parent="." instance=ExtResource("2_0lfnq")]
+
+[node name="World" parent="." instance=ExtResource("3_o6r8d")]
+visible = false

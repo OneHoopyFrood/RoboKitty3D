@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://ck1us1on6vyvw"]
 
-[ext_resource type="Script" uid="uid://qihcooc24anp" path="res://World/world.gd" id="1_y6flb"]
-[ext_resource type="PackedScene" uid="uid://dml8klxtt80hf" path="res://Player/Player.tscn" id="2_g376h"]
-[ext_resource type="PackedScene" uid="uid://dialogue_ui_scene" path="res://UI/DialogUI.tscn" id="2_dialog"]
+[ext_resource type="Script" uid="uid://qihcooc24anp" path="res://Root/World/world.gd" id="1_y6flb"]
+[ext_resource type="PackedScene" uid="uid://dml8klxtt80hf" path="res://Root/World/Player/Player.tscn" id="2_g376h"]
+[ext_resource type="PackedScene" uid="uid://dialogue_ui_scene" path="res://Root/Dialog/Dialog.tscn" id="2_dialog"]
 [ext_resource type="Texture2D" uid="uid://dsmobpvffbkln" path="res://Assets/texture_01.png" id="3_mlekv"]
 [ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="4_il6x7"]
 [ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg" id="5_04mge"]
@@ -55,9 +55,9 @@ stream_2/stream = ExtResource("6_eue43")
 script = ExtResource("1_y6flb")
 
 [node name="Player" parent="." unique_id=968952245 instance=ExtResource("2_g376h")]
-dialog_ui_path = NodePath("../DialogUI")
+dialog_ui_path = NodePath("../Dialog")
 
-[node name="DialogUI" parent="." instance=ExtResource("2_dialog")]
+[node name="Dialog" parent="." instance=ExtResource("2_dialog")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=709112638]
 environment = SubResource("Environment_js7pq")

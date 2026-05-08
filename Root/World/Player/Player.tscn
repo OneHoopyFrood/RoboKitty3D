@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dml8klxtt80hf"]
 
-[ext_resource type="Script" uid="uid://c0dqsato0i30x" path="res://Player/Player.gd" id="1_3qydi"]
+[ext_resource type="Script" uid="uid://c0dqsato0i30x" path="res://Root/World/Player/Player.gd" id="1_3qydi"]
 [ext_resource type="AudioStream" uid="uid://crcy0ak1blsn5" path="res://Assets/sfx/cubeselect.wav" id="2_tok1r"]
 [ext_resource type="AudioStream" uid="uid://cf2i00qswr1wd" path="res://Assets/sfx/wahmp.wav" id="3_ddoul"]
 

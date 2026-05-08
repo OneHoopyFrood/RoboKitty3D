@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+class_name Dialog
+
 ## Public interface
 var is_open: bool = false
 

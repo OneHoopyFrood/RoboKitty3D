@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://dslsww36yeyjy"]
 
-[ext_resource type="Script" uid="uid://bs8j71elomxox" path="res://World/Symbol/symbol.gd" id="1_a5rj1"]
+[ext_resource type="Script" uid="uid://bs8j71elomxox" path="res://Root/World/Symbol/symbol.gd" id="1_a5rj1"]
 [ext_resource type="FontFile" uid="uid://034x3460fr0j" path="res://Assets/TerminusBold.ttf" id="2_xqmbm"]
 
 [sub_resource type="TextMesh" id="TextMesh_nnv6f"]

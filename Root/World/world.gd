@@ -5,7 +5,7 @@ var board_size: int = 50
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
-var node_scene = preload('res://World/Symbol/Symbol.tscn')
+var node_scene = preload('res://Root/World/Symbol/Symbol.tscn')
 
 var _music_player: AudioStreamPlayer = null
 var _blurbs: Array[String] = []
