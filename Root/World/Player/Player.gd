@@ -47,7 +47,6 @@ const symbol_group = "symbol"
 func _ready():
   cam = $FPV
   shape = $HitBox
-  Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
   # Snap to grid on startup
   _snap_to_grid()
@@ -76,30 +75,11 @@ func _input(event):
     mouse_delta = event.relative
 
 func _process(delta):
-  # Early exit if mouse capture not active
-  if not _handle_mouse_capture():
-    return
-
   # Handle movement and interaction input
   _handle_movement_input(delta)
 
   # Handle mouse look
   _handle_look_input(delta)
-
-## Handle mouse capture toggling. Returns false if processing should stop.
-func _handle_mouse_capture() -> bool:
-  if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-      Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-      print_debug("Mouse captured")
-      # Fall through to `return true`, capturing the mouse
-    else:
-      return false # Don't process input if mouse not captured
-  elif Input.is_action_pressed("ui_cancel"):
-    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-    print_debug("Mouse released")
-    return false # Stop processing input on this frame to avoid sudden jumps when toggling capture
-  return true
 
 ## Process all movement and interaction input (forward, back, turn).
 func _handle_movement_input(delta: float) -> void:

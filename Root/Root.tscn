@@ -21,3 +21,4 @@ grow_vertical = 2
 visible = false
 
 [node name="Dialog" parent="." unique_id=1986789627 instance=ExtResource("4_dialog")]
+visible = false
