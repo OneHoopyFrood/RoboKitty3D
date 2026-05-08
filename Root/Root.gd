@@ -4,6 +4,7 @@ class_name Root
 
 @onready var _menu = $Menu
 @onready var _world = $World
+@onready var _player = $World/Player
 @onready var _dialog = $Dialog
 @onready var _music: AudioStreamPlayer = $BackgroundMusic
 
@@ -26,9 +27,11 @@ func _input(event: InputEvent) -> void:
 
 func _show_menu() -> void:
 	_current_scene = "menu"
+	if _player and _player.has_method("set_controls_enabled"):
+		_player.set_controls_enabled(false)
 	if _world:
-		_world.visible = false
-		_world.process_mode = Node.PROCESS_MODE_DISABLED
+		_world.visible = true
+		_world.process_mode = Node.PROCESS_MODE_INHERIT
 	if _menu:
 		_menu.visible = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -38,6 +41,8 @@ func _show_world() -> void:
 	_current_scene = "world"
 	if _menu:
 		_menu.visible = false
+	if _player and _player.has_method("set_controls_enabled"):
+		_player.set_controls_enabled(true)
 	if _world:
 		_world.visible = true
 		_world.process_mode = Node.PROCESS_MODE_INHERIT

@@ -36,6 +36,7 @@ var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
 var is_walking: bool = false # True when in continuous walk sequence; false after brake, turn, or key release
+var controls_enabled: bool = true
 
 var _tween: Tween
 var _dialog_ui: Node = null
@@ -70,11 +71,18 @@ func _ready():
   if error_sfx_stream:
     _error_sfx.stream = error_sfx_stream
 
+func set_controls_enabled(enabled: bool) -> void:
+  controls_enabled = enabled
+
 func _input(event):
+  if not controls_enabled:
+    return
   if event is InputEventMouseMotion:
     mouse_delta = event.relative
 
 func _process(delta):
+  if not controls_enabled:
+    return
   # Handle movement and interaction input
   _handle_movement_input(delta)
 
