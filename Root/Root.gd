@@ -5,12 +5,18 @@ class_name Root
 @onready var _menu = $Menu
 @onready var _world = $World
 @onready var _dialog = $Dialog
+@onready var _music: AudioStreamPlayer = $BackgroundMusic
 
 var _current_scene: String = "menu" # "menu" or "world"
 
 
 func _ready() -> void:
 	_show_menu()
+	_music.finished.connect(_on_music_finished)
+
+
+func _on_music_finished() -> void:
+	_music.play()
 
 
 func _input(event: InputEvent) -> void:

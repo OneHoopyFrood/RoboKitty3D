@@ -7,7 +7,6 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var node_scene = preload('res://Root/World/Symbol/Symbol.tscn')
 
-var _music_player: AudioStreamPlayer = null
 var _blurbs: Array[String] = []
 
 func _ready():
@@ -32,15 +31,6 @@ func _ready():
         print_debug("World: Connected ", node.name, " to player_movement signal")
   else:
     print_debug("World: Failed to find player or signal!")
-
-  # Music looping
-  _music_player = get_node_or_null("BackgroundMusic") as AudioStreamPlayer
-  if _music_player:
-    _music_player.finished.connect(_on_music_finished)
-
-func _on_music_finished():
-  if _music_player:
-    _music_player.play()
 
 func _generate_nodes() -> Array[Symbol]:
   var nodes: Array[Symbol] = []
