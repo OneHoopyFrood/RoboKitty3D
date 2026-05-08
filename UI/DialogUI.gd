@@ -21,6 +21,10 @@ func _ready():
   set_process_input(false)
 
 func _input(event: InputEvent) -> void:
+  # Let Player handle Escape for mouse capture toggling.
+  if event.is_action_pressed("ui_cancel"):
+    return
+
   # Any key press dismisses the dialog
   if event is InputEventKey and event.pressed:
     close()
