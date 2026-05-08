@@ -5,7 +5,6 @@ var board_size: int = 50
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
-#var node_scene = preload('res://World/Cube/Cube.tscn')
 var node_scene = preload('res://World/Symbol/Symbol.tscn')
 
 var _music_player: AudioStreamPlayer = null
@@ -43,18 +42,16 @@ func _on_music_finished():
   if _music_player:
     _music_player.play()
 
-func _generate_nodes() -> Array[BaseInteractionNode]:
-  var nodes: Array[BaseInteractionNode];
+func _generate_nodes() -> Array[Symbol]:
+  var nodes: Array[Symbol] = []
   var used_positions: Array[Vector3i] = [Vector3i(0, 1, 0)] # Start with the player's position as used to avoid spawning on top of them
   for i in range(num_nodes):
-    var node: BaseInteractionNode = node_scene.instantiate()
-
+    var node: Symbol = node_scene.instantiate()
     node.randomize_bobbing(rng)
     node.randomize_color(rng)
 
     # Assign blurb to Symbol nodes
-    if node is Symbol and i < _blurbs.size():
-      node.blurb = _blurbs[i]
+    node.blurb = _blurbs[i]
 
     var pos: Vector3i = random_pos()
     while used_positions.has(pos): # If an overlap happens, choose another spot until you get a unique value

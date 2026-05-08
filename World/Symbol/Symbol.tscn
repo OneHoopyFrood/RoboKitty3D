@@ -14,7 +14,7 @@ size = Vector3(0.9, 0.9, 0.9)
 
 [node name="Symbol" type="Node3D"]
 script = ExtResource("1_a5rj1")
-metadata/_custom_type_script = "uid://ctq7nc76j356v"
+metadata/_custom_type_script = "uid://bs8j71elomxox"
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
 custom_aabb = AABB(-0.5, -0.5, -0.5, 1, 1, 1)
