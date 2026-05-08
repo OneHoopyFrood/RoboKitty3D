@@ -53,7 +53,3 @@ Two exported audio stream slots on the Player node:
 - `error_sfx_stream` → `_error_sfx` — plays on blocked movement (tap into wall, mid-move stuck).
 
 Always guard playback: `if _sfx and _sfx.stream: _sfx.play()`.
-
-## No Signals
-
-Interaction uses direct method calls. Do not add signals to Player.

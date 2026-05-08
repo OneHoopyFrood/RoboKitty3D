@@ -26,7 +26,6 @@ World.tscn          — root; generates 100 Symbol nodes procedurally
 ## Key Conventions
 
 - **Grid movement**: 1 unit = 1 cell. Player always snaps to `round(pos / step_size) * step_size` after physics to prevent drift.
-- **No signals**: Interaction uses direct method calls, not signals. Keep this pattern.
 - **Tween-based animation**: All movement and visual transitions use `Tween`. Never animate with `_process` counters.
 - **Tap vs. hold distinction**: `Input.is_action_just_pressed()` triggers intentional interaction (symbol bump → interact, wall → error sound). `Input.is_action_pressed()` triggers continuous walking (symbol → brake animation, wall → stop silently). Preserve this semantics.
 - **Collision detection is raycast-based, not physics-based**: Do NOT use `is_on_wall()`, `velocity == Vector3.ZERO`, or distance-moved checks to detect collisions with NKIs. Use `_try_bump_interact()` and `_is_path_blocked()` before movement starts. The physics process only handles snapping on successful move completion and unsticking if somehow blocked mid-move.
