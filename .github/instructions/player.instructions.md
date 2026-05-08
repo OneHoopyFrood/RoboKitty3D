@@ -1,11 +1,11 @@
 ---
 description: "Use when modifying Player.gd or adding features to the Player node. Covers movement, input routing, collision, animation flags, and SFX conventions."
-applyTo: "Player/**/*.gd"
+applyTo: "Root/World/Player/**/*.gd"
 ---
 
 # Player Node Conventions
 
-The Player is a `CharacterBody3D` in [Player/Player.gd](../../Player/Player.gd). All input, grid movement, raycast interaction, and feedback animations live here.
+The Player is a `CharacterBody3D` in [Root/World/Player/Player.gd](../../Root/World/Player/Player.gd). All movement, raycast interaction, and feedback animations live here while `Root.gd` owns menu/world switching and mouse mode.
 
 ## Movement Model
 
@@ -24,6 +24,8 @@ This distinction is intentional — do not collapse the two branches:
 | `pressed` (held) forward | `start_move` | stop silently               | brake animation |
 | `just_pressed` back      | `start_move` | error sound                 | —               |
 | `pressed` (held) back    | `start_move` | stop silently               | —               |
+
+The Player should assume the World subtree is only active when gameplay is running. Do not add scene-switching or global mouse-capture logic here; `Root.gd` handles that.
 
 ## Collision Detection
 

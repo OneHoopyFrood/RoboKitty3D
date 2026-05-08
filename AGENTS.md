@@ -6,14 +6,17 @@ A Godot 4 GDScript port of [robotfindskitten](http://www.robotfindskitten.org/).
 
 - **Engine**: Godot 4.6 (mobile renderer)
 - **Run**: Import project folder in Godot, press Play (F5). No compilation step — GDScript is interpreted.
-- **Scene entry point**: `World/World.tscn`
+- **Scene entry point**: `Root/Root.tscn`
 
 ## Architecture
 
 ```
-World.tscn          — root; generates 100 Symbol nodes procedurally
-  Player.tscn       — CharacterBody3D; handles all input, movement, interaction
-  Symbol.tscn (×N)  — interactive floating objects (the NKIs)
+Root.tscn           — root; owns scene switching, mouse state, and global audio
+  Menu.tscn         — title/menu UI
+  Dialog.tscn       — global dialog overlay used by Player
+  World.tscn        — gameplay root; generates 100 Symbol nodes procedurally
+    Player.tscn     — CharacterBody3D; handles movement, interaction, and look while World is active
+    Symbol.tscn (×N) — interactive floating objects (the NKIs)
 ```
 
 **Inheritance chain for interactive objects:**
@@ -37,19 +40,29 @@ World.tscn          — root; generates 100 Symbol nodes procedurally
 
 ## Important Files
 
-| File                                                                                                     | Role                                                  |
-| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [Player/Player.gd](Player/Player.gd)                                                                     | Input, grid movement, raycast interaction, animations |
-| [World/world.gd](World/world.gd)                                                                         | Procedural board generation                           |
-| [World/BaseInteractionNode/base_interaction_node.gd](World/BaseInteractionNode/base_interaction_node.gd) | Base class for all interactable objects               |
-| [World/Symbol/symbol.gd](World/Symbol/symbol.gd)                                                         | NKI implementation (ASCII symbol + blurb)             |
-| [Assets/NKIs.txt](Assets/NKIs.txt)                                                                       | Source text for non-kitten item blurbs                |
+| File                                                                                                               | Role                                                   |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| [Root/Root.gd](Root/Root.gd)                                                                                       | Scene switching, mouse mode, world input gating, music |
+| [Root/Menu/Menu.gd](Root/Menu/Menu.gd)                                                                             | Menu button wiring and presentation                    |
+| [Root/World/world.gd](Root/World/world.gd)                                                                         | Procedural board generation                            |
+| [Root/World/Player/Player.gd](Root/World/Player/Player.gd)                                                         | Input, grid movement, raycast interaction, animations  |
+| [Root/World/BaseInteractionNode/base_interaction_node.gd](Root/World/BaseInteractionNode/base_interaction_node.gd) | Base class for all interactable objects                |
+| [Root/World/Symbol/symbol.gd](Root/World/Symbol/symbol.gd)                                                         | NKI implementation (ASCII symbol + blurb)              |
+| [Assets/NKIs.txt](Assets/NKIs.txt)                                                                                 | Source text for non-kitten item blurbs                 |
 
 ## What's Not Implemented Yet
 
-- Dialog UI display (wired in `Player.gd` via `dialog_ui_path` export, but no UI scene)
 - Kitten / win condition
 - World bounds
 - Pause menu / settings
+
+## Current Ownership
+
+- `Root.gd` owns menu/world visibility, mouse capture, ESC handling, and looping background music.
+- `Menu.gd` stays thin and forwards button actions back to `Root.gd`.
+- `World.gd` owns procedural generation and gameplay-side instancing.
+- `Player.gd` no longer manages global mouse capture; it only reacts while `World` is enabled.
+
+See [root.instructions.md](.github/instructions/root.instructions.md) and [menu.instructions.md](.github/instructions/menu.instructions.md) for focused guidance on the top-level flow.
 
 Refer to [TODO.md](TODO.md) before adding features to avoid duplicate work.
