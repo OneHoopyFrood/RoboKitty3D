@@ -105,14 +105,44 @@ func _handle_movement_input(delta: float) -> void:
   if _dialog_ui and _dialog_ui.is_open:
     return
 
-  # Reset walk sequence when player releases movement keys
-  if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
+  # Reset walk sequence when player releases directional movement keys
+  if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back") and not Input.is_action_pressed("strafe_left") and not Input.is_action_pressed("strafe_right"):
     is_walking = false
 
   if is_moving or is_animating:
     return # Don't accept new input while mid-move or during animations
 
-  if Input.is_action_just_pressed("move_left"):
+  if Input.is_action_just_pressed("strafe_left"):
+    # Left strafe tap
+    if _is_path_blocked(-transform.basis.x):
+      if _error_sfx and _error_sfx.stream:
+        _error_sfx.play()
+    else:
+      start_move(-transform.basis.x)
+  elif Input.is_action_pressed("strafe_left"):
+    # Held strafe left: brake when hitting any obstacle
+    if is_walking and _is_path_blocked(-transform.basis.x):
+      _do_brake()
+      is_walking = false
+    elif not _is_path_blocked(-transform.basis.x):
+      start_move(-transform.basis.x)
+      is_walking = true
+  elif Input.is_action_just_pressed("strafe_right"):
+    # Right strafe tap
+    if _is_path_blocked(transform.basis.x):
+      if _error_sfx and _error_sfx.stream:
+        _error_sfx.play()
+    else:
+      start_move(transform.basis.x)
+  elif Input.is_action_pressed("strafe_right"):
+    # Held strafe right: brake when hitting any obstacle
+    if is_walking and _is_path_blocked(transform.basis.x):
+      _do_brake()
+      is_walking = false
+    elif not _is_path_blocked(transform.basis.x):
+      start_move(transform.basis.x)
+      is_walking = true
+  elif Input.is_action_just_pressed("move_left"):
     turn_left()
   elif Input.is_action_just_pressed("move_right"):
     turn_right()
