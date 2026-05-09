@@ -56,7 +56,7 @@ func _hide_menu() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
-func play() -> void:
+func resume() -> void:
 	_hide_menu()
 
 
@@ -66,8 +66,8 @@ func quit() -> void:
 
 func _on_menu_button_pressed(action: Menu.MenuAction) -> void:
 	match action:
-		Menu.MenuAction.PLAY, Menu.MenuAction.RESUME:
-			play()
+		Menu.MenuAction.RESUME, Menu.MenuAction.RESTART:
+			resume()
 		Menu.MenuAction.QUIT:
 			quit()
 
