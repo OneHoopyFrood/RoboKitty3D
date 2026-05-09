@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends Node3D
 
 signal player_movement(direction: Vector3)
 
@@ -19,10 +19,10 @@ signal player_movement(direction: Vector3)
 
 @export var dialog_ui_path: NodePath
 @export var select_sfx_stream: AudioStream
+@export var brake_sfx_stream: AudioStream
 @export var error_sfx_stream: AudioStream
 
 var cam: Camera3D
-var shape: CollisionShape3D
 var mouse_delta: Vector2 = Vector2.ZERO
 var target_yaw: float = 0.0 # Where the mouse wants to look
 var target_pitch: float = 0.0
@@ -36,18 +36,19 @@ var move_dir: Vector3 = Vector3.ZERO
 var target_position: Vector3 = Vector3.ZERO
 var start_position: Vector3 = Vector3.ZERO # Grid-aligned position at movement start
 var is_walking: bool = false # True when in continuous walk sequence; false after brake, turn, or key release
+var controls_enabled: bool = true
 
 var _tween: Tween
 var _dialog_ui: Node = null
-var _sfx: AudioStreamPlayer = null
+var _sfx_select: AudioStreamPlayer = null
+var _sfx_brake: AudioStreamPlayer = null
 var _error_sfx: AudioStreamPlayer = null
+var _move_tween: Tween = null
 
 const symbol_group = "symbol"
 
 func _ready():
   cam = $FPV
-  shape = $HitBox
-  Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
   # Snap to grid on startup
   _snap_to_grid()
@@ -60,10 +61,16 @@ func _ready():
     _dialog_ui = get_node_or_null(dialog_ui_path)
 
   # Simple SFX player
-  _sfx = AudioStreamPlayer.new()
-  add_child(_sfx)
+  _sfx_select = AudioStreamPlayer.new()
+  add_child(_sfx_select)
   if select_sfx_stream:
-    _sfx.stream = select_sfx_stream
+    _sfx_select.stream = select_sfx_stream
+
+  # Brake SFX player
+  _sfx_brake = AudioStreamPlayer.new()
+  add_child(_sfx_brake)
+  if brake_sfx_stream:
+    _sfx_brake.stream = brake_sfx_stream
 
   # Error SFX player
   _error_sfx = AudioStreamPlayer.new()
@@ -71,35 +78,26 @@ func _ready():
   if error_sfx_stream:
     _error_sfx.stream = error_sfx_stream
 
+func enable_controls() -> void:
+  controls_enabled = true
+
+func disable_controls() -> void:
+  controls_enabled = false
+
 func _input(event):
+  if not controls_enabled:
+    return
   if event is InputEventMouseMotion:
     mouse_delta = event.relative
 
 func _process(delta):
-  # Early exit if mouse capture not active
-  if not _handle_mouse_capture():
+  if not controls_enabled:
     return
-
   # Handle movement and interaction input
   _handle_movement_input(delta)
 
   # Handle mouse look
   _handle_look_input(delta)
-
-## Handle mouse capture toggling. Returns false if processing should stop.
-func _handle_mouse_capture() -> bool:
-  if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-    if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-      Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-      print_debug("Mouse captured")
-      # Fall through to `return true`, capturing the mouse
-    else:
-      return false # Don't process input if mouse not captured
-  elif Input.is_action_pressed("ui_cancel"):
-    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-    print_debug("Mouse released")
-    return false # Stop processing input on this frame to avoid sudden jumps when toggling capture
-  return true
 
 ## Process all movement and interaction input (forward, back, turn).
 func _handle_movement_input(delta: float) -> void:
@@ -111,50 +109,95 @@ func _handle_movement_input(delta: float) -> void:
   if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
     is_walking = false
 
-  if not is_moving and not is_animating:
-    if Input.is_action_just_pressed("move_left"):
-      turn_left()
-    elif Input.is_action_just_pressed("move_right"):
-      turn_right()
-    else:
-      # Interactions only trigger on intentional bumps (standing -> just_pressed).
-      # Walking into symbols (action_pressed while moving) should collide naturally
-      # without triggering interaction.
-      if Input.is_action_just_pressed("move_forward"):
-        # Intentional tap: interact or error
-        var symbol = _try_bump_interact()
-        if symbol:
-          _on_bumped_symbol(symbol)
-        elif _is_path_blocked(-transform.basis.z):
-          if _error_sfx and _error_sfx.stream:
-            _error_sfx.play()
-        else:
-          start_move(-transform.basis.z)
-      elif Input.is_action_pressed("move_forward"):
-        # Held walk: brake when hitting any obstacle during continuous walk
-        if is_walking and _is_path_blocked(-transform.basis.z):
-          # Hit obstacle during continuous walk - brake and end sequence
-          _do_brake_animation()
-          is_walking = false
-        elif not _is_path_blocked(-transform.basis.z):
-          start_move(-transform.basis.z)
-          is_walking = true
-      elif Input.is_action_just_pressed("move_back"):
-        # Backward tap (always allowed)
-        if _is_path_blocked(transform.basis.z):
-          if _error_sfx and _error_sfx.stream:
-            _error_sfx.play()
-        else:
-          start_move(transform.basis.z)
-      elif Input.is_action_pressed("move_back"):
-        # Held walk backward: brake when hitting any obstacle
-        if is_walking and _is_path_blocked(transform.basis.z):
-          # Hit obstacle during continuous walk - brake and end sequence
-          _do_brake_animation()
-          is_walking = false
-        elif not _is_path_blocked(transform.basis.z):
-          start_move(transform.basis.z)
-          is_walking = true
+  if is_moving or is_animating:
+    return # Don't accept new input while mid-move or during animations
+
+  if Input.is_action_just_pressed("move_left"):
+    turn_left()
+  elif Input.is_action_just_pressed("move_right"):
+    turn_right()
+  else:
+    # Interactions only trigger on intentional bumps (standing -> just_pressed).
+    # Walking into symbols (action_pressed while moving) should collide naturally
+    # without triggering interaction.
+    if Input.is_action_just_pressed("move_forward"):
+      # Intentional tap: interact or error
+      var symbol = _try_bump_interact()
+      if symbol:
+        _on_bumped_symbol(symbol)
+      elif _is_path_blocked(-transform.basis.z):
+        if _error_sfx and _error_sfx.stream:
+          _error_sfx.play()
+      else:
+        start_move(-transform.basis.z)
+    elif Input.is_action_pressed("move_forward"):
+      # Held walk: brake when hitting any obstacle during continuous walk
+      if is_walking and _is_path_blocked(-transform.basis.z):
+        # Hit obstacle during continuous walk - brake and end sequence
+        _do_brake()
+        is_walking = false
+      elif not _is_path_blocked(-transform.basis.z):
+        start_move(-transform.basis.z)
+        is_walking = true
+    elif Input.is_action_just_pressed("move_back"):
+      # Backward tap (always allowed)
+      if _is_path_blocked(transform.basis.z):
+        if _error_sfx and _error_sfx.stream:
+          _error_sfx.play()
+      else:
+        start_move(transform.basis.z)
+    elif Input.is_action_pressed("move_back"):
+      # Held walk backward: brake when hitting any obstacle
+      if is_walking and _is_path_blocked(transform.basis.z):
+        # Hit obstacle during continuous walk - brake and end sequence
+        _do_brake()
+        is_walking = false
+      elif not _is_path_blocked(transform.basis.z):
+        start_move(transform.basis.z)
+        is_walking = true
+
+func start_move(direction: Vector3) -> void:
+  if is_moving:
+    return
+
+  direction.y = 0
+  direction = direction.normalized()
+
+  # Set up deterministic one-cell tween movement.
+  move_dir = direction
+  is_moving = true
+  start_position = global_transform.origin
+  target_position = global_transform.origin + move_dir * step_size
+
+  if _move_tween:
+    _move_tween.kill()
+
+  _move_tween = create_tween().bind_node(self )
+  _move_tween.set_trans(Tween.TRANS_LINEAR)
+  _move_tween.tween_property(self , "global_position", target_position, step_duration)
+  _move_tween.finished.connect(func():
+    _snap_to_grid()
+    is_moving = false
+  )
+
+func turn_left():
+  if is_moving:
+    return
+  is_walking = false # Turning ends walk sequence
+  var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
+  _face_degree(new_yaw)
+  var dir = _yaw_to_direction(new_yaw)
+  print_debug("Player turn_left: emitting player_movement with direction: ", dir)
+  player_movement.emit(dir)
+
+func turn_right():
+  if is_moving: return
+  is_walking = false # Turning ends walk sequence
+  var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
+  _face_degree(new_yaw)
+  var dir = _yaw_to_direction(new_yaw)
+  print_debug("Player turn_right: emitting player_movement with direction: ", dir)
+  player_movement.emit(dir)
 
 ## Process mouse look input and apply smoothed camera rotation.
 func _handle_look_input(delta: float) -> void:
@@ -175,74 +218,6 @@ func _handle_look_input(delta: float) -> void:
 
   if Input.is_action_just_released("look"):
     recenter_look()
-
-func _physics_process(delta):
-  if is_moving:
-    # Compute the speed so we travel exactly step_size units in step_duration seconds
-    var speed = step_size / step_duration
-    velocity = move_dir.normalized() * speed
-
-    var pos_before = global_transform.origin
-    move_and_slide()
-
-    if move_dir.dot(target_position - global_transform.origin) <= 0:
-      # Reached target - successful move
-      is_moving = false
-      _snap_to_grid()
-      # Note: is_walking persists here to allow continuous walk sequence to continue
-    elif global_transform.origin.distance_to(pos_before) < 0.001:
-      # Made no progress - blocked mid-move, snap back and end walk sequence
-      global_transform.origin = start_position
-      is_moving = false
-      is_walking = false
-      # Error SFX on wall bump
-      if _error_sfx and _error_sfx.stream:
-        _error_sfx.play()
-    # else still moving
-  else:
-    # If we’re not moving, ensure velocity is zero
-    velocity = Vector3.ZERO
-
-    # Save position before move_and_slide to detect collision push
-    var before_pos = position
-
-    # You still HAVE to call move_and_slide() every frame so that physics state stays consistent
-    move_and_slide()
-
-    # If we got pushed by a collision, snap back to grid
-    if position != before_pos:
-      _snap_to_grid()
-
-func start_move(direction: Vector3) -> void:
-  direction.y = 0
-  direction = direction.normalized()
-
-  # Set up our “moving” state
-  move_dir = direction
-  is_moving = true
-  # Store current grid-aligned position for collision bounce-back
-  start_position = global_transform.origin
-  # Calculate exactly one cell ahead
-  target_position = global_transform.origin + move_dir * step_size
-
-func turn_left():
-  if is_moving:
-    return
-  is_walking = false # Turning ends walk sequence
-  var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
-  _face_degree(new_yaw)
-  var dir = _yaw_to_direction(new_yaw)
-  print_debug("Player turn_left: emitting player_movement with direction: ", dir)
-  player_movement.emit(dir)
-
-func turn_right():
-  if is_moving: return
-  is_walking = false # Turning ends walk sequence
-  var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
-  _face_degree(new_yaw)
-  var dir = _yaw_to_direction(new_yaw)
-  print_debug("Player turn_right: emitting player_movement with direction: ", dir)
-  player_movement.emit(dir)
 
 func recenter_look():
   target_yaw = 0
@@ -306,6 +281,12 @@ func _do_bump_bounce() -> void:
   shake_tween.tween_property(cam, "position", original_cam_pos + Vector3(randf_range(-0.03, 0.03), randf_range(-0.03, 0.03), 0), 0.05)
   shake_tween.tween_property(cam, "position", original_cam_pos, 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
+func _do_brake() -> void:
+  # Play oof
+  if _sfx_brake and _sfx_brake.stream:
+    _sfx_brake.play()
+  _do_brake_animation()
+
 func _do_brake_animation() -> void:
   # Brake animation: camera lurches forward and down like sudden deceleration, then snaps back
   is_animating = true
@@ -337,52 +318,39 @@ func _do_brake_animation() -> void:
   cam_tween.tween_property(cam, "rotation_degrees", original_cam_rot, 0.18).set_delay(0.06).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _try_bump_interact() -> Node:
-  # Cast one cell ahead on a horizontal line from player center
-  var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
-  var fwd := -transform.basis.z
-  fwd.y = 0
-  fwd = fwd.normalized()
-  var to := from + fwd * (step_size * 0.95)
+  var world = _get_world_node()
+  if not world:
+    return null
 
-  var space := get_world_3d().direct_space_state
-  var query := PhysicsRayQueryParameters3D.create(from, to)
-  query.exclude = [ self ]
-  var hit := space.intersect_ray(query)
-
-  if hit.size() > 0 and hit.has("collider") and hit.collider:
-    var col: Node = hit.collider
-    # The collider is typically ColliderBody (StaticBody3D), parent is the Symbol
-    var parent = col.get_parent()
-    if parent and parent is Symbol:
-      return parent
-  return null
+  var target_cell := _target_cell_in_direction(-transform.basis.z)
+  return world.get_symbol_at_cell(target_cell)
 
 func _is_path_blocked(direction: Vector3) -> bool:
-  # Check if moving in this direction would hit something or go out of bounds
-  var target_pos := global_transform.origin + direction.normalized() * step_size
+  var world = _get_world_node()
+  if not world:
+    return false
 
-  # World boundaries - get board_size from World node parent
-  var world = get_parent()
+  var target_cell := _target_cell_in_direction(direction)
+  return world.is_cell_blocked(target_cell)
+
+## Compute the 2D floor grid cell one step ahead in this direction.
+## Returns a Vector2i where x = world X, y = world Z (world Y is ignored for collision).
+func _target_cell_in_direction(direction: Vector3) -> Vector2i:
+  var move_direction := direction
+  move_direction.y = 0
+  move_direction = move_direction.normalized()
+  var target_pos := global_transform.origin + move_direction * step_size
+  var world = _get_world_node()
   if world:
-    var board_size = world.get("board_size")
-    if board_size is int or board_size is float:
-      var boundary = int(board_size / 2)
-      if abs(target_pos.x) >= boundary or abs(target_pos.z) >= boundary:
-        return true
+    return world.world_to_cell(target_pos)
+  # Fallback: compute cell locally (Vector2i: x = world X, y = world Z)
+  return Vector2i(round(target_pos.x / step_size), round(target_pos.z / step_size))
 
-  # Raycast for collisions with objects
-  var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
-  var fwd := direction
-  fwd.y = 0
-  fwd = fwd.normalized()
-  var to := from + fwd * (step_size * 0.95)
-
-  var space := get_world_3d().direct_space_state
-  var query := PhysicsRayQueryParameters3D.create(from, to)
-  query.exclude = [ self ]
-  var hit := space.intersect_ray(query)
-
-  return hit.size() > 0
+func _get_world_node() -> Node:
+  var world := get_parent()
+  if world and world.has_method("world_to_cell") and world.has_method("is_cell_blocked") and world.has_method("get_symbol_at_cell"):
+    return world
+  return null
 
 func _on_bumped_symbol(symbol: Node) -> void:
   # Log interaction
@@ -392,18 +360,9 @@ func _on_bumped_symbol(symbol: Node) -> void:
   _do_bump_bounce()
 
   # Play sfx
-  if _sfx and _sfx.stream:
-    _sfx.play()
+  if _sfx_select and _sfx_select.stream:
+    _sfx_select.play()
 
-  # Get blurb safely
-  var blurb := ""
-  if symbol.has_method("get_blurb"):
-    blurb = symbol.get_blurb()
-  elif symbol.has_meta("blurb"):
-    blurb = str(symbol.get_meta("blurb"))
-  elif "blurb" in symbol:
-    blurb = str(symbol.blurb)
-
-  # Open dialog if wired
-  if _dialog_ui and _dialog_ui.has_method("open"):
-    _dialog_ui.open(blurb)
+  # Let Symbol emit its bump signal; Root owns dialog presentation.
+  if symbol.has_method("bump"):
+    symbol.bump()

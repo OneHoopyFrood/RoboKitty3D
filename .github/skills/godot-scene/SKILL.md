@@ -18,12 +18,12 @@ Creates a paired `.tscn` + `.gd` following this project's conventions.
 
 1. **Determine the base class** from the table below:
 
-   | Purpose                     | Extends                    | Location        |
-   | --------------------------- | -------------------------- | --------------- |
-   | Interactive world object    | `BaseInteractionNode`      | `World/<Name>/` |
-   | Player-controlled character | `CharacterBody3D`          | `Player/`       |
-   | UI overlay                  | `Control` or `CanvasLayer` | `UI/`           |
-   | World/level root            | `Node3D`                   | `World/`        |
+   | Purpose                     | Extends                    | Location             |
+   | --------------------------- | -------------------------- | -------------------- |
+   | Interactive world object    | `BaseInteractionNode`      | `Root/World/<Name>/` |
+   | Player-controlled character | `CharacterBody3D`          | `Root/World/Player/` |
+   | UI overlay                  | `Control` or `CanvasLayer` | `Root/<Name>/`       |
+   | World/level root            | `Node3D`                   | `Root/World/`        |
 
 2. **Create the GDScript** at `<Folder>/<Name>.gd`:
    - `class_name` matching the folder name
@@ -38,7 +38,7 @@ Creates a paired `.tscn` + `.gd` following this project's conventions.
    - Attach the `.gd` script to the root node
 
 4. **Register with `world.gd`** if it's a world object:
-   - Add a `preload('res://<Folder>/<Name>.tscn')` line
+   - Add a `preload('res://Root/World/<Name>/<Name>.tscn')` line
    - `world.gd` calls `randomize_bobbing(rng)` and `randomize_color(rng)` after instantiation — no need to set those in `_ready()`
 
 ## Scene Template (interactive object)

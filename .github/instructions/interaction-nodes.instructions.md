@@ -1,11 +1,11 @@
 ---
 description: "Use when creating, extending, or modifying interactive objects (NKIs, kitten, cubes) that extend BaseInteractionNode. Covers required interface, setup pattern, and conventions."
-applyTo: "World/**/*.gd"
+applyTo: "Root/World/**/*.gd"
 ---
 
 # Interaction Node Conventions
 
-All interactive objects inherit from `BaseInteractionNode` ([base_interaction_node.gd](../../World/BaseInteractionNode/base_interaction_node.gd)).
+All interactive objects inherit from `BaseInteractionNode` ([base_interaction_node.gd](../../Root/World/BaseInteractionNode/base_interaction_node.gd)).
 
 ## Required Setup in `_ready()`
 
@@ -36,3 +36,9 @@ Never manually set `_mesh.material_overlay` — use `set_color(color)` instead.
 ## No Signals
 
 Use direct method calls for interaction. Do not add signals to interaction nodes.
+
+## Current Folder Layout
+
+- World gameplay content lives under `Root/World/`.
+- The player scene lives under `Root/World/Player/`.
+- Global UI scenes such as menu/dialog live under `Root/Menu/` and `Root/Dialog/` instead of the World subtree.

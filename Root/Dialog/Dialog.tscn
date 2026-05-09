@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dialogue_ui_scene"]
 
-[ext_resource type="Script" path="res://UI/DialogUI.gd" id="1_dialog"]
+[ext_resource type="Script" path="res://Root/Dialog/Dialog.gd" id="1_dialog"]
 [ext_resource type="FontFile" uid="uid://034x3460fr0j" path="res://Assets/TerminusBold.ttf" id="2_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog"]
@@ -11,7 +11,7 @@ border_width_right = 4
 border_width_bottom = 4
 border_color = Color(1, 1, 1, 1)
 
-[node name="DialogUI" type="CanvasLayer"]
+[node name="Dialog" type="CanvasLayer"]
 script = ExtResource("1_dialog")
 
 [node name="Panel" type="Panel" parent="."]

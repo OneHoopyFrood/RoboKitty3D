@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://b21f20o23r3ct"]
+
+[ext_resource type="Script" uid="uid://bfy8frhuwtugm" path="res://Root/Root.gd" id="1_ja5m8"]
+[ext_resource type="PackedScene" uid="uid://cpjw6babfhfb5" path="res://Root/Menu/Menu.tscn" id="2_0lfnq"]
+[ext_resource type="PackedScene" uid="uid://ck1us1on6vyvw" path="res://Root/World/World.tscn" id="3_o6r8d"]
+[ext_resource type="PackedScene" path="res://Root/Dialog/Dialog.tscn" id="4_dialog"]
+[ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="5_music1"]
+[ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg" id="6_music2"]
+[ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/jonbeck bonbo.ogg" id="7_music3"]
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_music"]
+streams_count = 3
+stream_0/stream = ExtResource("5_music1")
+stream_1/stream = ExtResource("6_music2")
+stream_2/stream = ExtResource("7_music3")
+
+[node name="Root" type="Node3D" unique_id=773543183]
+script = ExtResource("1_ja5m8")
+
+[node name="Menu" parent="." unique_id=1950486604 instance=ExtResource("2_0lfnq")]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="World" parent="." unique_id=744606420 instance=ExtResource("3_o6r8d")]
+visible = false
+
+[node name="Dialog" parent="." unique_id=1986789627 instance=ExtResource("4_dialog")]
+visible = false
+
+[node name="BackgroundMusic" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamRandomizer_music")
+volume_db = -5.0
+autoplay = true
