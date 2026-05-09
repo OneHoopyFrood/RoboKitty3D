@@ -110,70 +110,52 @@ func _handle_movement_input(delta: float) -> void:
   if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
     is_walking = false
 
-  if not is_moving and not is_animating:
-    if Input.is_action_just_pressed("move_left"):
-      turn_left()
-    elif Input.is_action_just_pressed("move_right"):
-      turn_right()
-    else:
-      # Interactions only trigger on intentional bumps (standing -> just_pressed).
-      # Walking into symbols (action_pressed while moving) should collide naturally
-      # without triggering interaction.
-      if Input.is_action_just_pressed("move_forward"):
-        # Intentional tap: interact or error
-        var symbol = _try_bump_interact()
-        if symbol:
-          _on_bumped_symbol(symbol)
-        elif _is_path_blocked(-transform.basis.z):
-          if _error_sfx and _error_sfx.stream:
-            _error_sfx.play()
-        else:
-          start_move(-transform.basis.z)
-      elif Input.is_action_pressed("move_forward"):
-        # Held walk: brake when hitting any obstacle during continuous walk
-        if is_walking and _is_path_blocked(-transform.basis.z):
-          # Hit obstacle during continuous walk - brake and end sequence
-          _do_brake()
-          is_walking = false
-        elif not _is_path_blocked(-transform.basis.z):
-          start_move(-transform.basis.z)
-          is_walking = true
-      elif Input.is_action_just_pressed("move_back"):
-        # Backward tap (always allowed)
-        if _is_path_blocked(transform.basis.z):
-          if _error_sfx and _error_sfx.stream:
-            _error_sfx.play()
-        else:
-          start_move(transform.basis.z)
-      elif Input.is_action_pressed("move_back"):
-        # Held walk backward: brake when hitting any obstacle
-        if is_walking and _is_path_blocked(transform.basis.z):
-          # Hit obstacle during continuous walk - brake and end sequence
-          _do_brake()
-          is_walking = false
-        elif not _is_path_blocked(transform.basis.z):
-          start_move(transform.basis.z)
-          is_walking = true
+  if is_moving or is_animating:
+    return # Don't accept new input while mid-move or during animations
 
-## Process mouse look input and apply smoothed camera rotation.
-func _handle_look_input(delta: float) -> void:
-  # Update target angles based on mouse input
-  if Input.is_action_pressed("look"):
-    target_yaw -= mouse_delta.x * mouse_sensitivity
-    target_yaw = clamp(target_yaw, -89.0, 89.0)
-    target_pitch -= mouse_delta.y * mouse_sensitivity
-    target_pitch = clamp(target_pitch, -89.0, 89.0)
-    mouse_delta = Vector2.ZERO
-
-  # Exponential decay for smooth ease-out (starts fast, slows as it approaches, no oscillation)
-  var smoothing_factor = 1.0 - exp(-look_smoothing * delta)
-  var eased_factor = pow(smoothing_factor, look_ease_power) # Apply power curve for steeper easing
-  yaw = lerp(yaw, target_yaw, eased_factor)
-  pitch = lerp(pitch, target_pitch, eased_factor)
-  cam.rotation_degrees = Vector3(pitch, yaw, 0)
-
-  if Input.is_action_just_released("look"):
-    recenter_look()
+  if Input.is_action_just_pressed("move_left"):
+    turn_left()
+  elif Input.is_action_just_pressed("move_right"):
+    turn_right()
+  else:
+    # Interactions only trigger on intentional bumps (standing -> just_pressed).
+    # Walking into symbols (action_pressed while moving) should collide naturally
+    # without triggering interaction.
+    if Input.is_action_just_pressed("move_forward"):
+      # Intentional tap: interact or error
+      var symbol = _try_bump_interact()
+      if symbol:
+        _on_bumped_symbol(symbol)
+      elif _is_path_blocked(-transform.basis.z):
+        if _error_sfx and _error_sfx.stream:
+          _error_sfx.play()
+      else:
+        start_move(-transform.basis.z)
+    elif Input.is_action_pressed("move_forward"):
+      # Held walk: brake when hitting any obstacle during continuous walk
+      if is_walking and _is_path_blocked(-transform.basis.z):
+        # Hit obstacle during continuous walk - brake and end sequence
+        _do_brake()
+        is_walking = false
+      elif not _is_path_blocked(-transform.basis.z):
+        start_move(-transform.basis.z)
+        is_walking = true
+    elif Input.is_action_just_pressed("move_back"):
+      # Backward tap (always allowed)
+      if _is_path_blocked(transform.basis.z):
+        if _error_sfx and _error_sfx.stream:
+          _error_sfx.play()
+      else:
+        start_move(transform.basis.z)
+    elif Input.is_action_pressed("move_back"):
+      # Held walk backward: brake when hitting any obstacle
+      if is_walking and _is_path_blocked(transform.basis.z):
+        # Hit obstacle during continuous walk - brake and end sequence
+        _do_brake()
+        is_walking = false
+      elif not _is_path_blocked(transform.basis.z):
+        start_move(transform.basis.z)
+        is_walking = true
 
 func _physics_process(delta):
   if is_moving:
@@ -242,6 +224,26 @@ func turn_right():
   var dir = _yaw_to_direction(new_yaw)
   print_debug("Player turn_right: emitting player_movement with direction: ", dir)
   player_movement.emit(dir)
+
+## Process mouse look input and apply smoothed camera rotation.
+func _handle_look_input(delta: float) -> void:
+  # Update target angles based on mouse input
+  if Input.is_action_pressed("look"):
+    target_yaw -= mouse_delta.x * mouse_sensitivity
+    target_yaw = clamp(target_yaw, -89.0, 89.0)
+    target_pitch -= mouse_delta.y * mouse_sensitivity
+    target_pitch = clamp(target_pitch, -89.0, 89.0)
+    mouse_delta = Vector2.ZERO
+
+  # Exponential decay for smooth ease-out (starts fast, slows as it approaches, no oscillation)
+  var smoothing_factor = 1.0 - exp(-look_smoothing * delta)
+  var eased_factor = pow(smoothing_factor, look_ease_power) # Apply power curve for steeper easing
+  yaw = lerp(yaw, target_yaw, eased_factor)
+  pitch = lerp(pitch, target_pitch, eased_factor)
+  cam.rotation_degrees = Vector3(pitch, yaw, 0)
+
+  if Input.is_action_just_released("look"):
+    recenter_look()
 
 func recenter_look():
   target_yaw = 0
