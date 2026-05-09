@@ -11,13 +11,13 @@ enum MenuAction {
 signal button_pressed(action: MenuAction)
 
 @onready var _resume_button = $CenterContainer/PanelContainer/VBoxContainer/ResumeButton
-@onready var _play_button = $CenterContainer/PanelContainer/VBoxContainer/RestartButton
+@onready var _restart_button = $CenterContainer/PanelContainer/VBoxContainer/RestartButton
 @onready var _quit_button = $CenterContainer/PanelContainer/VBoxContainer/QuitButton
 
 
 func _ready() -> void:
   _resume_button.pressed.connect(_on_resume_pressed)
-  _play_button.pressed.connect(_on_restart_pressed)
+  _restart_button.pressed.connect(_on_restart_pressed)
   _quit_button.pressed.connect(_on_quit_pressed)
 
 

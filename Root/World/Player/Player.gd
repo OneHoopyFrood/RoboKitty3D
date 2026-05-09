@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends Node3D
 
 signal player_movement(direction: Vector3)
 
@@ -23,7 +23,6 @@ signal player_movement(direction: Vector3)
 @export var error_sfx_stream: AudioStream
 
 var cam: Camera3D
-var shape: CollisionShape3D
 var mouse_delta: Vector2 = Vector2.ZERO
 var target_yaw: float = 0.0 # Where the mouse wants to look
 var target_pitch: float = 0.0
@@ -44,12 +43,12 @@ var _dialog_ui: Node = null
 var _sfx_select: AudioStreamPlayer = null
 var _sfx_brake: AudioStreamPlayer = null
 var _error_sfx: AudioStreamPlayer = null
+var _move_tween: Tween = null
 
 const symbol_group = "symbol"
 
 func _ready():
   cam = $FPV
-  shape = $HitBox
 
   # Snap to grid on startup
   _snap_to_grid()
@@ -175,54 +174,29 @@ func _handle_look_input(delta: float) -> void:
   if Input.is_action_just_released("look"):
     recenter_look()
 
-func _physics_process(delta):
-  if is_moving:
-    # Compute the speed so we travel exactly step_size units in step_duration seconds
-    var speed = step_size / step_duration
-    velocity = move_dir.normalized() * speed
-
-    var pos_before = global_transform.origin
-    move_and_slide()
-
-    if move_dir.dot(target_position - global_transform.origin) <= 0:
-      # Reached target - successful move
-      is_moving = false
-      _snap_to_grid()
-      # Note: is_walking persists here to allow continuous walk sequence to continue
-    elif global_transform.origin.distance_to(pos_before) < 0.001:
-      # Made no progress - blocked mid-move, snap back and end walk sequence
-      global_transform.origin = start_position
-      is_moving = false
-      is_walking = false
-      # Error SFX on wall bump
-      if _error_sfx and _error_sfx.stream:
-        _error_sfx.play()
-    # else still moving
-  else:
-    # If we’re not moving, ensure velocity is zero
-    velocity = Vector3.ZERO
-
-    # Save position before move_and_slide to detect collision push
-    var before_pos = position
-
-    # You still HAVE to call move_and_slide() every frame so that physics state stays consistent
-    move_and_slide()
-
-    # If we got pushed by a collision, snap back to grid
-    if position != before_pos:
-      _snap_to_grid()
-
 func start_move(direction: Vector3) -> void:
+  if is_moving:
+    return
+
   direction.y = 0
   direction = direction.normalized()
 
-  # Set up our “moving” state
+  # Set up deterministic one-cell tween movement.
   move_dir = direction
   is_moving = true
-  # Store current grid-aligned position for collision bounce-back
   start_position = global_transform.origin
-  # Calculate exactly one cell ahead
   target_position = global_transform.origin + move_dir * step_size
+
+  if _move_tween:
+    _move_tween.kill()
+
+  _move_tween = create_tween().bind_node(self )
+  _move_tween.set_trans(Tween.TRANS_LINEAR)
+  _move_tween.tween_property(self , "global_position", target_position, step_duration)
+  _move_tween.finished.connect(func():
+    _snap_to_grid()
+    is_moving = false
+  )
 
 func turn_left():
   if is_moving:
@@ -342,52 +316,39 @@ func _do_brake_animation() -> void:
   cam_tween.tween_property(cam, "rotation_degrees", original_cam_rot, 0.18).set_delay(0.06).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _try_bump_interact() -> Node:
-  # Cast one cell ahead on a horizontal line from player center
-  var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
-  var fwd := -transform.basis.z
-  fwd.y = 0
-  fwd = fwd.normalized()
-  var to := from + fwd * (step_size * 0.95)
+  var world = _get_world_node()
+  if not world:
+    return null
 
-  var space := get_world_3d().direct_space_state
-  var query := PhysicsRayQueryParameters3D.create(from, to)
-  query.exclude = [ self ]
-  var hit := space.intersect_ray(query)
-
-  if hit.size() > 0 and hit.has("collider") and hit.collider:
-    var col: Node = hit.collider
-    # The collider is typically ColliderBody (StaticBody3D), parent is the Symbol
-    var parent = col.get_parent()
-    if parent and parent is Symbol:
-      return parent
-  return null
+  var target_cell := _target_cell_in_direction(-transform.basis.z)
+  return world.get_symbol_at_cell(target_cell)
 
 func _is_path_blocked(direction: Vector3) -> bool:
-  # Check if moving in this direction would hit something or go out of bounds
-  var target_pos := global_transform.origin + direction.normalized() * step_size
+  var world = _get_world_node()
+  if not world:
+    return false
 
-  # World boundaries - get board_size from World node parent
-  var world = get_parent()
+  var target_cell := _target_cell_in_direction(direction)
+  return world.is_cell_blocked(target_cell)
+
+## Compute the 2D floor grid cell one step ahead in this direction.
+## Returns a Vector2i where x = world X, y = world Z (world Y is ignored for collision).
+func _target_cell_in_direction(direction: Vector3) -> Vector2i:
+  var move_direction := direction
+  move_direction.y = 0
+  move_direction = move_direction.normalized()
+  var target_pos := global_transform.origin + move_direction * step_size
+  var world = _get_world_node()
   if world:
-    var board_size = world.get("board_size")
-    if board_size is int or board_size is float:
-      var boundary = int(board_size / 2)
-      if abs(target_pos.x) >= boundary or abs(target_pos.z) >= boundary:
-        return true
+    return world.world_to_cell(target_pos)
+  # Fallback: compute cell locally (Vector2i: x = world X, y = world Z)
+  return Vector2i(round(target_pos.x / step_size), round(target_pos.z / step_size))
 
-  # Raycast for collisions with objects
-  var from := global_transform.origin + Vector3(0, eye_height * 0.5, 0)
-  var fwd := direction
-  fwd.y = 0
-  fwd = fwd.normalized()
-  var to := from + fwd * (step_size * 0.95)
-
-  var space := get_world_3d().direct_space_state
-  var query := PhysicsRayQueryParameters3D.create(from, to)
-  query.exclude = [ self ]
-  var hit := space.intersect_ray(query)
-
-  return hit.size() > 0
+func _get_world_node() -> Node:
+  var world := get_parent()
+  if world and world.has_method("world_to_cell") and world.has_method("is_cell_blocked") and world.has_method("get_symbol_at_cell"):
+    return world
+  return null
 
 func _on_bumped_symbol(symbol: Node) -> void:
   # Log interaction

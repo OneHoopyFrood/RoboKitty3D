@@ -75,15 +75,16 @@ layout_mode = 2
 text = "A tiny world of things that are not kitten"
 horizontal_alignment = 1
 
-[node name="PlayButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
-text = "Play"
 
 [node name="ResumeButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
 text = "Resume"
+
+[node name="RestartButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+text = "Restart"
 
 [node name="QuitButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
