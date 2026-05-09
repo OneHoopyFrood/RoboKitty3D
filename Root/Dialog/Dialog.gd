@@ -11,6 +11,9 @@ var _label: Label
 var _tween: Tween
 
 func _ready():
+  # Keep the CanvasLayer itself visible; panel controls actual shown/hidden state.
+  visible = true
+
   # Get references to child nodes
   _panel = $Panel
   _label = $Panel/MarginContainer/Label
@@ -37,6 +40,7 @@ func open(blurb: String) -> void:
   if is_open:
     return
 
+  visible = true
   is_open = true
   _label.text = blurb
   _panel.visible = true

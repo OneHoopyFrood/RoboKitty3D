@@ -71,8 +71,11 @@ func _ready():
   if error_sfx_stream:
     _error_sfx.stream = error_sfx_stream
 
-func set_controls_enabled(enabled: bool) -> void:
-  controls_enabled = enabled
+func enable_controls() -> void:
+  controls_enabled = true
+
+func disable_controls() -> void:
+  controls_enabled = false
 
 func _input(event):
   if not controls_enabled:
@@ -383,15 +386,6 @@ func _on_bumped_symbol(symbol: Node) -> void:
   if _sfx and _sfx.stream:
     _sfx.play()
 
-  # Get blurb safely
-  var blurb := ""
-  if symbol.has_method("get_blurb"):
-    blurb = symbol.get_blurb()
-  elif symbol.has_meta("blurb"):
-    blurb = str(symbol.get_meta("blurb"))
-  elif "blurb" in symbol:
-    blurb = str(symbol.blurb)
-
-  # Open dialog if wired
-  if _dialog_ui and _dialog_ui.has_method("open"):
-    _dialog_ui.open(blurb)
+  # Let Symbol emit its bump signal; Root owns dialog presentation.
+  if symbol.has_method("bump"):
+    symbol.bump()

@@ -14,6 +14,9 @@ var _current_scene: String = "menu" # "menu" or "world"
 func _ready() -> void:
 	_show_menu()
 	_music.finished.connect(_on_music_finished)
+	if _world and not _world.child_entered_tree.is_connected(_on_world_child_entered_tree):
+		_world.child_entered_tree.connect(_on_world_child_entered_tree)
+	_connect_symbol_bump_signals()
 
 
 func _on_music_finished() -> void:
@@ -27,25 +30,30 @@ func _input(event: InputEvent) -> void:
 
 func _show_menu() -> void:
 	_current_scene = "menu"
-	if _player and _player.has_method("set_controls_enabled"):
-		_player.set_controls_enabled(false)
-	if _world:
-		_world.visible = true
-		_world.process_mode = Node.PROCESS_MODE_INHERIT
-	if _menu:
-		_menu.visible = true
+	
+	# Disable player controls and hide world, but keep them active so they can be seen in the background.
+	_player.disable_controls()
+
+	# Close dialog if open
+	if _dialog.is_open:
+		_dialog.close()
+	
+	# Show world in the background, but disable processing so it doesn't update or respond to interactions.
+	_world.visible = true
+	_world.process_mode = Node.PROCESS_MODE_INHERIT
+	
+	# Show menu on top of world
+	_menu.visible = true
+	
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 
 func _show_world() -> void:
 	_current_scene = "world"
-	if _menu:
-		_menu.visible = false
-	if _player and _player.has_method("set_controls_enabled"):
-		_player.set_controls_enabled(true)
-	if _world:
-		_world.visible = true
-		_world.process_mode = Node.PROCESS_MODE_INHERIT
+	_menu.visible = false
+	_player.enable_controls()
+	_world.visible = true
+	_world.process_mode = Node.PROCESS_MODE_INHERIT
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
@@ -55,3 +63,27 @@ func play() -> void:
 
 func quit() -> void:
 	get_tree().quit()
+
+
+func _connect_symbol_bump_signals() -> void:
+	if not _world:
+		return
+
+	_connect_symbol_bump_signals_recursive(_world)
+
+
+func _connect_symbol_bump_signals_recursive(node: Node) -> void:
+	for child in node.get_children():
+		if child.has_signal("bumped") and not child.is_connected("bumped", Callable(self , "_on_symbol_bumped")):
+			child.connect("bumped", Callable(self , "_on_symbol_bumped"))
+		_connect_symbol_bump_signals_recursive(child)
+
+
+func _on_world_child_entered_tree(node: Node) -> void:
+	if node.has_signal("bumped") and not node.is_connected("bumped", Callable(self , "_on_symbol_bumped")):
+		node.connect("bumped", Callable(self , "_on_symbol_bumped"))
+
+
+func _on_symbol_bumped(blurb: String) -> void:
+	if _dialog and _dialog.has_method("open"):
+		_dialog.open(blurb)
