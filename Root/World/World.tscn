@@ -21,14 +21,6 @@ fog_sky_affect = 0.0
 volumetric_fog_density = 0.2282
 volumetric_fog_sky_affect = 0.0
 
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_y6flb"]
-plane = Plane(0, 0, 1, -0.035)
-
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_il6x7"]
-plane = Plane(0, 0, 1, 0)
-
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_mlekv"]
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mlekv"]
 albedo_color = Color(0, 0, 0, 1)
 emission_enabled = true
@@ -60,27 +52,5 @@ light_specular = 16.0
 omni_range = 4096.0
 omni_attenuation = 0.0
 
-[node name="Boundry" type="StaticBody3D" parent="." unique_id=665446268]
-
-[node name="Wall1" type="CollisionShape3D" parent="Boundry" unique_id=1333183612]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -25)
-shape = SubResource("WorldBoundaryShape3D_y6flb")
-
-[node name="Wall2" type="CollisionShape3D" parent="Boundry" unique_id=1464596147]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 1, 25)
-shape = SubResource("WorldBoundaryShape3D_il6x7")
-
-[node name="Wall3" type="CollisionShape3D" parent="Boundry" unique_id=1132544913]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -25, 1, 0)
-shape = SubResource("WorldBoundaryShape3D_il6x7")
-
-[node name="Wall4" type="CollisionShape3D" parent="Boundry" unique_id=111304540]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 25, 1, 0)
-shape = SubResource("WorldBoundaryShape3D_il6x7")
-
-[node name="FloorBoundry" type="CollisionShape3D" parent="Boundry" unique_id=2118913691]
-visible = false
-shape = SubResource("WorldBoundaryShape3D_mlekv")
-
-[node name="FloorSolid" type="MeshInstance3D" parent="Boundry" unique_id=1482360944]
+[node name="FloorSolid" type="MeshInstance3D" parent="." unique_id=1482360944]
 mesh = SubResource("PlaneMesh_il6x7")

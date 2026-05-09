@@ -9,9 +9,6 @@ font = ExtResource("2_xqmbm")
 font_size = 127
 depth = 0.125
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_xqmbm"]
-size = Vector3(0.9, 0.9, 0.9)
-
 [node name="Symbol" type="Node3D"]
 script = ExtResource("1_a5rj1")
 metadata/_custom_type_script = "uid://bs8j71elomxox"
@@ -19,8 +16,3 @@ metadata/_custom_type_script = "uid://bs8j71elomxox"
 [node name="Mesh" type="MeshInstance3D" parent="."]
 custom_aabb = AABB(-0.5, -0.5, -0.5, 1, 1, 1)
 mesh = SubResource("TextMesh_nnv6f")
-
-[node name="ColliderBody" type="StaticBody3D" parent="."]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ColliderBody"]
-shape = SubResource("BoxShape3D_xqmbm")
