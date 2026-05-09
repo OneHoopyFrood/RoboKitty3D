@@ -14,9 +14,7 @@ var _current_scene: String = "menu" # "menu" or "world"
 func _ready() -> void:
 	_show_menu()
 	_music.finished.connect(_on_music_finished)
-	if _world and not _world.child_entered_tree.is_connected(_on_world_child_entered_tree):
-		_world.child_entered_tree.connect(_on_world_child_entered_tree)
-	_connect_symbol_bump_signals()
+	_connect_symbol_bump_signals_recursive(_world)
 	_menu.button_pressed.connect(_on_menu_button_pressed)
 
 
@@ -72,13 +70,6 @@ func _on_menu_button_pressed(action: Menu.MenuAction) -> void:
 			play()
 		Menu.MenuAction.QUIT:
 			quit()
-
-
-func _connect_symbol_bump_signals() -> void:
-	if not _world:
-		return
-
-	_connect_symbol_bump_signals_recursive(_world)
 
 
 func _connect_symbol_bump_signals_recursive(node: Node) -> void:
