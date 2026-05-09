@@ -88,7 +88,7 @@ func world_to_cell(world_pos: Vector3) -> Vector2i:
   )
 
 func cell_to_world(cell: Vector2i) -> Vector3:
-  return Vector3(cell.x * step_size, 1, cell.y * step_size)
+  return Vector3(cell.x * step_size, 0.8, cell.y * step_size)
 
 ## Check if a floor grid cell is within gameplay bounds.
 func is_in_bounds(cell: Vector2i) -> bool:
