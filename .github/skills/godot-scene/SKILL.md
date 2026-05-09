@@ -20,7 +20,7 @@ Creates a paired `.tscn` + `.gd` following this project's conventions.
 
    | Purpose                     | Extends                    | Location             |
    | --------------------------- | -------------------------- | -------------------- |
-   | Interactive world object    | `BaseInteractionNode`      | `Root/World/<Name>/` |
+   | Interactive world object    | `Node3D`                   | `Root/World/<Name>/` |
    | Player-controlled character | `CharacterBody3D`          | `Root/World/Player/` |
    | UI overlay                  | `Control` or `CanvasLayer` | `Root/<Name>/`       |
    | World/level root            | `Node3D`                   | `Root/World/`        |
@@ -28,13 +28,13 @@ Creates a paired `.tscn` + `.gd` following this project's conventions.
 2. **Create the GDScript** at `<Folder>/<Name>.gd`:
    - `class_name` matching the folder name
    - `extends` the appropriate base
-   - `_ready()` calls `super._ready()` if overriding
+   - `_ready()` initializes its own mesh/material state if needed
    - Private members prefixed with `_`
    - No signals — use direct method calls
 
 3. **Create the `.tscn`** at `<Folder>/<Name>.tscn`:
    - Root node type matches the `extends` class
-   - If it extends `BaseInteractionNode`, include a child `MeshInstance3D` named exactly `Mesh`
+   - For interactive world objects, include a child `MeshInstance3D` named exactly `Mesh`
    - Attach the `.gd` script to the root node
 
 4. **Register with `world.gd`** if it's a world object:

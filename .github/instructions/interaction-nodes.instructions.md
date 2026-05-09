@@ -1,16 +1,16 @@
 ---
-description: "Use when creating, extending, or modifying interactive objects (NKIs, kitten, cubes) that extend BaseInteractionNode. Covers required interface, setup pattern, and conventions."
+description: "Use when creating, extending, or modifying interactive objects (NKIs, kitten, cubes) under Root/World. Covers required interface, setup pattern, and conventions."
 applyTo: "Root/World/**/*.gd"
 ---
 
 # Interaction Node Conventions
 
-All interactive objects inherit from `BaseInteractionNode` ([base_interaction_node.gd](../../Root/World/BaseInteractionNode/base_interaction_node.gd)).
+Interactive objects currently own their behavior directly (for example `Symbol`).
 
 ## Required Setup in `_ready()`
 
-1. Call `super._ready()` first — it locates the `Mesh` child node and creates the glow material overlay.
-2. The scene **must** have a child `MeshInstance3D` named exactly `Mesh`.
+1. If the scene renders geometry, include a child `MeshInstance3D` named exactly `Mesh`.
+2. Initialize mesh/material setup in the node script's `_ready()`.
 
 ## Implement `get_blurb() -> String`
 
@@ -24,7 +24,7 @@ New interactive nodes should implement `get_blurb() -> String`. Do not rely on m
 
 ## Color & Bobbing
 
-Use the built-in helpers rather than setting properties directly:
+Expose and use helper methods rather than mutating mesh internals from outside:
 
 ```gdscript
 node.randomize_bobbing(rng)   # randomizes amplitude + speed within clamped ranges

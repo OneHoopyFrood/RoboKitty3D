@@ -19,12 +19,11 @@ Root.tscn           — root; owns scene switching, mouse state, and global audi
     Symbol.tscn (×N) — interactive floating objects (the NKIs)
 ```
 
-**Inheritance chain for interactive objects:**
-`BaseInteractionNode` → `Cube` | `Symbol`
+**Interactive object model:**
+`Symbol` currently owns interaction behavior directly.
 
-- `BaseInteractionNode` owns bobbing animation, glow color, and the `get_blurb()` interface.
-- `Symbol` adds a random ASCII character `TextMesh`.
-- `Cube` is currently a stub.
+- `Symbol` owns bobbing animation, glow color, random ASCII character `TextMesh`, and `get_blurb()`.
+- `Cube` is currently not implemented in `Root/World/`.
 
 ## Key Conventions
 
@@ -40,15 +39,14 @@ Root.tscn           — root; owns scene switching, mouse state, and global audi
 
 ## Important Files
 
-| File                                                                                                               | Role                                                   |
-| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| [Root/Root.gd](Root/Root.gd)                                                                                       | Scene switching, mouse mode, world input gating, music |
-| [Root/Menu/Menu.gd](Root/Menu/Menu.gd)                                                                             | Menu button wiring and presentation                    |
-| [Root/World/world.gd](Root/World/world.gd)                                                                         | Procedural board generation                            |
-| [Root/World/Player/Player.gd](Root/World/Player/Player.gd)                                                         | Input, grid movement, raycast interaction, animations  |
-| [Root/World/BaseInteractionNode/base_interaction_node.gd](Root/World/BaseInteractionNode/base_interaction_node.gd) | Base class for all interactable objects                |
-| [Root/World/Symbol/symbol.gd](Root/World/Symbol/symbol.gd)                                                         | NKI implementation (ASCII symbol + blurb)              |
-| [Assets/NKIs.txt](Assets/NKIs.txt)                                                                                 | Source text for non-kitten item blurbs                 |
+| File                                                       | Role                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------ |
+| [Root/Root.gd](Root/Root.gd)                               | Scene switching, mouse mode, world input gating, music |
+| [Root/Menu/Menu.gd](Root/Menu/Menu.gd)                     | Menu button wiring and presentation                    |
+| [Root/World/world.gd](Root/World/world.gd)                 | Procedural board generation                            |
+| [Root/World/Player/Player.gd](Root/World/Player/Player.gd) | Input, grid movement, raycast interaction, animations  |
+| [Root/World/Symbol/symbol.gd](Root/World/Symbol/symbol.gd) | NKI implementation (ASCII symbol + blurb)              |
+| [Assets/NKIs.txt](Assets/NKIs.txt)                         | Source text for non-kitten item blurbs                 |
 
 ## What's Not Implemented Yet
 
