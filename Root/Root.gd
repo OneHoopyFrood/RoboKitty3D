@@ -17,6 +17,7 @@ func _ready() -> void:
 	if _world and not _world.child_entered_tree.is_connected(_on_world_child_entered_tree):
 		_world.child_entered_tree.connect(_on_world_child_entered_tree)
 	_connect_symbol_bump_signals()
+	_menu.button_pressed.connect(_on_menu_button_pressed)
 
 
 func _on_music_finished() -> void:
@@ -48,7 +49,7 @@ func _show_menu() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 
-func _show_world() -> void:
+func _hide_menu() -> void:
 	_current_scene = "world"
 	_menu.visible = false
 	_player.enable_controls()
@@ -58,11 +59,19 @@ func _show_world() -> void:
 
 
 func play() -> void:
-	_show_world()
+	_hide_menu()
 
 
 func quit() -> void:
 	get_tree().quit()
+
+
+func _on_menu_button_pressed(action: Menu.MenuAction) -> void:
+	match action:
+		Menu.MenuAction.PLAY, Menu.MenuAction.RESUME:
+			play()
+		Menu.MenuAction.QUIT:
+			quit()
 
 
 func _connect_symbol_bump_signals() -> void:
