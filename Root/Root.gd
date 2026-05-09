@@ -12,10 +12,12 @@ var _current_scene: String = "menu" # "menu" or "world"
 
 
 func _ready() -> void:
-	_show_menu()
+	# Set up music to loop and play
 	_music.finished.connect(_on_music_finished)
 	_connect_symbol_bump_signals_recursive(_world)
 	_menu.button_pressed.connect(_on_menu_button_pressed)
+
+	_hide_menu()
 
 
 func _on_music_finished() -> void:
