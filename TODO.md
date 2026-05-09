@@ -35,9 +35,10 @@
 - [x] Should player only be able to move in the cardinal
       directions? Like the original game? W would be forward, S back, A to turn
       left 90°, D to turn right 90°
-- [ ] Strafe (hold shift to strafe instead of turn)
+- [x] Strafe (hold shift to strafe instead of turn)
 - [ ] Sprint (hold ctrl to move faster)
 - [ ] Configurable controls
+- [ ] Dim visited symbols
 - [ ] Something to fill the void? Starfield? Slightly shiny floor texture? It'd
       be nice to see my reflection.
 
@@ -47,9 +48,12 @@
 - [x] Resume
 - [ ] Restart - randomizes the symbols and puts the player back at the start
 - [x] Quit to desktop
-- Settings
+- Options
+  - [ ] Dim visited symbols
   - [ ] Number of symbols
   - [ ] Board size
+  - [ ] Change background track
+- Settings
   - [ ] Control customization
   - [ ] Music and SFX volumes
   - [ ] Fullscreen
