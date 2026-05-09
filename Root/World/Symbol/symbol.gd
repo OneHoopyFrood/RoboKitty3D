@@ -2,6 +2,7 @@ class_name Symbol
 extends Node3D
 
 signal bumped(blurb: String)
+signal kitten_found
 
 ########################
 ## CONSTANTS
@@ -27,6 +28,7 @@ var base_y: float # Height to float (centerpoint of symbol)
 var color: Color = DEFAULT_COLOR
 var symbol: String
 var blurb: String = ""
+var is_kitten: bool = false
 
 # Private
 var _time: float = 0.0
@@ -107,6 +109,8 @@ func face_player(direction: Vector3) -> void:
 func bump() -> void:
   print_debug("Symbol ", symbol, " interacted with")
   bumped.emit(blurb)
+  if is_kitten:
+    kitten_found.emit()
 
 ## Returns the blurb text for this symbol.
 func get_blurb() -> String:

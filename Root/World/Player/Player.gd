@@ -90,17 +90,17 @@ func _input(event):
   if event is InputEventMouseMotion:
     mouse_delta = event.relative
 
-func _process(delta):
+func _process(delta: float):
   if not controls_enabled:
     return
   # Handle movement and interaction input
-  _handle_movement_input(delta)
+  _handle_movement_input()
 
   # Handle mouse look
   _handle_look_input(delta)
 
 ## Process all movement and interaction input (forward, back, turn).
-func _handle_movement_input(delta: float) -> void:
+func _handle_movement_input() -> void:
   # Block input if dialog is open
   if _dialog_ui and _dialog_ui.is_open:
     return
@@ -378,7 +378,7 @@ func _target_cell_in_direction(direction: Vector3) -> Vector2i:
 
 func _get_world_node() -> Node:
   var world := get_parent()
-  if world and world.has_method("world_to_cell") and world.has_method("is_cell_blocked") and world.has_method("get_symbol_at_cell"):
+  if world and world.has_method("world_to_cell") and world.has_method("is_cell_blocked") and (world.has_method("get_interactable_at_cell") or world.has_method("get_symbol_at_cell")):
     return world
   return null
 

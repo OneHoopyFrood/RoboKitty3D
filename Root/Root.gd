@@ -26,6 +26,10 @@ func _ready() -> void:
 	_refresh_music_playback_label()
 
 	_connect_symbol_bump_signals_recursive(_world)
+
+	if _world.has_signal("kitten_found") and not _world.kitten_found.is_connected(_on_kitten_found):
+		_world.kitten_found.connect(_on_kitten_found)
+
 	_menu.button_pressed.connect(_on_menu_button_pressed)
 
 	_hide_menu()
@@ -145,3 +149,10 @@ func _on_world_child_entered_tree(node: Node) -> void:
 func _on_symbol_bumped(blurb: String) -> void:
 	if _dialog and _dialog.has_method("open"):
 		_dialog.open(blurb)
+
+
+func _on_kitten_found() -> void:
+	if _has_won:
+		return
+	_has_won = true
+	_player.disable_controls()
