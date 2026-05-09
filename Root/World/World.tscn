@@ -47,7 +47,6 @@ script = ExtResource("1_y6flb")
 [node name="Player" parent="." unique_id=968952245 instance=ExtResource("2_g376h")]
 dialog_ui_path = NodePath("../../Dialog")
 
-
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=709112638]
 environment = SubResource("Environment_js7pq")
 

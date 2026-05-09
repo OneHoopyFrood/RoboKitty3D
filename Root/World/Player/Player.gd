@@ -19,6 +19,7 @@ signal player_movement(direction: Vector3)
 
 @export var dialog_ui_path: NodePath
 @export var select_sfx_stream: AudioStream
+@export var brake_sfx_stream: AudioStream
 @export var error_sfx_stream: AudioStream
 
 var cam: Camera3D
@@ -40,7 +41,8 @@ var controls_enabled: bool = true
 
 var _tween: Tween
 var _dialog_ui: Node = null
-var _sfx: AudioStreamPlayer = null
+var _sfx_select: AudioStreamPlayer = null
+var _sfx_brake: AudioStreamPlayer = null
 var _error_sfx: AudioStreamPlayer = null
 
 const symbol_group = "symbol"
@@ -60,10 +62,16 @@ func _ready():
     _dialog_ui = get_node_or_null(dialog_ui_path)
 
   # Simple SFX player
-  _sfx = AudioStreamPlayer.new()
-  add_child(_sfx)
+  _sfx_select = AudioStreamPlayer.new()
+  add_child(_sfx_select)
   if select_sfx_stream:
-    _sfx.stream = select_sfx_stream
+    _sfx_select.stream = select_sfx_stream
+
+  # Brake SFX player
+  _sfx_brake = AudioStreamPlayer.new()
+  add_child(_sfx_brake)
+  if brake_sfx_stream:
+    _sfx_brake.stream = brake_sfx_stream
 
   # Error SFX player
   _error_sfx = AudioStreamPlayer.new()
@@ -125,7 +133,7 @@ func _handle_movement_input(delta: float) -> void:
         # Held walk: brake when hitting any obstacle during continuous walk
         if is_walking and _is_path_blocked(-transform.basis.z):
           # Hit obstacle during continuous walk - brake and end sequence
-          _do_brake_animation()
+          _do_brake()
           is_walking = false
         elif not _is_path_blocked(-transform.basis.z):
           start_move(-transform.basis.z)
@@ -141,7 +149,7 @@ func _handle_movement_input(delta: float) -> void:
         # Held walk backward: brake when hitting any obstacle
         if is_walking and _is_path_blocked(transform.basis.z):
           # Hit obstacle during continuous walk - brake and end sequence
-          _do_brake_animation()
+          _do_brake()
           is_walking = false
         elif not _is_path_blocked(transform.basis.z):
           start_move(transform.basis.z)
@@ -297,6 +305,12 @@ func _do_bump_bounce() -> void:
   shake_tween.tween_property(cam, "position", original_cam_pos + Vector3(randf_range(-0.03, 0.03), randf_range(-0.03, 0.03), 0), 0.05)
   shake_tween.tween_property(cam, "position", original_cam_pos, 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
+func _do_brake() -> void:
+  # Play oof
+  if _sfx_brake and _sfx_brake.stream:
+    _sfx_brake.play()
+  _do_brake_animation()
+
 func _do_brake_animation() -> void:
   # Brake animation: camera lurches forward and down like sudden deceleration, then snaps back
   is_animating = true
@@ -383,8 +397,8 @@ func _on_bumped_symbol(symbol: Node) -> void:
   _do_bump_bounce()
 
   # Play sfx
-  if _sfx and _sfx.stream:
-    _sfx.play()
+  if _sfx_select and _sfx_select.stream:
+    _sfx_select.play()
 
   # Let Symbol emit its bump signal; Root owns dialog presentation.
   if symbol.has_method("bump"):
