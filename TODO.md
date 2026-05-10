@@ -48,6 +48,7 @@
 - [x] Resume
 - [ ] Restart - randomizes the symbols and puts the player back at the start
 - [x] Quit to desktop
+- [ ] Keyboard/Controller navigation (is only mouse right now)
 - Options
   - [ ] Dim visited symbols
   - [ ] Number of symbols
@@ -82,12 +83,12 @@
   - [x] Kitten Noises
   - [x] Interact
   - [x] Wall bump noise
-  - [ ] Robot movement
-    - [ ] Whirrr on move/turn
-    - [ ] Aborted whirr on bump
+  - [x] Robot movement
+    - [x] Whirrr on move/turn
+    - [x] Ooof when hitting a symbol at speed
     - [ ] Back-up beep?
     - [x] Error noise when backing into a wall
-    - [ ] Error noise when backing into a symbol
+    - [x] Error noise when backing into a symbol
   - [ ] Kitten noises
     - [ ] For when you find the kitten, or in "hint" mode (you can hear the kitten when you call)
     - [ ] Call noise (Wall-E style whistle)

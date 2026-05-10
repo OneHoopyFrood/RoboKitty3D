@@ -5,7 +5,7 @@ signal player_movement(direction: Vector3)
 ## Distance moved per step input; also defines grid cell size
 @export var step_size: float = 1.0
 ## Duration of a single step movement (lower = snappier but less forgiving)
-@export var step_duration: float = 0.1
+@export var step_duration: float = 0.15
 ## Duration of 90-degree turn (lower = snappier but may cause motion sickness)
 @export var turn_duration: float = 0.25
 ## Mouse movement to camera rotation ratio (higher = more responsive, less precise)
@@ -21,6 +21,7 @@ signal player_movement(direction: Vector3)
 @export var select_sfx_stream: AudioStream
 @export var brake_sfx_stream: AudioStream
 @export var error_sfx_stream: AudioStream
+@export var motor_sfx_stream: AudioStream
 
 var cam: Camera3D
 var mouse_delta: Vector2 = Vector2.ZERO
@@ -43,6 +44,7 @@ var _dialog_ui: Node = null
 var _sfx_select: AudioStreamPlayer = null
 var _sfx_brake: AudioStreamPlayer = null
 var _error_sfx: AudioStreamPlayer = null
+var _sfx_motor: AudioStreamPlayer = null
 var _move_tween: Tween = null
 
 const symbol_group = "symbol"
@@ -78,6 +80,12 @@ func _ready():
   if error_sfx_stream:
     _error_sfx.stream = error_sfx_stream
 
+  # Motor SFX player
+  _sfx_motor = AudioStreamPlayer.new()
+  add_child(_sfx_motor)
+  if motor_sfx_stream:
+    _sfx_motor.stream = motor_sfx_stream
+  
 func enable_controls() -> void:
   controls_enabled = true
 
@@ -190,6 +198,10 @@ func start_move(direction: Vector3) -> void:
   if is_moving:
     return
 
+  # Play motor sound
+  if _sfx_motor and _sfx_motor.stream and not _sfx_motor.playing:
+    _sfx_motor.play()
+
   direction.y = 0
   direction = direction.normalized()
 
@@ -207,6 +219,8 @@ func start_move(direction: Vector3) -> void:
   _move_tween.tween_property(self , "global_position", target_position, step_duration)
   _move_tween.finished.connect(func():
     _snap_to_grid()
+    if _sfx_motor and _sfx_motor.playing:
+      _sfx_motor.stop()
     is_moving = false
   )
 
