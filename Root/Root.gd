@@ -15,6 +15,7 @@ const _MUSIC_TRACKS: Array[AudioStream] = [
   preload("res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg"),
   preload("res://Assets/music/jonbeck bonbo.ogg")
 ]
+const _MUSIC_TRACK_INDEX_SETTING: String = "game/current_music_track_index"
 const _WIN_RESTART_PROMPT: String = "Press any key to restart"
 
 var _current_scene: String = "menu" # "menu" or "world"
@@ -27,6 +28,8 @@ var _cheat_input_buffer: String = ""
 func _ready() -> void:
   if not _music.finished.is_connected(_on_music_finished):
     _music.finished.connect(_on_music_finished)
+  if ProjectSettings.has_setting(_MUSIC_TRACK_INDEX_SETTING):
+    _track_index = int(ProjectSettings.get_setting(_MUSIC_TRACK_INDEX_SETTING))
   _play_track(_track_index)
   _refresh_music_playback_label()
 
@@ -51,6 +54,7 @@ func _play_track(index: int) -> void:
     return
 
   _track_index = wrapi(index, 0, _MUSIC_TRACKS.size())
+  ProjectSettings.set_setting(_MUSIC_TRACK_INDEX_SETTING, _track_index)
   _music.stream = _MUSIC_TRACKS[_track_index]
   _music.stream_paused = false
   _music.play()
@@ -116,7 +120,7 @@ func _handle_root_input(event: InputEvent) -> bool:
 
 
 func _restart_after_win() -> void:
-  get_tree().reload_current_scene()
+  reset()
 
 
 func _show_menu() -> void:
@@ -232,6 +236,16 @@ func resume() -> void:
   _hide_menu()
 
 
+func reset() -> void:
+  shuffle_bg_music()
+  get_tree().reload_current_scene()
+
+
+func shuffle_bg_music() -> void:
+  if not _MUSIC_TRACKS.is_empty():
+    ProjectSettings.set_setting(_MUSIC_TRACK_INDEX_SETTING, wrapi(_track_index + 1, 0, _MUSIC_TRACKS.size()))
+
+
 func quit() -> void:
   get_tree().quit()
 
@@ -244,8 +258,10 @@ func _on_menu_button_pressed(action: Menu.MenuAction) -> void:
       toggle_music_playback()
     Menu.MenuAction.MUSIC_SKIP_FORWARD:
       skip_music_forward()
-    Menu.MenuAction.RESUME, Menu.MenuAction.RESTART:
+    Menu.MenuAction.RESUME:
       resume()
+    Menu.MenuAction.RESTART:
+      reset()
     Menu.MenuAction.QUIT:
       quit()
 
