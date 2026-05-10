@@ -119,5 +119,13 @@ func get_symbol_at_cell(cell: Vector2i) -> Symbol:
 func is_cell_blocked(cell: Vector2i) -> bool:
   return not is_in_bounds(cell) or get_symbol_at_cell(cell) != null
 
+func bump_kitten() -> void:
+  for cell in _cell_to_symbol:
+    var symbol = _cell_to_symbol[cell]
+    if symbol.is_kitten:
+      symbol.bump()
+      return
+
+
 func _on_kitten_found() -> void:
   kitten_found.emit()

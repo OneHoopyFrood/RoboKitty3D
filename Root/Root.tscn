@@ -36,3 +36,21 @@ visible = false
 stream = SubResource("AudioStreamRandomizer_music")
 volume_db = -5.0
 autoplay = true
+
+[node name="CheatConsoleLayer" type="CanvasLayer" parent="." unique_id=1019982774]
+layer = 50
+
+[node name="CheatPanel" type="PanelContainer" parent="CheatConsoleLayer" unique_id=347550798]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -42.0
+offset_right = 310.0
+offset_bottom = -10.0
+grow_vertical = 0
+
+[node name="CheatLabel" type="Label" parent="CheatConsoleLayer/CheatPanel" unique_id=1627201214]
+layout_mode = 2
+text = "  > "
+vertical_alignment = 2
