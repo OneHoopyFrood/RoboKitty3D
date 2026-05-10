@@ -8,6 +8,7 @@ var is_open: bool = false
 ## UI nodes
 var _panel: Control
 var _label: Label
+var _hint_label: Label
 var _tween: Tween
 
 func _ready():
@@ -17,10 +18,12 @@ func _ready():
   # Get references to child nodes
   _panel = $Panel
   _label = $Panel/MarginContainer/Label
+  _hint_label = $Panel/HintLabel
 
   # Start invisible
   _panel.modulate.a = 0
   _panel.visible = false
+  _hint_label.visible = false
 
   # Don't process input until dialog is open
   set_process_input(false)
@@ -36,13 +39,18 @@ func _input(event: InputEvent) -> void:
     get_viewport().set_input_as_handled()
 
 ## Open the dialog with the given blurb text
-func open(blurb: String) -> void:
+func open(blurb: String, hint: String = "") -> void:
+  if blurb != "":
+    _label.text = blurb
+
+  _hint_label.text = hint
+  _hint_label.visible = hint.length() > 0
+
   if is_open:
     return
 
   visible = true
   is_open = true
-  _label.text = blurb
   _panel.visible = true
 
   # Fade in
@@ -69,5 +77,6 @@ func close() -> void:
   _tween.tween_property(_panel, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
   _tween.finished.connect(func():
     _panel.visible = false
+    _hint_label.visible = false
     is_open = false
   )

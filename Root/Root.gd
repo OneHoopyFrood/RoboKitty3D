@@ -13,6 +13,7 @@ const _MUSIC_TRACKS: Array[AudioStream] = [
 	preload("res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg"),
 	preload("res://Assets/music/jonbeck bonbo.ogg")
 ]
+const _WIN_RESTART_PROMPT: String = "Press any key to restart"
 
 var _current_scene: String = "menu" # "menu" or "world"
 var _has_won: bool = false
@@ -79,8 +80,17 @@ func _refresh_music_playback_label() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if _has_won and event is InputEventKey and event.pressed and not event.echo:
+		_restart_after_win()
+		get_viewport().set_input_as_handled()
+		return
+
 	if event.is_action_pressed("ui_cancel"):
 		_show_menu()
+
+
+func _restart_after_win() -> void:
+	get_tree().reload_current_scene()
 
 
 func _show_menu() -> void:
@@ -156,3 +166,5 @@ func _on_kitten_found() -> void:
 		return
 	_has_won = true
 	_player.disable_controls()
+	if _dialog and _dialog.has_method("open"):
+		_dialog.open("", _WIN_RESTART_PROMPT)
