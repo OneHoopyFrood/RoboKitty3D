@@ -8,12 +8,23 @@ class_name Root
 @onready var _dialog = $Dialog
 @onready var _music: AudioStreamPlayer = $BackgroundMusic
 
+const _MUSIC_TRACKS: Array[AudioStream] = [
+	preload("res://Assets/music/Nostalgium 2023.ogg"),
+	preload("res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg"),
+	preload("res://Assets/music/jonbeck bonbo.ogg")
+]
+
 var _current_scene: String = "menu" # "menu" or "world"
+var _has_won: bool = false
+var _track_index: int = 0
 
 
 func _ready() -> void:
-	# Set up music to loop and play
-	_music.finished.connect(_on_music_finished)
+	if not _music.finished.is_connected(_on_music_finished):
+		_music.finished.connect(_on_music_finished)
+	_play_track(_track_index)
+	_refresh_music_playback_label()
+
 	_connect_symbol_bump_signals_recursive(_world)
 	_menu.button_pressed.connect(_on_menu_button_pressed)
 
@@ -21,7 +32,46 @@ func _ready() -> void:
 
 
 func _on_music_finished() -> void:
+	skip_music_forward()
+
+
+func _play_track(index: int) -> void:
+	if _MUSIC_TRACKS.is_empty():
+		return
+
+	_track_index = wrapi(index, 0, _MUSIC_TRACKS.size())
+	_music.stream = _MUSIC_TRACKS[_track_index]
+	_music.stream_paused = false
 	_music.play()
+	_refresh_music_playback_label()
+
+
+func skip_music_back() -> void:
+	_play_track(_track_index - 1)
+
+
+func skip_music_forward() -> void:
+	_play_track(_track_index + 1)
+
+
+func toggle_music_playback() -> void:
+	if _music.playing and not _music.stream_paused:
+		_music.stream_paused = true
+		_refresh_music_playback_label()
+		return
+
+	if _music.stream_paused:
+		_music.stream_paused = false
+		_refresh_music_playback_label()
+		return
+
+	_play_track(_track_index)
+
+
+func _refresh_music_playback_label() -> void:
+	var is_playing := _music.playing and not _music.stream_paused
+	if _menu and _menu.has_method("set_music_playing_state"):
+		_menu.set_music_playing_state(is_playing)
 
 
 func _input(event: InputEvent) -> void:
@@ -68,6 +118,12 @@ func quit() -> void:
 
 func _on_menu_button_pressed(action: Menu.MenuAction) -> void:
 	match action:
+		Menu.MenuAction.MUSIC_SKIP_BACK:
+			skip_music_back()
+		Menu.MenuAction.MUSIC_TOGGLE_PLAYBACK:
+			toggle_music_playback()
+		Menu.MenuAction.MUSIC_SKIP_FORWARD:
+			skip_music_forward()
 		Menu.MenuAction.RESUME, Menu.MenuAction.RESTART:
 			resume()
 		Menu.MenuAction.QUIT:

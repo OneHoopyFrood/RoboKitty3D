@@ -32,7 +32,7 @@ visible = false
 [node name="Dialog" parent="." unique_id=1986789627 instance=ExtResource("4_dialog")]
 visible = false
 
-[node name="BackgroundMusic" type="AudioStreamPlayer" parent="."]
+[node name="BackgroundMusic" type="AudioStreamPlayer" parent="." unique_id=340195841]
 stream = SubResource("AudioStreamRandomizer_music")
 volume_db = -5.0
 autoplay = true
