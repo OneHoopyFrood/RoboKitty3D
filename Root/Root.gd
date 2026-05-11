@@ -216,3 +216,12 @@ func _on_cheat_activated(code: String) -> void:
   if code == "rfk":
     resume()
     _world.bump_kitten()
+    print_debug("Cheat activated: You win!")
+  elif code == "herekittykitty":
+    # Set dim visited option to true if it's not already, so that the effect of
+    # the cheat is visible.
+    var options := get_node_or_null("/root/GameOptions")
+    if options and not bool(options.visited_dimming):
+      options.visited_dimming = true
+    _world.bump_all_nkis()
+    print_debug("Cheat activated: Bumped all NKIs")

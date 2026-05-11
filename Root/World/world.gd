@@ -128,13 +128,22 @@ func get_symbol_at_cell(cell: Vector2i) -> Symbol:
 func is_cell_blocked(cell: Vector2i) -> bool:
   return not is_in_bounds(cell) or get_symbol_at_cell(cell) != null
 
-func bump_kitten() -> void:
+func _bump_symbol_if(predicate: Callable, do_blurb: bool = true) -> void:
   for cell in _cell_to_symbol:
     var symbol = _cell_to_symbol[cell]
-    if symbol.is_kitten:
-      symbol.bump()
-      return
+    if predicate.call(symbol):
+      symbol.bump(do_blurb)
+  return
 
+func bump_kitten() -> void:
+  _bump_symbol_if(func(symbol: Symbol) -> bool:
+    return symbol.is_kitten
+  )
+
+func bump_all_nkis() -> void:
+  _bump_symbol_if(func(symbol: Symbol) -> bool:
+    return not symbol.is_kitten
+  , false)
 
 func _on_kitten_found() -> void:
   kitten_found.emit()

@@ -96,5 +96,4 @@ func _update_cheat_prompt_label() -> void:
 
 func _execute_cheat_code(input_code: String) -> void:
   var normalized_code := input_code.strip_edges().to_lower()
-  if normalized_code == "mrrow":
-    cheat_activated.emit(normalized_code)
+  cheat_activated.emit(normalized_code)

@@ -126,7 +126,7 @@
 
 - [x] "rfk" - Win the game immediately. (Testing purposes)
 - [ ] "pspsps" - Kitten starts mewing. (Spacial audio hint)
-- [ ] "herekittykitty" - All symbols go gray except the kitten symbol, which glows brighter.
+- [x] "herekittykitty" - All symbols go gray except the kitten symbol, which glows brighter.
 - [ ] "nyan" - God Mode. Doesn't actually do anything. You just get a UI HUD
       label that says "GOD MODE ENABLED" and the nyan cat music plays. Maybe you can jump.
 - [ ] "duckit" - Summons a duck that wanders around and quacks.

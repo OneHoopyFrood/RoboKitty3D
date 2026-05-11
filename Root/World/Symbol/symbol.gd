@@ -115,10 +115,11 @@ func face_player(direction: Vector3) -> void:
   _rotation_tween.tween_property(self , "rotation_degrees:y", shortest_target_rotation_y, 1.2)
 
 ## Handle interaction from player bump. Emits signal with this symbol as argument.
-func bump() -> void:
+func bump(do_blurb: bool = true) -> void:
   print_debug("Symbol ", symbol, " interacted with")
   is_bumped = true
-  bumped.emit(blurb)
+  if do_blurb:
+    bumped.emit(blurb)
   if is_kitten:
     kitten_found.emit()
 
