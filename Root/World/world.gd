@@ -15,6 +15,7 @@ var _blurbs: Array[String] = []
 var _cell_to_symbol: Dictionary = {}
 
 func _ready():
+  _apply_root_options()
   rng.randomize()
   _cell_to_symbol.clear()
 
@@ -37,6 +38,13 @@ func _ready():
         print_debug("World: Connected ", node.name, " to player_movement signal")
   else:
     print_debug("World: Failed to find player or signal!")
+
+
+func _apply_root_options() -> void:
+  var options := get_node_or_null("/root/GameOptions")
+  if options:
+    board_size = int(options.board_size)
+    num_nodes = int(options.nki_count)
 
 func _generate_nodes() -> Array[Symbol]:
   var nodes: Array[Symbol] = []
