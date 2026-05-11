@@ -77,7 +77,7 @@ func _generate_nodes() -> Array[Symbol]:
   return nodes
 
 func random_cell() -> Vector2i:
-  var spawn_radius = int(board_size / 2) - 1
+  var spawn_radius = int(board_size / 2.0) - 1
   return Vector2i(
     rng.randi_range(-spawn_radius, spawn_radius),
     rng.randi_range(-spawn_radius, spawn_radius)
@@ -103,9 +103,10 @@ func _load_blurbs() -> void:
 ## Vector2i.x = world X, Vector2i.y = world Z.
 ## World Y (vertical height) is ignored; occupancy is purely horizontal so bobbing doesn't affect collision.
 func world_to_cell(world_pos: Vector3) -> Vector2i:
+  var inv_step: float = 1.0 / max(step_size, 0.0001)
   return Vector2i(
-    round(world_pos.x / step_size),
-    round(world_pos.z / step_size)
+    round(world_pos.x * inv_step),
+    round(world_pos.z * inv_step)
   )
 
 func cell_to_world(cell: Vector2i) -> Vector3:
@@ -113,7 +114,7 @@ func cell_to_world(cell: Vector2i) -> Vector3:
 
 ## Check if a floor grid cell is within gameplay bounds.
 func is_in_bounds(cell: Vector2i) -> bool:
-  var boundary := int(board_size / 2)
+  var boundary := int(board_size / 2.0)
   return abs(cell.x) < boundary and abs(cell.y) < boundary
 
 ## Look up the symbol occupying a floor grid cell (2D xz address).
