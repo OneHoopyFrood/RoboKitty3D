@@ -28,7 +28,7 @@ func _ready():
   # Don't process input until dialog is open
   set_process_input(false)
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
   # Let Player handle Escape for mouse capture toggling.
   if event.is_action_pressed("ui_cancel"):
     return

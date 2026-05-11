@@ -89,12 +89,16 @@ func _refresh_music_playback_label() -> void:
 
 func _input(event: InputEvent) -> void:
   if _handle_root_input(event):
-    get_viewport().set_input_as_handled()
+    var viewport = get_viewport()
+    if viewport != null:
+      viewport.set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
   if _handle_root_input(event):
-    get_viewport().set_input_as_handled()
+    var viewport = get_viewport()
+    if viewport != null:
+      viewport.set_input_as_handled()
 
 
 func _handle_root_input(event: InputEvent) -> bool:
@@ -118,6 +122,7 @@ func _handle_root_input(event: InputEvent) -> bool:
 
 
 func _restart_after_win() -> void:
+  _has_won = false
   reset()
 
 

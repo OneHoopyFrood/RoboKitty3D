@@ -92,7 +92,7 @@ func enable_controls() -> void:
 func disable_controls() -> void:
   controls_enabled = false
 
-func _input(event):
+func _unhandled_input(event):
   if not controls_enabled:
     return
   if event is InputEventMouseMotion:
