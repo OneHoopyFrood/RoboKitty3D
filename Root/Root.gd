@@ -7,28 +7,36 @@ class_name Root
 @onready var _player = $World/Player
 @onready var _dialog = $Dialog
 @onready var _cheat_console = $CheatConsoleLayer
-@onready var _music: AudioStreamPlayer = $BackgroundMusic
+@onready var _bg_music: AudioStreamPlayer = $BackgroundMusic
+@onready var _bg_music_stream: AudioStreamPlaylist = _bg_music.stream
 
-const _MUSIC_TRACKS: Array[AudioStream] = [
-  preload("res://Assets/music/Nostalgium 2023.ogg"),
-  preload("res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg"),
-  preload("res://Assets/music/jonbeck bonbo.ogg")
-]
-const _MUSIC_TRACK_INDEX_SETTING: String = "game/current_music_track_index"
+var _bg_music_track_indexes: Array[float] = [0.0]
+var _bg_music_current_track_index: int = 0
+
 const _WIN_RESTART_PROMPT: String = "Press any key to restart"
 
 var _current_scene: String = "menu" # "menu" or "world"
 var _has_won: bool = false
-var _track_index: int = 0
 
 
 func _ready() -> void:
-  if not _music.finished.is_connected(_on_music_finished):
-    _music.finished.connect(_on_music_finished)
-  if ProjectSettings.has_setting(_MUSIC_TRACK_INDEX_SETTING):
-    _track_index = int(ProjectSettings.get_setting(_MUSIC_TRACK_INDEX_SETTING))
-  _play_track(_track_index)
-  _refresh_music_playback_label()
+  if not _bg_music.finished.is_connected(_on_music_finished):
+    _bg_music.finished.connect(_on_music_finished)
+
+  # Pre-calculate the starting position of each track in the playlist so we can seek to them directly when skipping.
+  var num_tracks := _bg_music_stream.stream_count
+  _bg_music_track_indexes = []
+  var track_start := 0.0
+  for i in range(num_tracks):
+    _bg_music_track_indexes.append(track_start)
+    var stream: AudioStream = _bg_music_stream.get_list_stream(i)
+    if stream:
+      track_start += stream.get_length()
+  print_debug("Background music track indexes: ", _bg_music_track_indexes)
+
+  # Pick a random start track
+  if num_tracks > 0:
+    _play_track(randi_range(0, num_tracks - 1))
 
   _connect_symbol_bump_signals_recursive(_world)
 
@@ -47,42 +55,50 @@ func _on_music_finished() -> void:
   skip_music_forward()
 
 
-func _play_track(index: int) -> void:
-  if _MUSIC_TRACKS.is_empty():
+func _play_track(idx: int) -> void:
+  if _bg_music_track_indexes.is_empty():
     return
-
-  _track_index = wrapi(index, 0, _MUSIC_TRACKS.size())
-  ProjectSettings.set_setting(_MUSIC_TRACK_INDEX_SETTING, _track_index)
-  _music.stream = _MUSIC_TRACKS[_track_index]
-  _music.stream_paused = false
-  _music.play()
+  _bg_music_current_track_index = wrapi(idx, 0, _bg_music_track_indexes.size())
+  _bg_music.seek(_bg_music_track_indexes[_bg_music_current_track_index])
   _refresh_music_playback_label()
 
 
+func _music_find_current_track_index() -> int:
+  if _bg_music_track_indexes.is_empty():
+    return 0
+  return wrapi(_bg_music_current_track_index, 0, _bg_music_track_indexes.size())
+
+
 func skip_music_back() -> void:
-  _play_track(_track_index - 1)
+  if _bg_music_track_indexes.is_empty():
+    return
+  var current_index := _music_find_current_track_index()
+  var last_index := wrapi(current_index - 1, 0, _bg_music_track_indexes.size())
+  _play_track(last_index)
 
 
 func skip_music_forward() -> void:
-  _play_track(_track_index + 1)
+  if _bg_music_track_indexes.is_empty():
+    return
+  var current_index := _music_find_current_track_index()
+  var next_index := wrapi(current_index + 1, 0, _bg_music_track_indexes.size())
+  _play_track(next_index)
 
 
 func toggle_music_playback() -> void:
-  if _music.playing and not _music.stream_paused:
-    _music.stream_paused = true
+  if _bg_music.playing and not _bg_music.stream_paused:
+    _bg_music.stream_paused = true
     _refresh_music_playback_label()
     return
 
-  if _music.stream_paused:
-    _music.stream_paused = false
+  if _bg_music.stream_paused:
+    _bg_music.stream_paused = false
     _refresh_music_playback_label()
     return
-
-  _play_track(_track_index)
 
 
 func _refresh_music_playback_label() -> void:
-  var is_playing := _music.playing and not _music.stream_paused
+  var is_playing := _bg_music.playing and not _bg_music.stream_paused
   if _menu and _menu.has_method("set_music_playing_state"):
     _menu.set_music_playing_state(is_playing)
 
@@ -162,13 +178,7 @@ func resume() -> void:
 
 
 func reset() -> void:
-  shuffle_bg_music()
   get_tree().reload_current_scene()
-
-
-func shuffle_bg_music() -> void:
-  if not _MUSIC_TRACKS.is_empty():
-    ProjectSettings.set_setting(_MUSIC_TRACK_INDEX_SETTING, wrapi(_track_index + 1, 0, _MUSIC_TRACKS.size()))
 
 
 func quit() -> void:

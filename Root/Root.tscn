@@ -10,12 +10,12 @@
 [ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/jonbeck bonbo.ogg" id="7_music3"]
 [ext_resource type="Script" uid="uid://bqyo6ke1u5nqd" path="res://Root/CheatConsole.gd" id="8_cheat_console"]
 
-[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_v8pwl"]
-streams_count = 4
-stream_0/stream = ExtResource("5_bxqx0")
-stream_1/stream = ExtResource("5_music1")
-stream_2/stream = ExtResource("7_music3")
-stream_3/stream = ExtResource("6_music2")
+[sub_resource type="AudioStreamPlaylist" id="AudioStreamPlaylist_bxqx0"]
+stream_count = 4
+stream_0 = ExtResource("5_bxqx0")
+stream_1 = ExtResource("6_music2")
+stream_2 = ExtResource("7_music3")
+stream_3 = ExtResource("5_music1")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mf1jr"]
 content_margin_left = 10.0
@@ -44,7 +44,7 @@ visible = false
 visible = false
 
 [node name="BackgroundMusic" type="AudioStreamPlayer" parent="." unique_id=340195841]
-stream = SubResource("AudioStreamRandomizer_v8pwl")
+stream = SubResource("AudioStreamPlaylist_bxqx0")
 autoplay = true
 
 [node name="CheatConsoleLayer" type="CanvasLayer" parent="." unique_id=1019982774]
