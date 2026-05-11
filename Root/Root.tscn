@@ -7,6 +7,7 @@
 [ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="5_music1"]
 [ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg" id="6_music2"]
 [ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/jonbeck bonbo.ogg" id="7_music3"]
+[ext_resource type="Script" path="res://Root/CheatConsole.gd" id="8_cheat_console"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_music"]
 streams_count = 3
@@ -48,6 +49,7 @@ autoplay = true
 [node name="CheatConsoleLayer" type="CanvasLayer" parent="." unique_id=1019982774]
 layer = 50
 visible = false
+script = ExtResource("8_cheat_console")
 
 [node name="CheatPanel" type="PanelContainer" parent="CheatConsoleLayer" unique_id=347550798]
 anchors_preset = 2
