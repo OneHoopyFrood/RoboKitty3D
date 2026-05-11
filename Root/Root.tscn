@@ -7,12 +7,21 @@
 [ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="5_music1"]
 [ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg" id="6_music2"]
 [ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/jonbeck bonbo.ogg" id="7_music3"]
+[ext_resource type="Script" path="res://Root/CheatConsole.gd" id="8_cheat_console"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_music"]
 streams_count = 3
 stream_0/stream = ExtResource("5_music1")
 stream_1/stream = ExtResource("6_music2")
 stream_2/stream = ExtResource("7_music3")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mf1jr"]
+content_margin_left = 10.0
+bg_color = Color(0, 0, 0, 0.88235295)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="Root" type="Node3D" unique_id=773543183]
 script = ExtResource("1_ja5m8")
@@ -32,7 +41,28 @@ visible = false
 [node name="Dialog" parent="." unique_id=1986789627 instance=ExtResource("4_dialog")]
 visible = false
 
-[node name="BackgroundMusic" type="AudioStreamPlayer" parent="."]
+[node name="BackgroundMusic" type="AudioStreamPlayer" parent="." unique_id=340195841]
 stream = SubResource("AudioStreamRandomizer_music")
 volume_db = -5.0
 autoplay = true
+
+[node name="CheatConsoleLayer" type="CanvasLayer" parent="." unique_id=1019982774]
+layer = 50
+visible = false
+script = ExtResource("8_cheat_console")
+
+[node name="CheatPanel" type="PanelContainer" parent="CheatConsoleLayer" unique_id=347550798]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -42.0
+offset_right = 310.0
+offset_bottom = -10.0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_mf1jr")
+
+[node name="CheatLabel" type="Label" parent="CheatConsoleLayer/CheatPanel" unique_id=1627201214]
+layout_mode = 2
+text = "> "
+vertical_alignment = 1

@@ -1,15 +1,17 @@
 [gd_scene format=3 uid="uid://dml8klxtt80hf"]
 
 [ext_resource type="Script" uid="uid://c0dqsato0i30x" path="res://Root/World/Player/Player.gd" id="1_3qydi"]
-[ext_resource type="AudioStream" uid="uid://crcy0ak1blsn5" path="res://Assets/sfx/cubeselect.wav" id="2_tok1r"]
 [ext_resource type="AudioStream" uid="uid://xv12btbuso37" path="res://Assets/sfx/oof.wav" id="2_9l7m"]
+[ext_resource type="AudioStream" uid="uid://crcy0ak1blsn5" path="res://Assets/sfx/cubeselect.wav" id="2_tok1r"]
 [ext_resource type="AudioStream" uid="uid://cf2i00qswr1wd" path="res://Assets/sfx/wahmp.wav" id="3_ddoul"]
+[ext_resource type="AudioStream" uid="uid://dde2cm8l8kble" path="res://Assets/sfx/motorhumloop.wav" id="5_akodn"]
 
 [node name="Player" type="Node3D" unique_id=996109789]
 script = ExtResource("1_3qydi")
 select_sfx_stream = ExtResource("2_tok1r")
 brake_sfx_stream = ExtResource("2_9l7m")
 error_sfx_stream = ExtResource("3_ddoul")
+motor_sfx_stream = ExtResource("5_akodn")
 
 [node name="FPV" type="Camera3D" parent="." unique_id=1322493754]
 

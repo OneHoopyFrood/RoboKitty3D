@@ -5,7 +5,7 @@ signal player_movement(direction: Vector3)
 ## Distance moved per step input; also defines grid cell size
 @export var step_size: float = 1.0
 ## Duration of a single step movement (lower = snappier but less forgiving)
-@export var step_duration: float = 0.1
+@export var step_duration: float = 0.15
 ## Duration of 90-degree turn (lower = snappier but may cause motion sickness)
 @export var turn_duration: float = 0.25
 ## Mouse movement to camera rotation ratio (higher = more responsive, less precise)
@@ -15,12 +15,13 @@ signal player_movement(direction: Vector3)
 ## Ease-out curve steepness (higher = more pronounced; tweak carefully)
 @export var look_ease_power: float = 1.5
 ## Camera height above player origin (adjust based on model height)
-@export var eye_height: float = 0.8
+@export var eye_height: float = 1
 
 @export var dialog_ui_path: NodePath
 @export var select_sfx_stream: AudioStream
 @export var brake_sfx_stream: AudioStream
 @export var error_sfx_stream: AudioStream
+@export var motor_sfx_stream: AudioStream
 
 var cam: Camera3D
 var mouse_delta: Vector2 = Vector2.ZERO
@@ -43,6 +44,7 @@ var _dialog_ui: Node = null
 var _sfx_select: AudioStreamPlayer = null
 var _sfx_brake: AudioStreamPlayer = null
 var _error_sfx: AudioStreamPlayer = null
+var _sfx_motor: AudioStreamPlayer = null
 var _move_tween: Tween = null
 
 const symbol_group = "symbol"
@@ -78,6 +80,12 @@ func _ready():
   if error_sfx_stream:
     _error_sfx.stream = error_sfx_stream
 
+  # Motor SFX player
+  _sfx_motor = AudioStreamPlayer.new()
+  add_child(_sfx_motor)
+  if motor_sfx_stream:
+    _sfx_motor.stream = motor_sfx_stream
+  
 func enable_controls() -> void:
   controls_enabled = true
 
@@ -90,29 +98,59 @@ func _input(event):
   if event is InputEventMouseMotion:
     mouse_delta = event.relative
 
-func _process(delta):
+func _process(delta: float):
   if not controls_enabled:
     return
   # Handle movement and interaction input
-  _handle_movement_input(delta)
+  _handle_movement_input()
 
   # Handle mouse look
   _handle_look_input(delta)
 
 ## Process all movement and interaction input (forward, back, turn).
-func _handle_movement_input(delta: float) -> void:
+func _handle_movement_input() -> void:
   # Block input if dialog is open
   if _dialog_ui and _dialog_ui.is_open:
     return
 
-  # Reset walk sequence when player releases movement keys
-  if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back"):
+  # Reset walk sequence when player releases directional movement keys
+  if not Input.is_action_pressed("move_forward") and not Input.is_action_pressed("move_back") and not Input.is_action_pressed("strafe_left") and not Input.is_action_pressed("strafe_right"):
     is_walking = false
 
   if is_moving or is_animating:
     return # Don't accept new input while mid-move or during animations
 
-  if Input.is_action_just_pressed("move_left"):
+  if Input.is_action_just_pressed("strafe_left"):
+    # Left strafe tap
+    if _is_path_blocked(-transform.basis.x):
+      if _error_sfx and _error_sfx.stream:
+        _error_sfx.play()
+    else:
+      start_move(-transform.basis.x)
+  elif Input.is_action_pressed("strafe_left"):
+    # Held strafe left: brake when hitting any obstacle
+    if is_walking and _is_path_blocked(-transform.basis.x):
+      _do_brake()
+      is_walking = false
+    elif not _is_path_blocked(-transform.basis.x):
+      start_move(-transform.basis.x)
+      is_walking = true
+  elif Input.is_action_just_pressed("strafe_right"):
+    # Right strafe tap
+    if _is_path_blocked(transform.basis.x):
+      if _error_sfx and _error_sfx.stream:
+        _error_sfx.play()
+    else:
+      start_move(transform.basis.x)
+  elif Input.is_action_pressed("strafe_right"):
+    # Held strafe right: brake when hitting any obstacle
+    if is_walking and _is_path_blocked(transform.basis.x):
+      _do_brake()
+      is_walking = false
+    elif not _is_path_blocked(transform.basis.x):
+      start_move(transform.basis.x)
+      is_walking = true
+  elif Input.is_action_just_pressed("move_left"):
     turn_left()
   elif Input.is_action_just_pressed("move_right"):
     turn_right()
@@ -160,6 +198,10 @@ func start_move(direction: Vector3) -> void:
   if is_moving:
     return
 
+  # Play motor sound
+  if _sfx_motor and _sfx_motor.stream and not _sfx_motor.playing:
+    _sfx_motor.play()
+
   direction.y = 0
   direction = direction.normalized()
 
@@ -177,6 +219,8 @@ func start_move(direction: Vector3) -> void:
   _move_tween.tween_property(self , "global_position", target_position, step_duration)
   _move_tween.finished.connect(func():
     _snap_to_grid()
+    if _sfx_motor and _sfx_motor.playing:
+      _sfx_motor.stop()
     is_moving = false
   )
 
@@ -348,7 +392,7 @@ func _target_cell_in_direction(direction: Vector3) -> Vector2i:
 
 func _get_world_node() -> Node:
   var world := get_parent()
-  if world and world.has_method("world_to_cell") and world.has_method("is_cell_blocked") and world.has_method("get_symbol_at_cell"):
+  if world and world.has_method("world_to_cell") and world.has_method("is_cell_blocked") and (world.has_method("get_interactable_at_cell") or world.has_method("get_symbol_at_cell")):
     return world
   return null
 
