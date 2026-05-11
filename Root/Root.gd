@@ -213,6 +213,6 @@ func _on_kitten_found() -> void:
 
 
 func _on_cheat_activated(code: String) -> void:
-  if code == "mrrow":
+  if code == "rfk":
     resume()
     _world.bump_kitten()
