@@ -18,6 +18,7 @@ const MAX_Y: float = 1.5
 const DEFAULT_AMPLITUDE: float = 0.25
 const DEFAULT_SPEED: float = 1.0
 const DEFAULT_COLOR: Color = Color.GREEN
+const DIM_GLOW_TIME: float = 0.2
 
 ########################
 ## Active values
@@ -29,18 +30,22 @@ var color: Color = DEFAULT_COLOR
 var symbol: String
 var blurb: String = ""
 var is_kitten: bool = false
+var is_bumped: bool = false
 
 # Private
 var _time: float = 0.0
 var _mesh: MeshInstance3D
 var _rotation_tween: Tween
+var _dim_tween: Tween
 var _text_mesh: TextMesh
+var _options: Node
 
 ########################
 ## Lifecycle
 ########################
 func _ready() -> void:
   _mesh = get_node("Mesh") as MeshInstance3D
+  _options = get_node_or_null("/root/GameOptions")
 
   symbol = random_symbol()
   # Make this a unique TextMesh.
@@ -52,15 +57,19 @@ func _ready() -> void:
   # Make sure the symbol isn't in the ground or too high.
   base_y = clamp(global_position.y, box_size.y / 2, MAX_Y)
 
-  # Add glow.
+  # Add undim.
   _mesh.material_overlay = StandardMaterial3D.new()
   _mesh.material_overlay.emission_enabled = true
-  _mesh.material_overlay.emission = color
+  _mesh.material_overlay.emission_energy_multiplier = 1.0
+
+  set_color(color)
+  _sync_to_options()
 
 func _process(delta: float) -> void:
   _time += delta
   var offset = sin(_time * bob_speed) * bob_amplitude
   global_position.y = base_y + offset
+  _sync_to_options()
 
 ########################
 ## Methods
@@ -74,8 +83,8 @@ func configure_bobbing(
 
 func set_color(new_color: Color) -> void:
   color = new_color
-  if _mesh != null and _mesh.material_overlay != null:
-    _mesh.material_overlay.emission = color
+  _mesh.material_overlay.albedo_color = color
+  _mesh.material_overlay.emission = color
 
 func randomize_bobbing(rng: RandomNumberGenerator) -> void:
   bob_amplitude = rng.randf_range(MIN_AMPLITUDE, MAX_AMPLITUDE)
@@ -108,9 +117,45 @@ func face_player(direction: Vector3) -> void:
 ## Handle interaction from player bump. Emits signal with this symbol as argument.
 func bump() -> void:
   print_debug("Symbol ", symbol, " interacted with")
+  is_bumped = true
   bumped.emit(blurb)
   if is_kitten:
     kitten_found.emit()
+
+
+## Dim the symbol's color and emission
+func dim() -> void:
+  var dimmed_color := color.lerp(Color(0.65, 0.65, 0.65, color.a), 0.6)
+  _tween_glow(dimmed_color, false)
+
+
+## Undim (restore) the symbol's color and emission
+func undim() -> void:
+  _tween_glow(color, true)
+
+func _tween_glow(target_color: Color, bright_glow: bool) -> void:
+  if _dim_tween:
+    return # Don't start a new tween if we're already tweening. This prevents visual glitches from rapidly toggling visited state.
+
+  var target_emission_multiplier: float = 1.0 if bright_glow else 0.02
+
+  _dim_tween = create_tween()
+  _dim_tween.tween_property(_mesh.material_overlay, "albedo_color", target_color, DIM_GLOW_TIME)
+  _dim_tween.tween_property(_mesh.material_overlay, "emission_energy_multiplier", target_emission_multiplier, DIM_GLOW_TIME)
+
+
+func _sync_to_options() -> void:
+  if not _options or "visited_dimming" not in _options:
+    return
+
+  var is_currently_dimmed: bool = _mesh.material_overlay.emission_energy_multiplier < 0.1
+
+  if bool(_options.visited_dimming):
+    if is_bumped and not is_currently_dimmed:
+      dim()
+    elif not is_bumped and is_currently_dimmed:
+      undim()
+
 
 ## Returns the blurb text for this symbol.
 func get_blurb() -> String:
