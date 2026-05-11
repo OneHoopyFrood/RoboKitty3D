@@ -102,7 +102,7 @@ func _handle_root_input(event: InputEvent) -> bool:
     _cheat_console.handle_cheat_prompt_input(event)
     return true
 
-  if _current_scene == "menu" and _cheat_console.is_cheat_prompt_toggle_input(event):
+  if _cheat_console.is_cheat_prompt_toggle_input(event):
     _cheat_console.open_cheat_prompt()
     return true
 
