@@ -267,7 +267,7 @@ A book with "Don't Panic" in large friendly letters across the cover.
 A compendium of haiku about metals.
 A discredited cosmology, relic of a bygone era.
 A hollow voice says "Plugh".
-A knight who says "Either I am an insane knave, or you will find kitten."",     
+A knight who says "Either I am an insane knave, or you will find kitten."",
 A neural net -- maybe it's trying to recognize kitten.
 A screwdriver.
 A statue of a girl holding a goose like the one in Gottingen, Germany.
@@ -290,18 +290,18 @@ Quidquid Latine dictum sit, kitten non est.
 Sutro Tower is visible at some distance through the fog.
 The Digital Millennium Copyright Act of 1998.
 The United States Court of Appeals for the Federal Circuit.
-The non-kitten item like this but with "false" and "true" switched is true.", 
+The non-kitten item like this but with "false" and "true" switched is true.",
 The non-kitten item like this but with "true" and "false" switched is false.
-This is the chapter called "A Map of the Cat?" from Feynman's autobiography.",  
+This is the chapter called "A Map of the Cat?" from Feynman's autobiography.",
 This is the forest primeval.
 Werner's "Pocket Field Guide to Things That Are Not Kitten".
 You found nettik, but that's backwards.
-You have found some zinc, but you must not stop here, for you must find kitten.", 
+You have found some zinc, but you must not stop here, for you must find kitten.",
 "50 Years Among the Non-Kitten Items", by Ann Droyd.
 "Robot may not injure kitten, or, through inaction, ..."
 "Address Allocation for Private Internets" by Yakov Rekhter et al.
 "Mail Routing and the Domain System" by Craig Partridge.
-"The Theory and Practice of Oligarchical Collectivism" by Emmanuel Goldstein.", 
+"The Theory and Practice of Oligarchical Collectivism" by Emmanuel Goldstein.",
 "201 Kitten Verbs, Fully Conjugated".  You look for "find".
 A card shark sits here, practicing his Faro shuffle.  He ignores you.
 A copy of DeCSS.  They're a dime a dozen these days.
@@ -404,3 +404,4 @@ Just a man selling an albatross.
 The intermission from a 1930s silent movie.
 It's an inverted billiard ball!
 The spectre of Sherlock Holmes wills you onwards.
+It's a cigar box. There's an inscription here... it reads: "chik-chiky-boom?"

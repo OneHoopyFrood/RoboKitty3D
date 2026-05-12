@@ -105,16 +105,16 @@ func _refresh_music_playback_label() -> void:
 
 func _input(event: InputEvent) -> void:
   if _handle_root_input(event):
+    _player.disable_controls()
     var viewport = get_viewport()
     if viewport != null:
       viewport.set_input_as_handled()
+  else:
+    _player.enable_controls()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-  if _handle_root_input(event):
-    var viewport = get_viewport()
-    if viewport != null:
-      viewport.set_input_as_handled()
+  _input(event)
 
 
 func _handle_root_input(event: InputEvent) -> bool:
@@ -216,6 +216,30 @@ func _on_world_child_entered_tree(node: Node) -> void:
 func _on_symbol_bumped(blurb: String) -> void:
   if _dialog and _dialog.has_method("open"):
     _dialog.open(blurb)
+    if blurb.contains("chik-chiky-boom"):
+      _cuban_pete()
+
+
+func _cuban_pete() -> void:
+  var cuban_pete_stream := load("res://Assets/music/Cuban Pete.ogg") as AudioStream
+  if cuban_pete_stream and _bg_music.stream == _bg_music_stream:
+    # var fade_tween := create_tween()
+    # fade_tween.tween_property(_bg_music, "volume_db", -80.0, 1.0)
+    # fade_tween.chain().tween_callback(func():
+    #     _bg_music.stop()
+    #     _bg_music.stream = cuban_pete_stream
+    #     _bg_music.play()
+    #   )
+    #   .tween_property(_bg_music, "volume_db", 0.0, 1.0)
+    _bg_music.stream = cuban_pete_stream
+    _bg_music.play()
+    _bg_music.finished.connect(func():
+      _bg_music.stream = _bg_music_stream
+      _bg_music.play()
+      _play_track(_bg_music_current_track_index)
+    )
+  else:
+    print_debug("Failed to load Cuban Pete track")
 
 
 func _on_kitten_found() -> void:
@@ -240,3 +264,8 @@ func _on_cheat_activated(code: String) -> void:
       options.visited_dimming = true
     _world.bump_all_nkis()
     print_debug("Cheat activated: Bumped all NKIs")
+  elif code == "cubanpete":
+    # If symbol in front of player, assign it the chik-chiky-boom blurb
+    # For now, play music
+    _cuban_pete()
+    print_debug("Cheat activated: Cuban Pete")
