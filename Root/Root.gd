@@ -254,7 +254,6 @@ func _cuban_pete() -> void:
 func _start_cuban_pete_playback() -> void:
   _bg_music.stop()
   _bg_music.stream = _CUBAN_PETE_STREAM
-  _bg_music.volume_db = _MUSIC_MUTED_DB
   _bg_music.play()
   _bg_music.finished.connect(_on_cuban_pete_finished, CONNECT_ONE_SHOT)
 
@@ -276,7 +275,6 @@ func _on_cuban_pete_finished() -> void:
 func _restore_background_music() -> void:
   _bg_music.stop()
   _bg_music.stream = _bg_music_stream
-  _bg_music.volume_db = _MUSIC_MUTED_DB
   _bg_music.play()
   _play_track(_bg_music_current_track_index)
 
