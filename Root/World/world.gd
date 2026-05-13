@@ -2,17 +2,23 @@ extends Node3D
 
 signal kitten_found
 
+const KITTEN_BLURB: String = "You found kitten! Way to go, robot."
+const PETE_BLURB: String = "It's a cigar box. There's an inscription here... it reads: \"chik-chiky-boom?\""
+const DEFAULT_PETE_CHANCE: float = 0.1 # % chance for Pete to spawn
+
 @export var num_nodes: int = 100
 @export var step_size: float = 1.0
+@export var pete_chance: float = DEFAULT_PETE_CHANCE
 var board_size: int = 50
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var node_scene = preload('res://Root/World/Symbol/Symbol.tscn')
-const KITTEN_BLURB: String = "You found kitten! Way to go, robot."
 
 var _blurbs: Array[String] = []
 var _cell_to_symbol: Dictionary = {}
+var _kitten: Symbol = null
+var _pete: Symbol = null
 
 func _ready():
   _apply_root_options()
@@ -22,10 +28,14 @@ func _ready():
   # Load and shuffle blurbs from NKIs.txt
   _load_blurbs()
 
-  # Floaty Bits
+  # Generate symbols and add them to the world.
   var nodes = _generate_nodes()
   for node in nodes:
     add_child(node)
+
+  # Random chance to spawn Pete
+  if rng.randf() <= pete_chance:
+    spawn_pete()
 
   # Connect player rotation signal to all interaction nodes
   var player = get_node_or_null("Player")
@@ -49,6 +59,7 @@ func _apply_root_options() -> void:
 func _generate_nodes() -> Array[Symbol]:
   var nodes: Array[Symbol] = []
   var used_positions: Array[Vector2i] = [Vector2i(0, 0)] # Player spawn cell
+
   # Choose one generated symbol to become kitten.
   var kitten_index: int = rng.randi_range(0, max(num_nodes - 1, 0))
 
@@ -58,11 +69,11 @@ func _generate_nodes() -> Array[Symbol]:
     node.randomize_color(rng)
 
     if i == kitten_index:
-      node.is_kitten = true
       node.blurb = KITTEN_BLURB
-      if node.has_signal("kitten_found") and not node.kitten_found.is_connected(_on_kitten_found):
-        node.kitten_found.connect(_on_kitten_found)
-    elif _blurbs.size() > 0:
+      node.bumped.connect(kitten_found.emit)
+      _kitten = node
+
+    if _blurbs.size() > 0:
       node.blurb = _blurbs[i % _blurbs.size()]
 
     var cell := random_cell() # Returns Vector2i
@@ -124,26 +135,46 @@ func get_symbol_at_cell(cell: Vector2i) -> Symbol:
     return _cell_to_symbol[cell] as Symbol
   return null
 
+func get_random_symbol() -> Symbol:
+  if _cell_to_symbol.size() == 0:
+    return null
+  return _cell_to_symbol.values()[rng.randi_range(0, _cell_to_symbol.size() - 1)]
+
 ## Check if a floor grid cell is blocked (out of bounds or occupied by symbol).
 func is_cell_blocked(cell: Vector2i) -> bool:
   return not is_in_bounds(cell) or get_symbol_at_cell(cell) != null
 
-func _bump_symbol_if(predicate: Callable, do_blurb: bool = true) -> void:
-  for cell in _cell_to_symbol:
-    var symbol = _cell_to_symbol[cell]
-    if predicate.call(symbol):
-      symbol.bump(do_blurb)
-  return
+func _dim_symbols_except(...exclude_symbols) -> void:
+  assert(
+    exclude_symbols.size() == 0 || exclude_symbols.any(func(s): return _cell_to_symbol.values().has(s)),
+    "_dim_symbols_except requires at least one Symbol argument")
 
+  for symbol in _cell_to_symbol.values():
+    if not exclude_symbols.has(symbol):
+      symbol.dim()
+
+## Bump the kitten directly. (Used for debug cheat that lets you skip straight to the win.)
 func bump_kitten() -> void:
-  _bump_symbol_if(func(symbol: Symbol) -> bool:
-    return symbol.is_kitten
-  )
+  if _kitten:
+    _kitten.bump()
 
-func bump_all_nkis() -> void:
-  _bump_symbol_if(func(symbol: Symbol) -> bool:
-    return not symbol.is_kitten
-  , false)
+## Dim all NKIs (non-kitten interactables).
+func dim_nkis() -> void:
+  _dim_symbols_except(_kitten)
 
-func _on_kitten_found() -> void:
-  kitten_found.emit()
+## Get cuban pete!
+func has_pete() -> bool:
+  return _pete != null
+
+## Override a random symbol to become Pete, if Pete isn't already present.
+func spawn_pete() -> void:
+  if _pete == null:
+    _pete = get_random_symbol()
+    _pete.blurb = PETE_BLURB
+
+## Dim all symbols except Pete, if Pete exists. Returns true if Pete was found, false if not.
+func dim_ncpis() -> bool:
+  if has_pete():
+    _dim_symbols_except(_pete)
+    return true
+  return false

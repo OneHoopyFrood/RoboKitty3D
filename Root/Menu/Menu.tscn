@@ -1,9 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://cpjw6a9bfhfb5"]
+[gd_scene format=3 uid="uid://cpjw6babfhfb5"]
 
-[ext_resource type="Script" path="res://Root/Menu/Menu.gd" id="1_t5b1c"]
-[ext_resource type="FontFile" path="res://Assets/TerminusBold.ttf" id="2_menu_font"]
+[ext_resource type="Script" uid="uid://bvub5jk4palkp" path="res://Root/Menu/Menu.gd" id="1_t5b1c"]
+[ext_resource type="FontFile" uid="uid://034x3460fr0j" path="res://Assets/TerminusBold.ttf" id="2_menu_font"]
+
+[sub_resource type="Theme" id="Theme_menu"]
+default_font = ExtResource("2_menu_font")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 28.0
+content_margin_top = 28.0
+content_margin_right = 28.0
+content_margin_bottom = 28.0
 bg_color = Color(0.05, 0.08, 0.11, 0.8)
 border_width_left = 2
 border_width_top = 2
@@ -14,14 +21,14 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-content_margin_left = 28.0
-content_margin_top = 28.0
-content_margin_right = 28.0
-content_margin_bottom = 28.0
 shadow_color = Color(0, 0, 0, 0.35)
 shadow_size = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_music_panel"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
 bg_color = Color(0.03, 0.06, 0.08, 0.72)
 border_width_left = 1
 border_width_top = 1
@@ -32,27 +39,22 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-content_margin_left = 14.0
-content_margin_top = 10.0
-content_margin_right = 14.0
-content_margin_bottom = 10.0
-
-[sub_resource type="Theme" id="Theme_menu"]
-default_font = ExtResource("2_menu_font")
 
 [sub_resource type="SystemFont" id="SystemFont_music_symbols"]
 font_names = PackedStringArray("Segoe UI Symbol", "Noto Sans Symbols2", "Noto Sans Symbols 2", "DejaVu Sans")
+subpixel_positioning = 0
 
-[node name="Menu" type="Control"]
+[sub_resource type="LabelSettings" id="LabelSettings_dthlk"]
+font_size = 12
+font_color = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Menu" type="Control" unique_id=1884520405]
 layout_mode = 3
-anchors_left = 0.0
-anchors_top = 0.0
-anchors_right = 1.0
-anchors_bottom = 1.0
+anchors_preset = 0
 theme = SubResource("Theme_menu")
 script = ExtResource("1_t5b1c")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=2086895859]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -61,7 +63,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.18)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1817979070]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -69,194 +71,184 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
-layout_mode = 2
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer" unique_id=974613108]
 custom_minimum_size = Vector2(320, 220)
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer" unique_id=995629972]
+layout_mode = 2
 theme_override_constants/separation = 12
+alignment = 1
 
-[node name="Title" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=1174836253]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "ROBOT FINDS KITTEN"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
+[node name="Subtitle" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=2096663234]
 layout_mode = 2
 text = "A tiny world of things that are not kitten"
 horizontal_alignment = 1
 
-[node name="MusicPanel" type="PanelContainer" parent="CenterContainer/PanelContainer/VBoxContainer"]
+[node name="MusicPanel" type="PanelContainer" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=2029071142]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_music_panel")
 
-[node name="MusicVBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel"]
+[node name="MusicVBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel" unique_id=589084737]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="MusicTitle" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox"]
+[node name="MusicTitle" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox" unique_id=1341538104]
 layout_mode = 2
 text = "Music"
 horizontal_alignment = 1
 
-[node name="MusicControls" type="HBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox"]
+[node name="MusicControls" type="HBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox" unique_id=1207447147]
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 8
+alignment = 1
 
-[node name="MusicSkipBackButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls"]
-layout_mode = 2
+[node name="MusicSkipBackButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls" unique_id=1711527074]
 custom_minimum_size = Vector2(96, 34)
+layout_mode = 2
 theme_override_fonts/font = SubResource("SystemFont_music_symbols")
 text = "⏮︎"
 
-[node name="MusicTogglePlaybackButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls"]
-layout_mode = 2
+[node name="MusicTogglePlaybackButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls" unique_id=1708091252]
 custom_minimum_size = Vector2(96, 34)
+layout_mode = 2
 theme_override_fonts/font = SubResource("SystemFont_music_symbols")
 text = "▶︎"
 
-[node name="MusicSkipForwardButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls"]
-layout_mode = 2
+[node name="MusicSkipForwardButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls" unique_id=327425331]
 custom_minimum_size = Vector2(96, 34)
+layout_mode = 2
 theme_override_fonts/font = SubResource("SystemFont_music_symbols")
 text = "⏭︎"
 
-[node name="ControlsDivider" type="HSeparator" parent="CenterContainer/PanelContainer/VBoxContainer"]
+[node name="MusicTrackLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox" unique_id=549143847]
+layout_mode = 2
+text = "Current Track"
+label_settings = SubResource("LabelSettings_dthlk")
+horizontal_alignment = 1
+clip_text = true
+text_overrun_behavior = 5
+
+[node name="ControlsDivider" type="HSeparator" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=1596924399]
 layout_mode = 2
 
-
-[node name="ResumeButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
+[node name="ResumeButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=661276613]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 text = "Resume"
 
-[node name="RestartButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
+[node name="RestartButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=2098183882]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 text = "Restart"
 
-[node name="OptionsButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
+[node name="OptionsButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=1604587904]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 text = "Options"
 
-[node name="QuitButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
-layout_mode = 2
+[node name="QuitButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer" unique_id=58604683]
 custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
 text = "Quit"
 
-[node name="OptionsPanel" type="PanelContainer" parent="CenterContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(360, 0)
+[node name="OptionsPanel" type="PanelContainer" parent="CenterContainer" unique_id=44854975]
 visible = false
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/OptionsPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 0
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/OptionsPanel" unique_id=1138470243]
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer"]
+[node name="Title" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=1679572044]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "Options"
 horizontal_alignment = 1
 
-[node name="OptionsDivider" type="HSeparator" parent="CenterContainer/OptionsPanel/VBoxContainer"]
+[node name="OptionsDivider" type="HSeparator" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=657149747]
 layout_mode = 2
 
-[node name="VisitedDimmingRow" type="HBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer"]
+[node name="VisitedDimmingRow" type="HBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=230911128]
 layout_mode = 2
 
-[node name="VisitedDimmingLabel" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/VisitedDimmingRow"]
+[node name="VisitedDimmingLabel" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/VisitedDimmingRow" unique_id=1043635739]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Visited dimming"
 
-[node name="VisitedDimmingCheck" type="CheckButton" parent="CenterContainer/OptionsPanel/VBoxContainer/VisitedDimmingRow"]
+[node name="VisitedDimmingCheck" type="CheckButton" parent="CenterContainer/OptionsPanel/VBoxContainer/VisitedDimmingRow" unique_id=1992174283]
 layout_mode = 2
 
-[node name="BoardSizeOption" type="VBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer"]
+[node name="BoardSizeOption" type="VBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=2038626327]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="BoardSizeControls" type="HBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption"]
+[node name="BoardSizeControls" type="HBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption" unique_id=1489812659]
 layout_mode = 2
 
-[node name="BoardSizeLabel" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption/BoardSizeControls"]
+[node name="BoardSizeLabel" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption/BoardSizeControls" unique_id=1049021772]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Board Size"
 
-[node name="BoardSizeSpinBox" type="SpinBox" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption/BoardSizeControls"]
+[node name="BoardSizeSpinBox" type="SpinBox" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption/BoardSizeControls" unique_id=77918258]
 layout_mode = 2
 min_value = 5.0
 max_value = 200.0
-step = 1.0
 value = 50.0
 
-[node name="BoardSizeNote" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption"]
+[node name="BoardSizeNote" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/BoardSizeOption" unique_id=1294307728]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.55, 0.55, 0.6, 1)
+theme_override_font_sizes/font_size = 12
 text = "(Requires restart)"
 horizontal_alignment = 2
 
-[node name="NKICountOption" type="VBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer"]
+[node name="NKICountOption" type="VBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=1422599331]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="NKICountControls" type="HBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption"]
+[node name="NKICountControls" type="HBoxContainer" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption" unique_id=1407849514]
 layout_mode = 2
 
-[node name="NKICountLabel" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption/NKICountControls"]
+[node name="NKICountLabel" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption/NKICountControls" unique_id=209192379]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "# NKI"
 
-[node name="NKICountSpinBox" type="SpinBox" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption/NKICountControls"]
+[node name="NKICountSpinBox" type="SpinBox" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption/NKICountControls" unique_id=1832737588]
 layout_mode = 2
 min_value = 1.0
 max_value = 500.0
-step = 1.0
 value = 100.0
 
-[node name="NKICountNote" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption"]
+[node name="NKICountNote" type="Label" parent="CenterContainer/OptionsPanel/VBoxContainer/NKICountOption" unique_id=1033003472]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.55, 0.55, 0.6, 1)
+theme_override_font_sizes/font_size = 12
 text = "(Requires restart)"
 horizontal_alignment = 2
 
-[node name="OptionsControlsDivider" type="HSeparator" parent="CenterContainer/OptionsPanel/VBoxContainer"]
+[node name="OptionsControlsDivider" type="HSeparator" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=980722783]
 layout_mode = 2
 
-[node name="SaveButton" type="Button" parent="CenterContainer/OptionsPanel/VBoxContainer"]
-layout_mode = 2
+[node name="SaveButton" type="Button" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=182053812]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 disabled = true
 text = "Save"
 
-[node name="BackButton" type="Button" parent="CenterContainer/OptionsPanel/VBoxContainer"]
-layout_mode = 2
+[node name="BackButton" type="Button" parent="CenterContainer/OptionsPanel/VBoxContainer" unique_id=1716510180]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 text = "Back"

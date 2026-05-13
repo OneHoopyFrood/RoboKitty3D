@@ -85,7 +85,9 @@
   - [x] Nostalgium 2023
   - [x] I Found A Pretty Stone
   - [x] Jonbeck Bonobo
-  - [ ] Cuban Pete (Secret)
+  - [ ] Hyyd
+  - [x] Sique
+  - [x] Cuban Pete (Secret)
 - SFX
   - [x] Wahmp
   - [x] Kitten Noises

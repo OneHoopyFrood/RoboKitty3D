@@ -2,7 +2,6 @@ class_name Symbol
 extends Node3D
 
 signal bumped(blurb: String)
-signal kitten_found
 
 ########################
 ## CONSTANTS
@@ -29,7 +28,6 @@ var base_y: float # Height to float (centerpoint of symbol)
 var color: Color = DEFAULT_COLOR
 var symbol: String
 var blurb: String = ""
-var is_kitten: bool = false
 var is_bumped: bool = false
 
 # Private
@@ -95,12 +93,10 @@ func randomize_color(rng: RandomNumberGenerator) -> void:
   if _mesh != null:
     set_color(color)
 
+## Flip direction so symbol faces toward player (opposite of where player looks).
 func face_player(direction: Vector3) -> void:
-  print_debug("face_player called on ", name, " with direction: ", direction)
-  # Flip direction so symbol faces toward player (opposite of where player looks).
   var opposite_dir = - direction
   var target_rotation_y = rad_to_deg(atan2(opposite_dir.x, opposite_dir.z))
-  print_debug("  -> target_rotation_y: ", target_rotation_y)
 
   if _rotation_tween:
     _rotation_tween.kill()
@@ -116,12 +112,10 @@ func face_player(direction: Vector3) -> void:
 
 ## Handle interaction from player bump. Emits signal with this symbol as argument.
 func bump(do_blurb: bool = true) -> void:
-  print_debug("Symbol ", symbol, " interacted with")
+  print_debug("Symbol ", symbol, " bumped")
   is_bumped = true
   if do_blurb:
     bumped.emit(blurb)
-  if is_kitten:
-    kitten_found.emit()
 
 
 ## Dim the symbol's color and emission

@@ -4,16 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://cpjw6babfhfb5" path="res://Root/Menu/Menu.tscn" id="2_0lfnq"]
 [ext_resource type="PackedScene" uid="uid://ck1us1on6vyvw" path="res://Root/World/World.tscn" id="3_o6r8d"]
 [ext_resource type="PackedScene" path="res://Root/Dialog/Dialog.tscn" id="4_dialog"]
-[ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="5_music1"]
-[ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone (soft cutoff).ogg" id="6_music2"]
-[ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/jonbeck bonbo.ogg" id="7_music3"]
-[ext_resource type="Script" path="res://Root/CheatConsole.gd" id="8_cheat_console"]
-
-[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_music"]
-streams_count = 3
-stream_0/stream = ExtResource("5_music1")
-stream_1/stream = ExtResource("6_music2")
-stream_2/stream = ExtResource("7_music3")
+[ext_resource type="PackedScene" uid="uid://b78w44acdh74o" path="res://Root/BackgroundMusic.tscn" id="5_t36hs"]
+[ext_resource type="Script" uid="uid://bqyo6ke1u5nqd" path="res://Root/CheatConsole.gd" id="8_cheat_console"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mf1jr"]
 content_margin_left = 10.0
@@ -41,10 +33,7 @@ visible = false
 [node name="Dialog" parent="." unique_id=1986789627 instance=ExtResource("4_dialog")]
 visible = false
 
-[node name="BackgroundMusic" type="AudioStreamPlayer" parent="." unique_id=340195841]
-stream = SubResource("AudioStreamRandomizer_music")
-volume_db = -5.0
-autoplay = true
+[node name="BackgroundMusic" parent="." unique_id=281138859 instance=ExtResource("5_t36hs")]
 
 [node name="CheatConsoleLayer" type="CanvasLayer" parent="." unique_id=1019982774]
 layer = 50
