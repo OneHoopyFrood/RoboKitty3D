@@ -231,7 +231,6 @@ func turn_left():
   var new_yaw = _cardinalize_deg(rotation_degrees.y + 90)
   _face_degree(new_yaw)
   var dir = _yaw_to_direction(new_yaw)
-  print_debug("Player turn_left: emitting player_movement with direction: ", dir)
   player_movement.emit(dir)
 
 func turn_right():
@@ -240,7 +239,6 @@ func turn_right():
   var new_yaw = _cardinalize_deg(rotation_degrees.y - 90)
   _face_degree(new_yaw)
   var dir = _yaw_to_direction(new_yaw)
-  print_debug("Player turn_right: emitting player_movement with direction: ", dir)
   player_movement.emit(dir)
 
 ## Process mouse look input and apply smoothed camera rotation.
@@ -397,9 +395,6 @@ func _get_world_node() -> Node:
   return null
 
 func _on_bumped_symbol(symbol: Node) -> void:
-  # Log interaction
-  print_debug("Bumped symbol: ", symbol.symbol if "symbol" in symbol else symbol.name)
-
   # Bounce off the symbol
   _do_bump_bounce()
 

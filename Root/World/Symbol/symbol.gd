@@ -95,12 +95,10 @@ func randomize_color(rng: RandomNumberGenerator) -> void:
   if _mesh != null:
     set_color(color)
 
+## Flip direction so symbol faces toward player (opposite of where player looks).
 func face_player(direction: Vector3) -> void:
-  print_debug("face_player called on ", name, " with direction: ", direction)
-  # Flip direction so symbol faces toward player (opposite of where player looks).
   var opposite_dir = - direction
   var target_rotation_y = rad_to_deg(atan2(opposite_dir.x, opposite_dir.z))
-  print_debug("  -> target_rotation_y: ", target_rotation_y)
 
   if _rotation_tween:
     _rotation_tween.kill()
