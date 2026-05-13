@@ -20,6 +20,7 @@ signal button_pressed(action: MenuAction)
 @onready var _music_skip_back_button = $CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls/MusicSkipBackButton
 @onready var _music_toggle_playback_button = $CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls/MusicTogglePlaybackButton
 @onready var _music_skip_forward_button = $CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicControls/MusicSkipForwardButton
+@onready var _music_track_label = $CenterContainer/PanelContainer/VBoxContainer/MusicPanel/MusicVBox/MusicTrackLabel
 
 @onready var _main_panel = $CenterContainer/PanelContainer
 @onready var _options_panel = $CenterContainer/OptionsPanel
@@ -45,8 +46,11 @@ func _ready() -> void:
   _nki_count_spinbox.value_changed.connect(_on_options_control_changed)
 
 
-func set_music_playing_state(is_playing: bool) -> void:
+func set_music_playing_state(is_playing: bool, track_title: String = "") -> void:
   _music_toggle_playback_button.text = "⏸︎" if is_playing else "▶︎"
+  _music_track_label.text = track_title
+
+
 func reset() -> void:
   _main_panel.visible = true
   _options_panel.visible = false

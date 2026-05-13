@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://b78w44acdh74o"]
+
+[ext_resource type="AudioStream" uid="uid://p4bu0nrt0dvo" path="res://Assets/music/I Found A Pretty Stone.ogg" id="1_5g1wx"]
+[ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/Jonbeck Bonbo.ogg" id="2_lhopf"]
+[ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="3_wek3v"]
+[ext_resource type="AudioStream" uid="uid://mgvh6faga1dd" path="res://Assets/music/Sique.ogg" id="4_pcd0w"]
+[ext_resource type="AudioStream" uid="uid://cx6vdh5js28cc" path="res://Assets/sfx/remain_calm.ogg" id="5_5g1wx"]
+[ext_resource type="Script" uid="uid://c26gf6yh3py57" path="res://Root/BackgroundMusic.gd" id="6_47gdd"]
+
+[sub_resource type="AudioStreamInteractive" id="AudioStreamInteractive_t36hs"]
+clip_count = 5
+clip_0/name = &"I Found A Pretty Stone"
+clip_0/stream = ExtResource("1_5g1wx")
+clip_0/auto_advance = 1
+clip_0/next_clip = 1
+clip_1/name = &"Jonbeck Bonbo"
+clip_1/stream = ExtResource("2_lhopf")
+clip_1/auto_advance = 1
+clip_1/next_clip = 2
+clip_2/name = &"Nostalgium 2023"
+clip_2/stream = ExtResource("3_wek3v")
+clip_2/auto_advance = 1
+clip_2/next_clip = 3
+clip_3/name = &"Sique"
+clip_3/stream = ExtResource("4_pcd0w")
+clip_3/auto_advance = 1
+clip_3/next_clip = 0
+clip_4/name = &"Cuban Pete"
+clip_4/stream = ExtResource("5_5g1wx")
+clip_4/auto_advance = 1
+clip_4/next_clip = 3
+_transitions = {
+Vector2i(-1, -1): {
+"fade_beats": 1.0,
+"fade_mode": 4,
+"from_time": 0,
+"to_time": 2
+},
+Vector2i(-1, 4): {
+"fade_beats": 2.0,
+"fade_mode": 3,
+"from_time": 0,
+"hold_previous": true,
+"to_time": 1
+}
+}
+
+[node name="BackgroundMusic" type="AudioStreamPlayer" unique_id=281138859]
+stream = SubResource("AudioStreamInteractive_t36hs")
+script = ExtResource("6_47gdd")
