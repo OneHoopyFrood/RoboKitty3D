@@ -8,6 +8,7 @@ class_name Root
 @onready var _dialog = $Dialog
 @onready var _cheat_console = $CheatConsoleLayer
 @onready var _bg_music: AudioStreamPlayer = $BackgroundMusic
+@onready var _alt_bg_music: AudioStreamPlayer = $AltBackgroundMusic
 @onready var _bg_music_stream: AudioStreamPlaylist = _bg_music.stream
 
 var _bg_music_track_indexes: Array[float] = [0.0]
@@ -61,6 +62,8 @@ func _play_track(idx: int) -> void:
   _bg_music_current_track_index = wrapi(idx, 0, _bg_music_track_indexes.size())
   _bg_music.seek(_bg_music_track_indexes[_bg_music_current_track_index])
   _refresh_music_playback_label()
+  if not _bg_music.playing:
+    _bg_music.play()
 
 
 func _music_find_current_track_index() -> int:
@@ -97,6 +100,13 @@ func toggle_music_playback() -> void:
     return
 
 
+func _fade_music_toggle(fade_len: float = 1.0, target: AudioStreamPlayer = _bg_music) -> void:
+  var fade_in := target.volume_db > -80.0
+  var fade_tween := create_tween()
+  fade_tween.tween_property(target, "volume_db", -80.0 if fade_in else 0.0, fade_len).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+  await fade_tween.finished
+
+
 func _refresh_music_playback_label() -> void:
   var is_playing := _bg_music.playing and not _bg_music.stream_paused
   if _menu and _menu.has_method("set_music_playing_state"):
@@ -131,7 +141,7 @@ func _handle_root_input(event: InputEvent) -> bool:
     return true
 
   if event.is_action_pressed("ui_cancel"):
-    _show_menu()
+    _toggle_menu()
     return true
 
   return false
@@ -141,6 +151,12 @@ func _restart_after_win() -> void:
   _has_won = false
   reset()
 
+
+func _toggle_menu() -> void:
+  if _current_scene == "menu":
+    _hide_menu()
+  else:
+    _show_menu()
 
 func _show_menu() -> void:
   _current_scene = "menu"
@@ -167,6 +183,7 @@ func _hide_menu() -> void:
   _current_scene = "world"
   _cheat_console.close_cheat_prompt(false)
   _menu.visible = false
+  _menu.reset()
   _player.enable_controls()
   _world.visible = true
   _world.process_mode = Node.PROCESS_MODE_INHERIT
@@ -223,21 +240,23 @@ func _on_symbol_bumped(blurb: String) -> void:
 func _cuban_pete() -> void:
   var cuban_pete_stream := load("res://Assets/music/Cuban Pete.ogg") as AudioStream
   if cuban_pete_stream and _bg_music.stream == _bg_music_stream:
-    # var fade_tween := create_tween()
-    # fade_tween.tween_property(_bg_music, "volume_db", -80.0, 1.0)
-    # fade_tween.chain().tween_callback(func():
-    #     _bg_music.stop()
-    #     _bg_music.stream = cuban_pete_stream
-    #     _bg_music.play()
-    #   )
-    #   .tween_property(_bg_music, "volume_db", 0.0, 1.0)
-    _bg_music.stream = cuban_pete_stream
+    _menu.toggle_music_controls()
+
+    # Transition to Cuban Pete
+    _alt_bg_music.play()
+    _fade_music_toggle(2, _alt_bg_music)
+
+    await _fade_music_toggle(2, _bg_music)
+    _bg_music.stop()
+
+    await _alt_bg_music.finished
+    _alt_bg_music.volume_db = 0.0
+
+    # Restore original background music
     _bg_music.play()
-    _bg_music.finished.connect(func():
-      _bg_music.stream = _bg_music_stream
-      _bg_music.play()
-      _play_track(_bg_music_current_track_index)
-    )
+    _fade_music_toggle(2, _bg_music)
+
+    _menu.toggle_music_controls()
   else:
     print_debug("Failed to load Cuban Pete track")
 
@@ -247,8 +266,7 @@ func _on_kitten_found() -> void:
     return
   _has_won = true
   _player.disable_controls()
-  if _dialog and _dialog.has_method("open"):
-    _dialog.open("", _WIN_RESTART_PROMPT)
+  _dialog.open("", _WIN_RESTART_PROMPT)
 
 
 func _on_cheat_activated(code: String) -> void:
@@ -257,15 +275,13 @@ func _on_cheat_activated(code: String) -> void:
     _world.bump_kitten()
     print_debug("Cheat activated: You win!")
   elif code == "herekittykitty":
-    # Set dim visited option to true if it's not already, so that the effect of
-    # the cheat is visible.
-    var options := get_node_or_null("/root/GameOptions")
-    if options and not bool(options.visited_dimming):
-      options.visited_dimming = true
-    _world.bump_all_nkis()
-    print_debug("Cheat activated: Bumped all NKIs")
-  elif code == "cubanpete":
-    # If symbol in front of player, assign it the chik-chiky-boom blurb
-    # For now, play music
+    _world.dim_nkis()
+    print_debug("Cheat activated: Dimmed all NKIs")
+  elif code == "pete":
+    # Make sure Pete is spawned.
+    if not _world.has_pete():
+      _world.spawn_pete()
+    _world.dim_ncpis()
+    print_debug("Cheat activated: Cuban Pete will appear in the world")
+  elif code == "p":
     _cuban_pete()
-    print_debug("Cheat activated: Cuban Pete")

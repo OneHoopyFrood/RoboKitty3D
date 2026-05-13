@@ -67,3 +67,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_mf1jr")
 layout_mode = 2
 text = "> "
 vertical_alignment = 1
+
+[node name="AltBackgroundMusic" type="AudioStreamPlayer" parent="." unique_id=214352518]
+stream = ExtResource("10_music5")
+volume_db = -80.0

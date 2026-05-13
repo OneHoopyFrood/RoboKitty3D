@@ -47,6 +47,17 @@ func _ready() -> void:
 
 func set_music_playing_state(is_playing: bool) -> void:
   _music_toggle_playback_button.text = "⏸︎" if is_playing else "▶︎"
+func reset() -> void:
+  _main_panel.visible = true
+  _options_panel.visible = false
+  _save_button.disabled = true
+
+
+func toggle_music_controls() -> void:
+  var enable: bool = not _music_skip_back_button.disabled
+  _music_skip_back_button.disabled = enable
+  _music_toggle_playback_button.disabled = enable
+  _music_skip_forward_button.disabled = enable
 
 
 func _get_options_node() -> Node:
