@@ -10,8 +10,16 @@ class_name Root
 @onready var _bg_music: AudioStreamPlayer = $BackgroundMusic
 @onready var _bg_music_stream: AudioStreamPlaylist = _bg_music.stream
 
+const _CUBAN_PETE_STREAM: AudioStream = preload("res://Assets/music/Cuban Pete.ogg")
+const _MUSIC_FADE_DURATION: float = 1.0
+const _MUSIC_MUTED_DB: float = -80.0
+const _MUSIC_NORMAL_DB: float = 0.0
+
 var _bg_music_track_indexes: Array[float] = [0.0]
 var _bg_music_current_track_index: int = 0
+var _bg_music_transition_tween: Tween = null
+var _bg_music_restore_tween: Tween = null
+var _is_cuban_pete_active: bool = false
 
 const _WIN_RESTART_PROMPT: String = "Press any key to restart"
 
@@ -52,6 +60,8 @@ func _ready() -> void:
 
 
 func _on_music_finished() -> void:
+  if _is_cuban_pete_active:
+    return
   skip_music_forward()
 
 
@@ -59,6 +69,8 @@ func _play_track(idx: int) -> void:
   if _bg_music_track_indexes.is_empty():
     return
   _bg_music_current_track_index = wrapi(idx, 0, _bg_music_track_indexes.size())
+  if _bg_music.stream != _bg_music_stream:
+    return
   _bg_music.seek(_bg_music_track_indexes[_bg_music_current_track_index])
   _refresh_music_playback_label()
 
@@ -221,25 +233,66 @@ func _on_symbol_bumped(blurb: String) -> void:
 
 
 func _cuban_pete() -> void:
-  var cuban_pete_stream := load("res://Assets/music/Cuban Pete.ogg") as AudioStream
-  if cuban_pete_stream and _bg_music.stream == _bg_music_stream:
-    # var fade_tween := create_tween()
-    # fade_tween.tween_property(_bg_music, "volume_db", -80.0, 1.0)
-    # fade_tween.chain().tween_callback(func():
-    #     _bg_music.stop()
-    #     _bg_music.stream = cuban_pete_stream
-    #     _bg_music.play()
-    #   )
-    #   .tween_property(_bg_music, "volume_db", 0.0, 1.0)
-    _bg_music.stream = cuban_pete_stream
-    _bg_music.play()
-    _bg_music.finished.connect(func():
-      _bg_music.stream = _bg_music_stream
-      _bg_music.play()
-      _play_track(_bg_music_current_track_index)
-    )
-  else:
+  if not _CUBAN_PETE_STREAM:
     print_debug("Failed to load Cuban Pete track")
+    return
+
+  if _is_cuban_pete_active or _bg_music.stream != _bg_music_stream:
+    return
+
+  _kill_music_tween(_bg_music_transition_tween)
+  _kill_music_tween(_bg_music_restore_tween)
+
+  _is_cuban_pete_active = true
+  _bg_music_transition_tween = create_tween().bind_node(self)
+  _bg_music_transition_tween.tween_property(_bg_music, "volume_db", _MUSIC_MUTED_DB, _MUSIC_FADE_DURATION)
+  _bg_music_transition_tween.tween_callback(_start_cuban_pete_playback)
+  _bg_music_transition_tween.tween_property(_bg_music, "volume_db", _MUSIC_NORMAL_DB, _MUSIC_FADE_DURATION)
+  _bg_music_transition_tween.finished.connect(_on_bg_music_transition_finished, CONNECT_ONE_SHOT)
+
+
+func _start_cuban_pete_playback() -> void:
+  _bg_music.stop()
+  _bg_music.stream = _CUBAN_PETE_STREAM
+  _bg_music.volume_db = _MUSIC_MUTED_DB
+  _bg_music.play()
+  _bg_music.finished.connect(_on_cuban_pete_finished, CONNECT_ONE_SHOT)
+
+
+func _on_cuban_pete_finished() -> void:
+  if not _is_cuban_pete_active:
+    return
+
+  _kill_music_tween(_bg_music_transition_tween)
+  _kill_music_tween(_bg_music_restore_tween)
+
+  _bg_music_restore_tween = create_tween().bind_node(self)
+  _bg_music_restore_tween.tween_property(_bg_music, "volume_db", _MUSIC_MUTED_DB, _MUSIC_FADE_DURATION)
+  _bg_music_restore_tween.tween_callback(_restore_background_music)
+  _bg_music_restore_tween.tween_property(_bg_music, "volume_db", _MUSIC_NORMAL_DB, _MUSIC_FADE_DURATION)
+  _bg_music_restore_tween.finished.connect(_on_bg_music_restore_finished, CONNECT_ONE_SHOT)
+
+
+func _restore_background_music() -> void:
+  _bg_music.stop()
+  _bg_music.stream = _bg_music_stream
+  _bg_music.volume_db = _MUSIC_MUTED_DB
+  _bg_music.play()
+  _play_track(_bg_music_current_track_index)
+
+
+func _on_bg_music_transition_finished() -> void:
+  _bg_music_transition_tween = null
+
+
+func _on_bg_music_restore_finished() -> void:
+  _bg_music_restore_tween = null
+  _is_cuban_pete_active = false
+
+
+func _kill_music_tween(tween: Tween) -> void:
+  if tween:
+    tween.kill()
 
 
 func _on_kitten_found() -> void:
