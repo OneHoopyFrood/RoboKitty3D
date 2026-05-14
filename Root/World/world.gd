@@ -6,14 +6,14 @@ const KITTEN_BLURB: String = "You found kitten! Way to go, robot."
 const PETE_BLURB: String = "It's a cigar box. There's an inscription here... it reads: \"chik-chiky-boom?\""
 const DEFAULT_PETE_CHANCE: float = 0.1 # % chance for Pete to spawn
 
-@export var num_nodes: int = 100
+@export var num_symbols: int = 100
 @export var step_size: float = 1.0
 @export var pete_chance: float = DEFAULT_PETE_CHANCE
 var board_size: int = 50
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
-var node_scene = preload('res://Root/World/Symbol/Symbol.tscn')
+var symbol_scene = preload('res://Root/World/Symbol/Symbol.tscn')
 
 var _blurbs: Array[String] = []
 var _cell_to_symbol: Dictionary = {}
@@ -29,23 +29,23 @@ func _ready():
   _load_blurbs()
 
   # Generate symbols and add them to the world.
-  var nodes = _generate_nodes()
-  for node in nodes:
-    add_child(node)
+  var symbols = _generate_symbols()
+  for symbol in symbols:
+    add_child(symbol)
 
   # Random chance to spawn Pete
   if rng.randf() <= pete_chance:
     spawn_pete()
 
-  # Connect player rotation signal to all interaction nodes
+  # Connect player rotation signal to all interaction symbols
   var player = get_node_or_null("Player")
   print_debug("World: Looking for player at Player: ", player)
   if player and player.has_signal("player_movement"):
-    print_debug("World: Found player with player_movement signal, connecting ", nodes.size(), " nodes")
-    for node in nodes:
-      if node.has_method("face_player") and not player.player_movement.is_connected(node.face_player):
-        player.player_movement.connect(node.face_player)
-        print_debug("World: Connected ", node.name, " to player_movement signal")
+    print_debug("World: Found player with player_movement signal, connecting ", symbols.size(), " symbols")
+    for symbol in symbols:
+      if symbol.has_method("face_player") and not player.player_movement.is_connected(symbol.face_player):
+        player.player_movement.connect(symbol.face_player)
+        print_debug("World: Connected ", symbol.name, " to player_movement signal")
   else:
     print_debug("World: Failed to find player or signal!")
 
@@ -54,38 +54,43 @@ func _apply_root_options() -> void:
   var options := get_node_or_null("/root/GameOptions")
   if options:
     board_size = int(options.board_size)
-    num_nodes = int(options.nki_count)
+    num_symbols = int(options.nki_count)
 
-func _generate_nodes() -> Array[Symbol]:
-  var nodes: Array[Symbol] = []
+func _generate_symbols() -> Array[Symbol]:
+  var symbols: Array[Symbol] = []
   var used_positions: Array[Vector2i] = [Vector2i(0, 0)] # Player spawn cell
 
   # Choose one generated symbol to become kitten.
-  var kitten_index: int = rng.randi_range(0, max(num_nodes - 1, 0))
+  var kitten_index: int = rng.randi_range(0, max(num_symbols - 1, 0))
 
-  for i in range(num_nodes):
-    var node: Symbol = node_scene.instantiate()
-    node.randomize_bobbing(rng)
-    node.randomize_color(rng)
+  for i in range(num_symbols):
+    var symbol: Symbol = symbol_scene.instantiate()
+    symbol.randomize_bobbing(rng)
+    symbol.randomize_color(rng)
 
     if i == kitten_index:
-      node.blurb = KITTEN_BLURB
-      node.bumped.connect(kitten_found.emit)
-      _kitten = node
+      symbol.blurb = KITTEN_BLURB
+      symbol.bumped.connect(kitten_found.emit)
+      _kitten = symbol
 
     if _blurbs.size() > 0:
-      node.blurb = _blurbs[i % _blurbs.size()]
+      symbol.blurb = _blurbs[i % _blurbs.size()]
 
     var cell := random_cell() # Returns Vector2i
     while used_positions.has(cell):
       cell = random_cell()
     used_positions.push_back(cell)
 
-    _cell_to_symbol[cell] = node
-    node.position = cell_to_world(cell)
+    _cell_to_symbol[cell] = symbol
+    symbol.position = cell_to_world(cell)
 
-    nodes.append(node)
-  return nodes
+    symbols.append(symbol)
+  return symbols
+
+
+func get_symbols():
+  return _cell_to_symbol.values() as Array[Symbol]
+
 
 func random_cell() -> Vector2i:
   var spawn_radius = int(board_size / 2.0) - 1

@@ -17,7 +17,7 @@ var _has_won: bool = false
 
 
 func _ready() -> void:
-  _connect_symbol_bump_signals_recursive(_world)
+  _connect_symbol_bump_signals()
 
   if _world.has_signal("kitten_found") and not _world.kitten_found.is_connected(_on_kitten_found):
     _world.kitten_found.connect(_on_kitten_found)
@@ -141,11 +141,10 @@ func _on_menu_button_pressed(action: Menu.MenuAction) -> void:
       quit()
 
 
-func _connect_symbol_bump_signals_recursive(node: Node) -> void:
-  for child in node.get_children():
-    if child.has_signal("bumped") and not child.is_connected("bumped", Callable(self , "_on_symbol_bumped")):
-      child.connect("bumped", Callable(self , "_on_symbol_bumped"))
-    _connect_symbol_bump_signals_recursive(child)
+func _connect_symbol_bump_signals() -> void:
+  for symbol: Symbol in _world.get_symbols():
+    if symbol.has_signal("bumped") and not symbol.is_connected("bumped", Callable(self , "_on_symbol_bumped")):
+      symbol.connect("bumped", Callable(self , "_on_symbol_bumped"))
 
 
 func _on_world_child_entered_tree(node: Node) -> void:
