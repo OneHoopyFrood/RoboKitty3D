@@ -99,7 +99,6 @@
     - [ ] Back-up beep?
     - [x] Error noise when backing into a wall
     - [x] Error noise when backing into a symbol
-  - [ ] Kitten noises (for "pspsps" cheat code)
   - [ ] Menu sounds
 
 **Art**
