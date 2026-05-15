@@ -79,6 +79,13 @@
 
 ## Assets
 
+**Model**
+
+- [ ] Robot (Generally WALL-E like.)
+  - [ ] Walk animation (Just wheels turning)
+  - [ ] Break animation (for bumping into walls/symbols)
+  - [ ] Bones for head to look around
+
 **Sounds**
 
 - Music
@@ -104,6 +111,6 @@
 **Art**
 
 - [ ] Kitten (paper cut-out)
-- [ ] Robot kitten heart (for win sequence)
-- [ ] Splash screen/title card
-- [ ] Credits screen background
+- [ ] Pixel Heart (for win sequence)
+- [ ] Splash Screen
+- [ ] Icon
