@@ -38,6 +38,7 @@ var _rotation_tween: Tween
 var _dim_tween: Tween
 var _text_mesh: TextMesh
 var _options: Node
+var _visit_dim_enabled: bool = false
 
 ########################
 ## Lifecycle
@@ -56,19 +57,20 @@ func _ready() -> void:
   # Make sure the symbol isn't in the ground or too high.
   base_y = clamp(global_position.y, box_size.y / 2, MAX_Y)
 
-  # Add undim.
+  # Add glow
   _mesh.material_overlay = StandardMaterial3D.new()
   _mesh.material_overlay.emission_enabled = true
   _mesh.material_overlay.emission_energy_multiplier = 1.0
 
   set_color(color)
-  _sync_to_options()
 
 func _process(delta: float) -> void:
   _time += delta
   var offset = sin(_time * bob_speed) * bob_amplitude
   global_position.y = base_y + offset
-  _sync_to_options()
+  if _visit_dim_enabled != bool(_options.visited_dimming):
+    _visit_dim_enabled = bool(_options.visited_dimming)
+    sync_dim()
 
 ########################
 ## Methods
@@ -117,6 +119,8 @@ func bump(do_blurb: bool = true) -> void:
   is_bumped = true
   if do_blurb:
     bumped.emit(blurb)
+  if _visit_dim_enabled and not is_dimmed:
+    dim()
 
 
 ## Dim the symbol's color and emission
@@ -131,27 +135,24 @@ func undim() -> void:
   _tween_glow(color, true)
   is_dimmed = false
 
+
+## Sync the symbol's dimmed state to whether it's been bumped and visit-based dimming is enabled. This is used when toggling visit-based dimming on/off in the options menu, and also ensures symbols are in the correct state if the player bumps them while toggling dimming on/off.
+func sync_dim() -> void:
+  if _visit_dim_enabled and is_bumped and not is_dimmed:
+    dim()
+  elif not _visit_dim_enabled and is_dimmed:
+    undim()
+
+
 func _tween_glow(target_color: Color, bright_glow: bool) -> void:
   if _dim_tween:
-    return # Don't start a new tween if we're already tweening. This prevents visual glitches from rapidly toggling visited state.
+    _dim_tween.kill()
 
   var target_emission_multiplier: float = 1.0 if bright_glow else 0.02
 
-  _dim_tween = create_tween()
+  _dim_tween = create_tween().parallel()
   _dim_tween.tween_property(_mesh.material_overlay, "albedo_color", target_color, DIM_GLOW_TIME)
   _dim_tween.tween_property(_mesh.material_overlay, "emission_energy_multiplier", target_emission_multiplier, DIM_GLOW_TIME)
-
-
-func _sync_to_options() -> void:
-  if not _options or "visited_dimming" not in _options:
-    return
-
-  if bool(_options.visited_dimming):
-    if is_bumped and not is_dimmed:
-      dim()
-    elif not is_bumped and is_dimmed:
-      undim()
-
 
 ## Returns the blurb text for this symbol.
 func get_blurb() -> String:

@@ -146,16 +146,22 @@ func get_random_symbol() -> Symbol:
 func is_cell_blocked(cell: Vector2i) -> bool:
   return not is_in_bounds(cell) or get_symbol_at_cell(cell) != null
 
+func _resync_symbol_dims() -> void:
+  for symbol in _cell_to_symbol.values():
+    if symbol.is_dimmed:
+      symbol.sync_dim()
+
 func _dim_symbols_except(...exclude_symbols) -> void:
   assert(
     exclude_symbols.size() == 0 || exclude_symbols.any(func(s): return _cell_to_symbol.values().has(s)),
     "_dim_symbols_except requires at least one Symbol argument")
 
   for symbol in _cell_to_symbol.values():
+    if symbol.is_dimmed:
+      symbol.sync_dim()
     if not exclude_symbols.has(symbol):
       symbol.dim()
-    elif symbol.is_dimmed:
-      symbol.undim()
+
 
 ## Bump the kitten directly. (Used for debug cheat that lets you skip straight to the win.)
 func bump_kitten() -> void:
@@ -177,8 +183,8 @@ func spawn_pete() -> void:
     _pete.blurb = PETE_BLURB
 
 ## Dim all symbols except Pete, if Pete exists. Returns true if Pete was found, false if not.
-func dim_ncpis() -> bool:
+func dim_ncpis() -> void:
   if has_pete():
     _dim_symbols_except(_pete)
-    return true
-  return false
+    await _pete.bumped
+    _resync_symbol_dims()

@@ -160,11 +160,12 @@ func _on_symbol_bumped(blurb: String) -> void:
 
 
 func _cuban_pete() -> void:
-  _menu.toggle_music_controls()
+  _menu.disable_music_controls()
   if _bg_music.current_track_title() != "Cuban Pete":
     _bg_music.play_track_by_name("Cuban Pete")
+    await get_tree().create_timer(2.0).timeout # Give it a couple secs to start playing before toggling controls so the label updates correctly.
     await _bg_music.playback_changed
-    _menu.toggle_music_controls()
+    _menu.enable_music_controls()
 
 
 func _on_kitten_found(_blurb: String) -> void:

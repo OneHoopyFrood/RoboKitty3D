@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dslsww36yeyjy"]
+[gd_scene format=3 uid="uid://dslsww36yeyjy"]
 
 [ext_resource type="Script" uid="uid://bs8j71elomxox" path="res://Root/World/Symbol/symbol.gd" id="1_a5rj1"]
 [ext_resource type="FontFile" uid="uid://034x3460fr0j" path="res://Assets/TerminusBold.ttf" id="2_xqmbm"]
@@ -9,10 +9,10 @@ font = ExtResource("2_xqmbm")
 font_size = 127
 depth = 0.125
 
-[node name="Symbol" type="Node3D"]
+[node name="Symbol" type="Node3D" unique_id=2129787191]
 script = ExtResource("1_a5rj1")
 metadata/_custom_type_script = "uid://bs8j71elomxox"
 
-[node name="Mesh" type="MeshInstance3D" parent="."]
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1798056428]
 custom_aabb = AABB(-0.5, -0.5, -0.5, 1, 1, 1)
 mesh = SubResource("TextMesh_nnv6f")
