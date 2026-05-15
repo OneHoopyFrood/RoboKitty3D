@@ -29,6 +29,7 @@ var color: Color = DEFAULT_COLOR
 var symbol: String
 var blurb: String = ""
 var is_bumped: bool = false
+var is_dimmed: bool = false
 
 # Private
 var _time: float = 0.0
@@ -122,11 +123,13 @@ func bump(do_blurb: bool = true) -> void:
 func dim() -> void:
   var dimmed_color := color.lerp(Color(0.65, 0.65, 0.65, color.a), 0.6)
   _tween_glow(dimmed_color, false)
+  is_dimmed = true
 
 
 ## Undim (restore) the symbol's color and emission
 func undim() -> void:
   _tween_glow(color, true)
+  is_dimmed = false
 
 func _tween_glow(target_color: Color, bright_glow: bool) -> void:
   if _dim_tween:
@@ -143,12 +146,10 @@ func _sync_to_options() -> void:
   if not _options or "visited_dimming" not in _options:
     return
 
-  var is_currently_dimmed: bool = _mesh.material_overlay.emission_energy_multiplier < 0.1
-
   if bool(_options.visited_dimming):
-    if is_bumped and not is_currently_dimmed:
+    if is_bumped and not is_dimmed:
       dim()
-    elif not is_bumped and is_currently_dimmed:
+    elif not is_bumped and is_dimmed:
       undim()
 
 

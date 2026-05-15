@@ -39,13 +39,10 @@ func _ready():
 
   # Connect player rotation signal to all interaction symbols
   var player = get_node_or_null("Player")
-  print_debug("World: Looking for player at Player: ", player)
   if player and player.has_signal("player_movement"):
-    print_debug("World: Found player with player_movement signal, connecting ", symbols.size(), " symbols")
     for symbol in symbols:
       if symbol.has_method("face_player") and not player.player_movement.is_connected(symbol.face_player):
         player.player_movement.connect(symbol.face_player)
-        print_debug("World: Connected ", symbol.name, " to player_movement signal")
   else:
     print_debug("World: Failed to find player or signal!")
 
@@ -72,9 +69,9 @@ func _generate_symbols() -> Array[Symbol]:
       symbol.blurb = KITTEN_BLURB
       symbol.bumped.connect(kitten_found.emit)
       _kitten = symbol
-
-    if _blurbs.size() > 0:
-      symbol.blurb = _blurbs[i % _blurbs.size()]
+    else:
+      if _blurbs.size() > 0:
+        symbol.blurb = _blurbs[i % _blurbs.size()]
 
     var cell := random_cell() # Returns Vector2i
     while used_positions.has(cell):
@@ -157,6 +154,8 @@ func _dim_symbols_except(...exclude_symbols) -> void:
   for symbol in _cell_to_symbol.values():
     if not exclude_symbols.has(symbol):
       symbol.dim()
+    elif symbol.is_dimmed:
+      symbol.undim()
 
 ## Bump the kitten directly. (Used for debug cheat that lets you skip straight to the win.)
 func bump_kitten() -> void:

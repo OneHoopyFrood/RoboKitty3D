@@ -167,12 +167,10 @@ func _cuban_pete() -> void:
     _menu.toggle_music_controls()
 
 
-func _on_kitten_found() -> void:
-  if _has_won:
-    return
+func _on_kitten_found(_blurb: String) -> void:
   _has_won = true
   _player.disable_controls()
-  _dialog.open("", _WIN_RESTART_PROMPT)
+  _dialog.show_hint(_WIN_RESTART_PROMPT)
 
 
 func _on_cheat_activated(code: String) -> void:

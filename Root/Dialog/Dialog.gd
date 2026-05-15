@@ -39,12 +39,9 @@ func _unhandled_input(event: InputEvent) -> void:
     get_viewport().set_input_as_handled()
 
 ## Open the dialog with the given blurb text
-func open(blurb: String, hint: String = "") -> void:
+func open(blurb: String) -> void:
   if blurb != "":
     _label.text = blurb
-
-  _hint_label.text = hint
-  _hint_label.visible = hint.length() > 0
 
   if is_open:
     return
@@ -80,3 +77,8 @@ func close() -> void:
     _hint_label.visible = false
     is_open = false
   )
+  _hint_label.visible = false
+
+func show_hint(text: String) -> void:
+  _hint_label.text = text
+  _hint_label.visible = true
