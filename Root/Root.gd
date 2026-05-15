@@ -161,8 +161,10 @@ func _on_symbol_bumped(blurb: String) -> void:
 
 func _cuban_pete() -> void:
   _menu.toggle_music_controls()
-  _bg_music.play_track_by_name("Cuban Pete")
-  _menu.toggle_music_controls()
+  if _bg_music.current_track_title() != "Cuban Pete":
+    _bg_music.play_track_by_name("Cuban Pete")
+    await _bg_music.playback_changed
+    _menu.toggle_music_controls()
 
 
 func _on_kitten_found() -> void:
@@ -187,5 +189,3 @@ func _on_cheat_activated(code: String) -> void:
       _world.spawn_pete()
     _world.dim_ncpis()
     print_debug("Cheat activated: Cuban Pete will appear in the world")
-  elif code == "p":
-    _cuban_pete()

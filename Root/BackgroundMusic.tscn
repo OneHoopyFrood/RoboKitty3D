@@ -4,7 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://bbmkppbpci53q" path="res://Assets/music/Jonbeck Bonbo.ogg" id="2_lhopf"]
 [ext_resource type="AudioStream" uid="uid://oye4okuoaqwq" path="res://Assets/music/Nostalgium 2023.ogg" id="3_wek3v"]
 [ext_resource type="AudioStream" uid="uid://mgvh6faga1dd" path="res://Assets/music/Sique.ogg" id="4_pcd0w"]
-[ext_resource type="AudioStream" uid="uid://cx6vdh5js28cc" path="res://Assets/sfx/remain_calm.ogg" id="5_5g1wx"]
+[ext_resource type="AudioStream" uid="uid://lfwdk7sy7ktd" path="res://Assets/music/Cuban Pete.ogg" id="5_12eql"]
 [ext_resource type="Script" uid="uid://c26gf6yh3py57" path="res://Root/BackgroundMusic.gd" id="6_47gdd"]
 
 [sub_resource type="AudioStreamInteractive" id="AudioStreamInteractive_t36hs"]
@@ -26,7 +26,7 @@ clip_3/stream = ExtResource("4_pcd0w")
 clip_3/auto_advance = 1
 clip_3/next_clip = 0
 clip_4/name = &"Cuban Pete"
-clip_4/stream = ExtResource("5_5g1wx")
+clip_4/stream = ExtResource("5_12eql")
 clip_4/auto_advance = 1
 clip_4/next_clip = 3
 _transitions = {
