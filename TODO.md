@@ -24,7 +24,6 @@
 - [x] Strafe (hold shift to strafe instead of turn)
 - [ ] Sprint (hold ctrl to move faster)
 - [ ] Save and load settings and options
-- [ ] Configurable controls
 - [x] Dim visited symbols
 - [ ] Something to fill the void? Starfield? Slightly shiny floor texture? It'd
       be nice to see my reflection.
@@ -40,6 +39,10 @@
 - [ ] Timed mode (non-zen)
 - [ ] Multiplayer competative mode (multiple rounds, keeps score of who finds
       the kitten first each round, first to 3 wins)
+- [ ] Out in the void beyond the world border, there should be some secret way
+      to get out there and find a degraded model of the robot sitting by a tree,
+      with rust and a mushroom growing from it's eye socket, holding a dragonfly.
+      (Callout toe the album art from which the Robot model is derived.)
 
 ### Pause menu
 
@@ -54,8 +57,8 @@
   - [x] Number of symbols
   - [x] Board size
 - Settings
-  - [ ] Control customization
   - [ ] Music and SFX volumes
+  - [ ] Control customization
   - [ ] Fullscreen
   - [ ] Camera mode (FP, 3rd person, top down)
 - [ ] Credits
@@ -103,7 +106,6 @@
   - [x] Robot movement
     - [x] Whirrr on move/turn
     - [x] Ooof when hitting a symbol at speed
-    - [ ] Back-up beep?
     - [x] Error noise when backing into a wall
     - [x] Error noise when backing into a symbol
   - [ ] Menu sounds

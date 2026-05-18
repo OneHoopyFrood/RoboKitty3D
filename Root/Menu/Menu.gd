@@ -67,7 +67,7 @@ func enable_music_controls() -> void:
   _music_skip_back_button.disabled = false
   _music_toggle_playback_button.disabled = false
   _music_skip_forward_button.disabled = false
-  
+
 
 func _get_options_node() -> Node:
   return get_node_or_null("/root/GameOptions")
